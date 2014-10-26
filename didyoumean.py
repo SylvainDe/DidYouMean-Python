@@ -3,16 +3,22 @@ import inspect
 import dis
 import functools
 
+def get_suggestions(var, inspect_frame, lim=10):
+    # todo : add distance with coef for locals, glob and builtins
+    return (inspect_frame.f_locals.keys() + inspect_frame.f_globals.keys() + inspect_frame.f_builtins.keys())[:lim]
+
+def get_var_name_from_exc(e):
+    return e.args[0].split("'")[1]
+
 def didyoumean(f):
     @functools.wraps(f)
     def decorated(*args, **kwargs):
         try:
             return f(*args, **kwargs)
         except NameError as e:
-            # todo : add distance with coef for locals, glob and builtins
-            var = (e.args[0] if e.args else '').split("'")[1]
-            ins = inspect.trace()[-1][0]
-            e.args = (var + " is not found. Did you mean " + ', '.join(ins.f_locals.keys() + ins.f_globals.keys() + ins.f_builtins.keys()),)
+            e.args = (e.args[0] +
+                    ". Did you mean " +
+                    ', '.join(get_suggestions(get_var_name_from_exc(e), inspect.trace()[-1][0])), )
             raise
         except KeyError as e:
             # this will never get any better
