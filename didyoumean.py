@@ -24,7 +24,7 @@ def get_method_suggestions(type_, method, lim=10, cutoff=0.6):
     # todo : add hardcoded logic for usual containers : add, append, etc
     return difflib.get_close_matches(
         method,
-        dir(type_),
+        dir(eval(type_)),  # todo: this can and should be changed
         lim,
         cutoff)
 
@@ -49,16 +49,21 @@ def didyoumean(func):
             return func(*args, **kwargs)
         except NameError as exc:
             assert len(exc.args) == 1
-            exc.args = (exc.args[0] + ". Did you mean " + ', '.join(
+            sugg = ', '.join(
                 get_var_suggestions(
                     get_var_name_from_nameerror(exc),
-                    inspect.trace()[-1][0])), )
+                    inspect.trace()[-1][0]))
+            if sugg:
+                exc.args = (exc.args[0] + ". Did you mean " + sugg, )
+            assert len(exc.args) == 1
             raise
         except AttributeError as exc:
             assert len(exc.args) == 1
             type_, method = get_type_and_method_from_attributeerror(exc)
-            exc.args = (exc.args[0] + ". Did you mean " + ', '.join(
-                get_method_suggestions(type_, method)), )
+            sugg = ', '.join(
+                get_method_suggestions(type_, method))
+            exc.args = (exc.args[0] + ". Did you mean " + sugg, )
+            assert len(exc.args) == 1
             raise
         # Could be added : IndexError, KeyError
     return decorated

@@ -1,34 +1,96 @@
 # -*- coding: utf-8
 """Unit tests for code in didyoumean.py."""
-
 from didyoumean import didyoumean
-# import unittest
+import unittest
 
 
-def func(a, b):
-    print("func")
-    c = 5
-    f = [1, 2, 3]
-    # c = (f+f)[4+3]
-    # f.len()
-    f.add(c)
-    # c = [5 for i in range(10) if b2 > 0]
-    c = b2
-    e = {}
-    e[3] = 3
-    # c = e[2 + 5]
+class NameErrorSingleArgument(unittest.TestCase):
+    def nameerror_function(self, foo, bar):
+        return foob
+
+    @didyoumean
+    def nameerror_function_wrapped(self, foo, bar):
+        return self.nameerror_function(foo, bar)
+
+    def test_original(self):
+        self.assertRaisesRegex(NameError, "^global name '[^']*' is not defined$", lambda: self.nameerror_function(1, 2))
+
+    def test_wrapped(self):
+        self.assertRaisesRegex(NameError, "^global name '[^']*' is not defined. Did you mean foo$", lambda: self.nameerror_function_wrapped(1, 2))
 
 
-def func2():
-    print("func2")
-    fun = 2
-    func(1, 2)
+class NameErrorMultipleArguments(unittest.TestCase):
+    def nameerror_function(self, fool, foot):
+        return food
+
+    @didyoumean
+    def nameerror_function_wrapped(self, foo, bar):
+        return self.nameerror_function(foo, bar)
+
+    def test_original(self):
+        self.assertRaisesRegex(NameError, "^global name '[^']*' is not defined$", lambda: self.nameerror_function(1, 2))
+
+    def test_wrapped(self):
+        self.assertRaisesRegex(NameError, "^global name '[^']*' is not defined. Did you mean foot, fool$", lambda: self.nameerror_function_wrapped(1, 2))
 
 
-@didyoumean
-def func3():
-    print("func3")
-    func2()
+class NameErrorBuiltin(unittest.TestCase):
+    def nameerror_function(self):
+        return maxi
+
+    @didyoumean
+    def nameerror_function_wrapped(self):
+        return self.nameerror_function()
+
+    def test_original(self):
+        self.assertRaisesRegex(NameError, "^global name '[^']*' is not defined$", lambda: self.nameerror_function())
+
+    def test_wrapped(self):
+        self.assertRaisesRegex(NameError, "^global name '[^']*' is not defined. Did you mean max$", lambda: self.nameerror_function_wrapped())
 
 
-func3()
+class NameErrorNoSuggestion(unittest.TestCase):
+    def nameerror_function(self):
+        return ldkjhfnvdlkjhvgfdhgf
+
+    @didyoumean
+    def nameerror_function_wrapped(self):
+        return self.nameerror_function()
+
+    def test_original(self):
+        self.assertRaisesRegex(NameError, "^global name '[^']*' is not defined$", lambda: self.nameerror_function())
+
+    def test_wrapped(self):
+        self.assertRaisesRegex(NameError, "^global name '[^']*' is not defined$", lambda: self.nameerror_function_wrapped())
+
+
+class AttributeErrorBuiltin(unittest.TestCase):
+    def attributeerror_function(self):
+        lst = [1, 2, 3]
+        lst.len()
+
+    @didyoumean
+    def attributeerror_function_wrapped(self):
+        return self.attributeerror_function()
+
+    def test_original(self):
+        self.assertRaisesRegex(AttributeError, "^'[^']*' object has no attribute '[^']*'$", lambda: self.attributeerror_function())
+
+    def test_wrapped(self):
+        self.assertRaisesRegex(AttributeError, "^'[^']*' object has no attribute '[^']*'. Did you mean len\(list\)$", lambda: self.attributeerror_function_wrapped())
+
+
+class AttributeErrorMethod(unittest.TestCase):
+    def attributeerror_function(self):
+        lst = [1, 2, 3]
+        lst.appendh(4)
+
+    @didyoumean
+    def attributeerror_function_wrapped(self):
+        return self.attributeerror_function()
+
+    def test_original(self):
+        self.assertRaisesRegex(AttributeError, "^'[^']*' object has no attribute '[^']*'$", lambda: self.attributeerror_function())
+
+    def test_wrapped(self):
+        self.assertRaisesRegex(AttributeError, "^'[^']*' object has no attribute '[^']*'. Did you mean append*$", lambda: self.attributeerror_function_wrapped())

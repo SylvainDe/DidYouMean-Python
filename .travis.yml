@@ -1,0 +1,19 @@
+language: python
+python:
+  - "2.6"
+  - "2.7"
+  - "3.2"
+  - "3.3"
+  - "3.4"
+
+install:
+  - pip install pep8
+  - pip install --upgrade pyflakes
+
+before_script:
+ - pep8 *.py --ignore=E501,E713
+  # to have the list anyway
+ - pep8 *.py --select=E501,E713 || true
+
+script:
+ - python3 -m unittest discover --pattern=*.py
