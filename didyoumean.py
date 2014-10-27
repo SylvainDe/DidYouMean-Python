@@ -2,24 +2,31 @@
 """Decorator to have suggestions when variable/functions do not exist."""
 import inspect
 import functools
+import difflib
+import builtins
 
 
-def get_var_suggestions(var, inspect_frame, lim=10):
+def get_var_suggestions(var, inspect_frame, lim=10, cutoff=0.6):
     """Get the lim suggestions closest to the variable names."""
-    # todo : add distance with coef for locals, glob and builtins
-    # should use var
-    return (
+    return difflib.get_close_matches(
+        var,
         list(inspect_frame.f_locals.keys()) +
         list(inspect_frame.f_globals.keys()) +
-        list(inspect_frame.f_builtins.keys()))[:lim]
+        list(inspect_frame.f_builtins.keys()),
+        lim,
+        cutoff)
 
 
-def get_method_suggestions(type_, method, lim=10):
+def get_method_suggestions(type_, method, lim=10, cutoff=0.6):
     """Get the lim suggestions closest to the variable names."""
-    # todo : add distance
-    # should use method
+    if method in dir(builtins):
+        return [method + '(' + type_ + ')']
     # todo : add hardcoded logic for usual containers : add, append, etc
-    return dir(type_)[:lim]
+    return difflib.get_close_matches(
+        method,
+        dir(type_),
+        lim,
+        cutoff)
 
 
 def get_var_name_from_nameerror(exc):
@@ -53,5 +60,5 @@ def didyoumean(func):
             exc.args = (exc.args[0] + ". Did you mean " + ', '.join(
                 get_method_suggestions(type_, method)), )
             raise
-        # Could be added : AttributeError, KeyError
+        # Could be added : IndexError, KeyError
     return decorated

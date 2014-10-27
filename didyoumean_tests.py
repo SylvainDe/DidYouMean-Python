@@ -8,7 +8,9 @@ from didyoumean import didyoumean
 def func(a, b):
     print("func")
     c = 5
-    f = []
+    f = [1, 2, 3]
+    # c = (f+f)[4+3]
+    # f.len()
     f.add(c)
     # c = [5 for i in range(10) if b2 > 0]
     c = b2
