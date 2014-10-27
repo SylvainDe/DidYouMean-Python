@@ -13,10 +13,10 @@ class NameErrorSingleArgument(unittest.TestCase):
         return self.nameerror_function(foo, bar)
 
     def test_original(self):
-        self.assertRaisesRegex(NameError, "^global name '[^']*' is not defined$", lambda: self.nameerror_function(1, 2))
+        self.assertRaisesRegex(NameError, "^(global )?name '[^']*' is not defined$", lambda: self.nameerror_function(1, 2))
 
     def test_wrapped(self):
-        self.assertRaisesRegex(NameError, "^global name '[^']*' is not defined. Did you mean foo$", lambda: self.nameerror_function_wrapped(1, 2))
+        self.assertRaisesRegex(NameError, "^(global )?name '[^']*' is not defined. Did you mean foo$", lambda: self.nameerror_function_wrapped(1, 2))
 
 
 class NameErrorMultipleArguments(unittest.TestCase):
@@ -28,10 +28,10 @@ class NameErrorMultipleArguments(unittest.TestCase):
         return self.nameerror_function(foo, bar)
 
     def test_original(self):
-        self.assertRaisesRegex(NameError, "^global name '[^']*' is not defined$", lambda: self.nameerror_function(1, 2))
+        self.assertRaisesRegex(NameError, "^(global )?name '[^']*' is not defined$", lambda: self.nameerror_function(1, 2))
 
     def test_wrapped(self):
-        self.assertRaisesRegex(NameError, "^global name '[^']*' is not defined. Did you mean foot, fool$", lambda: self.nameerror_function_wrapped(1, 2))
+        self.assertRaisesRegex(NameError, "^(global )?name '[^']*' is not defined. Did you mean foot, fool$", lambda: self.nameerror_function_wrapped(1, 2))
 
 
 class NameErrorBuiltin(unittest.TestCase):
@@ -43,10 +43,10 @@ class NameErrorBuiltin(unittest.TestCase):
         return self.nameerror_function()
 
     def test_original(self):
-        self.assertRaisesRegex(NameError, "^global name '[^']*' is not defined$", lambda: self.nameerror_function())
+        self.assertRaisesRegex(NameError, "^(global )?name '[^']*' is not defined$", lambda: self.nameerror_function())
 
     def test_wrapped(self):
-        self.assertRaisesRegex(NameError, "^global name '[^']*' is not defined. Did you mean max$", lambda: self.nameerror_function_wrapped())
+        self.assertRaisesRegex(NameError, "^(global )?name '[^']*' is not defined. Did you mean max$", lambda: self.nameerror_function_wrapped())
 
 
 class NameErrorNoSuggestion(unittest.TestCase):
@@ -58,10 +58,10 @@ class NameErrorNoSuggestion(unittest.TestCase):
         return self.nameerror_function()
 
     def test_original(self):
-        self.assertRaisesRegex(NameError, "^global name '[^']*' is not defined$", lambda: self.nameerror_function())
+        self.assertRaisesRegex(NameError, "^(global )?name '[^']*' is not defined$", lambda: self.nameerror_function())
 
     def test_wrapped(self):
-        self.assertRaisesRegex(NameError, "^global name '[^']*' is not defined$", lambda: self.nameerror_function_wrapped())
+        self.assertRaisesRegex(NameError, "^(global )?name '[^']*' is not defined$", lambda: self.nameerror_function_wrapped())
 
 
 class AttributeErrorBuiltin(unittest.TestCase):
