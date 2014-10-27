@@ -1,48 +1,57 @@
-
+# -*- coding: utf-8
+"""Decorator to have suggestions when variable/functions do not exist."""
 import inspect
-import dis
 import functools
 
-def get_suggestions(var, inspect_frame, lim=10):
+
+def get_var_suggestions(var, inspect_frame, lim=10):
+    """Get the lim suggestions closest to the variable names."""
     # todo : add distance with coef for locals, glob and builtins
-    return (inspect_frame.f_locals.keys() + inspect_frame.f_globals.keys() + inspect_frame.f_builtins.keys())[:lim]
+    # should use var
+    return (
+        list(inspect_frame.f_locals.keys()) +
+        list(inspect_frame.f_globals.keys()) +
+        list(inspect_frame.f_builtins.keys()))[:lim]
 
-def get_var_name_from_exc(e):
-    return e.args[0].split("'")[1]
 
-def didyoumean(f):
-    @functools.wraps(f)
+def get_method_suggestions(type_, method, lim=10):
+    """Get the lim suggestions closest to the variable names."""
+    # todo : add distance
+    # should use method
+    # todo : add hardcoded logic for usual containers : add, append, etc
+    return dir(type_)[:lim]
+
+
+def get_var_name_from_nameerror(exc):
+    """Extract the variable name from NameError."""
+    assert isinstance(exc, NameError)
+    return exc.args[0].split("'")[1]
+
+
+def get_type_and_method_from_attributeerror(exc):
+    """Extract the type and the method name from AttributeError."""
+    assert isinstance(exc, AttributeError)
+    split = exc.args[0].split("'")
+    return (split[1], split[3])
+
+
+def didyoumean(func):
+    @functools.wraps(func)
     def decorated(*args, **kwargs):
         try:
-            return f(*args, **kwargs)
-        except NameError as e:
-            assert len(e.args) == 1
-            e.args = (e.args[0] +
-                    ". Did you mean " +
-                    ', '.join(get_suggestions(get_var_name_from_exc(e), inspect.trace()[-1][0])), )
+            return func(*args, **kwargs)
+        except NameError as exc:
+            assert len(exc.args) == 1
+            exc.args = (exc.args[0] + ". Did you mean " + ', '.join(
+                get_var_suggestions(
+                    get_var_name_from_nameerror(exc),
+                    inspect.trace()[-1][0])), )
+            raise
+        except AttributeError as exc:
+            assert len(exc.args) == 1
+            type_, method = get_type_and_method_from_attributeerror(exc)
+            exc.args = (exc.args[0] + ". Did you mean " + ', '.join(
+                get_method_suggestions(type_, method)), )
             raise
         # Could be added : AttributeError, KeyError
     return decorated
-
-def func(a, b):
-    print("func")
-    c = 5
-    # c = [5 for i in range(10) if b2 > 0]
-    c = b2
-    e = {}
-    e[3] = 3
-    # c = e[2 + 5]
-
-
-def func2():
-    print("func2")
-    fun = 2
-    func(1, 2)
-
-@didyoumean
-def func3():
-    print("func3")
-    func2()
-
-func3()
-
