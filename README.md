@@ -20,13 +20,13 @@ Example
 def my_func(foo, bar):
     return foob
 
-#>>> NameError: global name 'food' is not defined
+#>>> NameError: global name 'foob' is not defined
 
 @didyoumean
 def my_func2(foo, bar):
-    return boob
+    return foob
 
-#>>> NameError: global name 'food' is not defined. Did you mean foo
+#>>> NameError: global name 'foob' is not defined. Did you mean foo
 ```
 
 ### Attribute Error
