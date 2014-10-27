@@ -18,7 +18,7 @@ def get_var_suggestions(var, inspect_frame, lim=10, cutoff=0.6):
 
 
 def get_method_suggestions(type_, method, lim=10, cutoff=0.6):
-    """Get the lim suggestions closest to the variable names."""
+    """Get the lim suggestions closest to the method name for a given type."""
     if method in dir(builtins):
         return [method + '(' + type_ + ')']
     # todo : add hardcoded logic for usual containers : add, append, etc

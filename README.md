@@ -53,13 +53,15 @@ Implementation
 
 Current implementation relies on a decorator to wrap your function call in a try-except to catch relevant exceptions, enhance them and rethrow them.
 
+To filter the best suggestions out of everything, I am currently using ```difflib```.
+
 
 Usage
 -----
 
 I haven't done anything fancy for the installation (yet). You'll have to clone this.
 
-Then, you'll just need to decorate the relevant function (the `main()`) is probably a good choice, write your code, run it : it should work. If not, please refer to next point.
+Once you have the code, you'll just need to decorate the relevant function (the `main()` is probably a good choice) by writing ```@didyoumean``` before its definition. That's it, you can write your code and run it : it should work. If not, please refer to next point.
 
 
 Contributing
@@ -67,7 +69,7 @@ Contributing
 
 Feedback is welcome, feel free to :
  * send me an email for any question/advice/comment/criticism
- * open issues if something goes wrong
+ * open issues if something goes wrong (please provide at least the version of Python you are using).
 
 Also, pull-requests are welcome to :
  * fix issues
