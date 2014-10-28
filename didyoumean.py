@@ -9,9 +9,13 @@ import builtins
 def get_var_suggestions(var, inspect_frame, lim=10, cutoff=0.6):
     """Get the lim suggestions closest to the variable names."""
     sugg = []
+    local_var = inspect_frame.f_locals
+    for spec_var in ('self', 'cls'):
+        if hasattr(local_var.get(spec_var, None), var):
+            sugg.append(spec_var + '.' + var)
     sugg.extend(difflib.get_close_matches(
         var,
-        list(inspect_frame.f_locals.keys()) +
+        list(local_var.keys()) +
         list(inspect_frame.f_globals.keys()) +
         list(inspect_frame.f_builtins.keys()),
         lim,

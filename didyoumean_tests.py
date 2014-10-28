@@ -64,6 +64,40 @@ class NameErrorNoSuggestion(unittest.TestCase):
         self.assertRaisesRegex(NameError, "^(global )?name '[^']*' is not defined$", lambda: self.nameerror_function_wrapped())
 
 
+class NameErrorSelfSuggestion(unittest.TestCase):
+    def nameerror_function(self):
+        return assertEqual
+
+    @didyoumean
+    def nameerror_function_wrapped(self):
+        return self.nameerror_function()
+
+    def test_original(self):
+        self.assertRaisesRegex(NameError, "^(global )?name '[^']*' is not defined$", lambda: self.nameerror_function())
+
+    def test_wrapped(self):
+        self.assertRaisesRegex(NameError, "^(global )?name '[^']*' is not defined. Did you mean self.assertEqual$", lambda: self.nameerror_function_wrapped())
+
+
+class NameErrorSelfClassMethodSuggestion(unittest.TestCase):
+    @classmethod
+    def function_class_nameerror(cls):
+        pass
+
+    def nameerror_function(self):
+        return function_class_nameerror
+
+    @didyoumean
+    def nameerror_function_wrapped(self):
+        return self.nameerror_function()
+
+    def test_original(self):
+        self.assertRaisesRegex(NameError, "^(global )?name '[^']*' is not defined$", lambda: self.nameerror_function())
+
+    def test_wrapped(self):
+        self.assertRaisesRegex(NameError, "^(global )?name '[^']*' is not defined. Did you mean self.function_class_nameerror$", lambda: self.nameerror_function_wrapped())
+
+
 class AttributeErrorBuiltin(unittest.TestCase):
     def attributeerror_function(self):
         lst = [1, 2, 3]
