@@ -4,7 +4,7 @@ import inspect
 import functools
 import difflib
 import builtins
-
+import sys
 
 #: Standard modules we'll consider while searching for undefined values - to be completed
 STAND_MODULES = set(['string', 'os', 'sys', 're', 'math', 'random', 'datetime', 'timeit', 'unittest', 'itertools', 'functools'])
@@ -61,25 +61,38 @@ def get_suggestion_string(sugg):
     return ". Did you mean " + ', '.join(sugg) if sugg else ""
 
 
+def add_suggestions_to_exception(type, value, traceback):
+    """Add suggestion to exception. Arguments are such as provided by sys.exc_info()."""
+    if issubclass(type, NameError):
+        assert len(value.args) == 1
+        var = get_var_name_from_nameerror(value)
+        sugg = get_var_suggestions(var, inspect.trace()[-1][0]) # last argument should be about traceback I guess
+        value.args = (value.args[0] + get_suggestion_string(sugg), )
+        assert len(value.args) == 1
+    elif issubclass(type, AttributeError):
+        assert len(value.args) == 1
+        type_, method = get_type_and_method_from_attributeerror(value)
+        sugg = get_method_suggestions(type_, method)
+        value.args = (value.args[0] + get_suggestion_string(sugg), )
+        assert len(value.args) == 1
+    # Could be added : IndexError, KeyError
+
+
 def didyoumean(func):
-    """Decorator to add a 'did-you-mean' message to error messages."""
+    """Decorator to add a suggestions to error messages."""
     @functools.wraps(func)
     def decorated(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except NameError as exc:
-            assert len(exc.args) == 1
-            var = get_var_name_from_nameerror(exc)
-            sugg = get_var_suggestions(var, inspect.trace()[-1][0])
-            exc.args = (exc.args[0] + get_suggestion_string(sugg), )
-            assert len(exc.args) == 1
+        except:
+            type, value, traceback = sys.exc_info()
+            add_suggestions_to_exception(type, value, traceback)
             raise
-        except AttributeError as exc:
-            assert len(exc.args) == 1
-            type_, method = get_type_and_method_from_attributeerror(exc)
-            sugg = get_method_suggestions(type_, method)
-            exc.args = (exc.args[0] + get_suggestion_string(sugg), )
-            assert len(exc.args) == 1
-            raise
-        # Could be added : IndexError, KeyError
     return decorated
+
+
+def didyoumean_hook(type, value, traceback, prev_hook=sys.excepthook):
+    """Hook to be substituted to sys.excepthook to enhance exceptions."""
+    add_suggestions_to_exception(type, value, traceback)
+    return prev_hook(type, value, traceback)
+# when it will work - sys.excepthook = didyoumean_hook
