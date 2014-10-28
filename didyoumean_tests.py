@@ -67,7 +67,7 @@ class NameErrorNoSuggestion(unittest.TestCase):
 class AttributeErrorBuiltin(unittest.TestCase):
     def attributeerror_function(self):
         lst = [1, 2, 3]
-        lst.len()
+        lst.max()
 
     @didyoumean
     def attributeerror_function_wrapped(self):
@@ -77,7 +77,7 @@ class AttributeErrorBuiltin(unittest.TestCase):
         self.assertRaisesRegex(AttributeError, "^'[^']*' object has no attribute '[^']*'$", lambda: self.attributeerror_function())
 
     def test_wrapped(self):
-        self.assertRaisesRegex(AttributeError, "^'[^']*' object has no attribute '[^']*'. Did you mean len\(list\)$", lambda: self.attributeerror_function_wrapped())
+        self.assertRaisesRegex(AttributeError, "^'[^']*' object has no attribute '[^']*'. Did you mean max\(list\)$", lambda: self.attributeerror_function_wrapped())
 
 
 class AttributeErrorMethod(unittest.TestCase):

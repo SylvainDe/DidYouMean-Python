@@ -8,25 +8,29 @@ import builtins
 
 def get_var_suggestions(var, inspect_frame, lim=10, cutoff=0.6):
     """Get the lim suggestions closest to the variable names."""
-    return difflib.get_close_matches(
+    sugg = []
+    sugg.extend(difflib.get_close_matches(
         var,
         list(inspect_frame.f_locals.keys()) +
         list(inspect_frame.f_globals.keys()) +
         list(inspect_frame.f_builtins.keys()),
         lim,
-        cutoff)
+        cutoff))
+    return sugg
 
 
 def get_method_suggestions(type_, method, lim=10, cutoff=0.6):
     """Get the lim suggestions closest to the method name for a given type."""
+    sugg = []
     if method in dir(builtins):
-        return [method + '(' + type_ + ')']
+        sugg.append(method + '(' + type_ + ')')
     # todo : add hardcoded logic for usual containers : add, append, etc
-    return difflib.get_close_matches(
+    sugg.extend(difflib.get_close_matches(
         method,
         dir(eval(type_)),  # todo: this can and should be changed
         lim,
-        cutoff)
+        cutoff))
+    return sugg
 
 
 def get_var_name_from_nameerror(exc):
