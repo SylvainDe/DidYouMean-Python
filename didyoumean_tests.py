@@ -64,6 +64,21 @@ class NameErrorNoSuggestion(unittest.TestCase):
         self.assertRaisesRegex(NameError, "^(global )?name '[^']*' is not defined$", lambda: self.nameerror_function_wrapped())
 
 
+class NameErrorImportSuggestion(unittest.TestCase):
+    def nameerror_function(self):
+        return math.pi
+
+    @didyoumean
+    def nameerror_function_wrapped(self):
+        return self.nameerror_function()
+
+    def test_original(self):
+        self.assertRaisesRegex(NameError, "^(global )?name '[^']*' is not defined$", lambda: self.nameerror_function())
+
+    def test_wrapped(self):
+        self.assertRaisesRegex(NameError, "^(global )?name '[^']*' is not defined. Did you mean import math.*$", lambda: self.nameerror_function_wrapped())
+
+
 class NameErrorSelfSuggestion(unittest.TestCase):
     def nameerror_function(self):
         return assertEqual

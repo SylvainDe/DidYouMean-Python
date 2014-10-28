@@ -6,6 +6,10 @@ import difflib
 import builtins
 
 
+#: Standard modules we'll consider while searching for undefined values - to be completed
+STAND_MODULES = set(['string', 'os', 'sys', 're', 'math', 'random', 'datetime', 'timeit', 'unittest', 'itertools', 'functools'])
+
+
 def get_var_suggestions(var, inspect_frame, lim=10, cutoff=0.6):
     """Get the lim suggestions closest to the variable names."""
     sugg = []
@@ -13,6 +17,8 @@ def get_var_suggestions(var, inspect_frame, lim=10, cutoff=0.6):
     for spec_var in ('self', 'cls'):
         if hasattr(local_var.get(spec_var, None), var):
             sugg.append(spec_var + '.' + var)
+    if var in STAND_MODULES:
+        sugg.append('import ' + var)
     sugg.extend(difflib.get_close_matches(
         var,
         list(local_var.keys()) +
