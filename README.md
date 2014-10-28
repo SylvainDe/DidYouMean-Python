@@ -79,6 +79,6 @@ Also, pull-requests are welcome to :
 
 As for the technical details :
 
- * this is under MIT License : you can do anythin you want as long as you provide attribution back to this project.
+ * this is under MIT License : you can do anything you want as long as you provide attribution back to this project.
  * I try to follow [PEP 8](http://legacy.python.org/dev/peps/pep-0008/) as much as possible
  * I try to have most of the code covered by unit tests

@@ -42,27 +42,29 @@ def get_type_and_method_from_attributeerror(exc):
     return (split[1], split[3])
 
 
+def get_suggestion_string(sugg):
+    """Return the suggestion list as a string."""
+    return ". Did you mean " + ', '.join(sugg) if sugg else ""
+
+
 def didyoumean(func):
+    """Decorator to add a 'did-you-mean' message to error messages."""
     @functools.wraps(func)
     def decorated(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except NameError as exc:
             assert len(exc.args) == 1
-            sugg = ', '.join(
-                get_var_suggestions(
-                    get_var_name_from_nameerror(exc),
-                    inspect.trace()[-1][0]))
-            if sugg:
-                exc.args = (exc.args[0] + ". Did you mean " + sugg, )
+            var = get_var_name_from_nameerror(exc)
+            sugg = get_var_suggestions(var, inspect.trace()[-1][0])
+            exc.args = (exc.args[0] + get_suggestion_string(sugg), )
             assert len(exc.args) == 1
             raise
         except AttributeError as exc:
             assert len(exc.args) == 1
             type_, method = get_type_and_method_from_attributeerror(exc)
-            sugg = ', '.join(
-                get_method_suggestions(type_, method))
-            exc.args = (exc.args[0] + ". Did you mean " + sugg, )
+            sugg = get_method_suggestions(type_, method)
+            exc.args = (exc.args[0] + get_suggestion_string(sugg), )
             assert len(exc.args) == 1
             raise
         # Could be added : IndexError, KeyError
