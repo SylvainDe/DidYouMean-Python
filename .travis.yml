@@ -11,9 +11,9 @@ install:
   - pip install --upgrade pyflakes
 
 before_script:
- - pep8 *.py --ignore=E501
+ - pep8 *.py */*.py --ignore=E501
   # to have the list anyway
- - pep8 *.py --select=E501 || true
+ - pep8 *.py */*.py --select=E501 || true
 
 script:
- - python3 -m unittest discover --pattern=*.py
+ - python3 -m unittest discover --start-directory=didyoumean --pattern=*.py
