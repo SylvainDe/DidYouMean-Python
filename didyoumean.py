@@ -1,6 +1,5 @@
 # -*- coding: utf-8
 """Decorator to have suggestions when variable/functions do not exist."""
-import inspect
 import functools
 import difflib
 import builtins
@@ -10,10 +9,10 @@ import sys
 STAND_MODULES = set(['string', 'os', 'sys', 're', 'math', 'random', 'datetime', 'timeit', 'unittest', 'itertools', 'functools'])
 
 
-def get_var_suggestions(var, inspect_frame, lim=10, cutoff=0.6):
+def get_var_suggestions(var, frame, lim=10, cutoff=0.6):
     """Get the lim suggestions closest to the variable names."""
     sugg = []
-    local_var = inspect_frame.f_locals
+    local_var = frame.f_locals
     for spec_var in ('self', 'cls'):
         if hasattr(local_var.get(spec_var, None), var):
             sugg.append(spec_var + '.' + var)
@@ -22,8 +21,8 @@ def get_var_suggestions(var, inspect_frame, lim=10, cutoff=0.6):
     sugg.extend(difflib.get_close_matches(
         var,
         list(local_var.keys()) +
-        list(inspect_frame.f_globals.keys()) +
-        list(inspect_frame.f_builtins.keys()),
+        list(frame.f_globals.keys()) +
+        list(frame.f_builtins.keys()),
         lim,
         cutoff))
     return sugg
@@ -61,12 +60,30 @@ def get_suggestion_string(sugg):
     return ". Did you mean " + ', '.join(sugg) if sugg else ""
 
 
+def debug_traceback(traceback):
+    """Print information from the traceback for debugging purposes."""
+    while traceback:
+        frame = traceback.tb_frame
+        assert traceback.tb_lineno == frame.f_lineno
+        assert traceback.tb_lasti == frame.f_lasti
+        print(traceback,
+              traceback.tb_lasti,
+              traceback.tb_lineno,
+              frame.f_code.co_name)
+        traceback = traceback.tb_next
+
+
 def add_suggestions_to_exception(type, value, traceback):
-    """Add suggestion to exception. Arguments are such as provided by sys.exc_info()."""
+    """Add suggestion to an exception.
+    Arguments are such as provided by sys.exc_info()."""
+    # We care about the last element of the traceback
+    end_traceback = traceback
+    while end_traceback.tb_next:
+        end_traceback = end_traceback.tb_next
     if issubclass(type, NameError):
         assert len(value.args) == 1
         var = get_var_name_from_nameerror(value)
-        sugg = get_var_suggestions(var, inspect.trace()[-1][0])  # last argument should be about traceback I guess
+        sugg = get_var_suggestions(var, end_traceback.tb_frame)
         value.args = (value.args[0] + get_suggestion_string(sugg), )
         assert len(value.args) == 1
     elif issubclass(type, AttributeError):
