@@ -3,7 +3,7 @@ DidYouMean-Python
 
 [![Build Status](https://travis-ci.org/SylvainDe/DidYouMean-Python.svg)](https://travis-ci.org/SylvainDe/DidYouMean-Python)
 
-Decorator to have variables/functions name suggestions in case of errors (NameError, AttributeError, etc).
+Logic to have various kind of suggestions in case of errors (NameError, AttributeError, etc). Can be used via a simple import or a dedicated decorator.
 
 Inspired by "Did you mean" for Ruby ([Explanation](http://www.yukinishijima.net/2014/10/21/did-you-mean-experience-in-ruby.html), [Github Page](https://github.com/yuki24/did_you_mean)), this is a simple implementation for/in Python. I wanted to see if I could mess around and create something similar in Python and it seems to be possible.
 
@@ -12,7 +12,7 @@ See also :
 
  - [PEP 473 :  Adding structured data to built-in exceptions](http://legacy.python.org/dev/peps/pep-0473/).
 
- - [dutc/didyoumean](https://github.com/dutc/didyoumean) : a quite similar project developed in pretty much the same time. A few differences though : works without decorator (just an import), works only for AttributeError, etc.
+ - [dutc/didyoumean](https://github.com/dutc/didyoumean) : a quite similar project developed in pretty much the same time. A few differences though : written in C, works only for AttributeError, etc.
 
 
 
@@ -52,21 +52,22 @@ def my_func2(foo, bar):
 #>>> AttributeError: 'list' object has no attribute 'len'. Did you mean len(list)
 ```
 
-
-Implementation
---------------
-
-Current implementation relies on a decorator to wrap your function call in a try-except to catch relevant exceptions, enhance them and rethrow them.
-
-To filter the best suggestions out of everything, I am currently using ```difflib```.
-
-
 Usage
 -----
 
 I haven't done anything fancy for the installation (yet). You'll have to clone this.
 
-Once you have the code, you'll just need to decorate the relevant function (the `main()` is probably a good choice) by writing ```@didyoumean``` before its definition. That's it, you can write your code and run it : it should work. If not, please refer to next point.
+Once you have the code, it can be used in two different ways :
+
+ * hook on `sys.excepthook` : just `import didyoumean_hook` and you'll have the suggestions for any exception happening
+
+ * decorator : just `import didyoumean_decorator` and add the `@didyoumean` decorator before any function (the `main()` could be a good choice) and you'll have the suggestions for any exception happening through a call to that method.
+
+
+Implementation
+--------------
+
+Both the hook and the decorator use the same logic behind the scene. It works in a pretty simple way : when an exception happens, we try to get the relevant information out of the error message and of the backtrace to find the most relevant suggestions. To filter the best suggestions out of everything, I am currently using ```difflib```.
 
 
 Contributing
