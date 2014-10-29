@@ -66,7 +66,7 @@ def add_suggestions_to_exception(type, value, traceback):
     if issubclass(type, NameError):
         assert len(value.args) == 1
         var = get_var_name_from_nameerror(value)
-        sugg = get_var_suggestions(var, inspect.trace()[-1][0]) # last argument should be about traceback I guess
+        sugg = get_var_suggestions(var, inspect.trace()[-1][0])  # last argument should be about traceback I guess
         value.args = (value.args[0] + get_suggestion_string(sugg), )
         assert len(value.args) == 1
     elif issubclass(type, AttributeError):
