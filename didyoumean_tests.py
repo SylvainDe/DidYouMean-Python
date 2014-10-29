@@ -1,6 +1,6 @@
 # -*- coding: utf-8
 """Unit tests for code in didyoumean.py."""
-from didyoumean import didyoumean
+from didyoumean_decorator import didyoumean
 import unittest
 
 

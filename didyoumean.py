@@ -1,9 +1,7 @@
 # -*- coding: utf-8
-"""Decorator to have suggestions when variable/functions do not exist."""
-import functools
+"""Logic to add suggestions to exceptions."""
 import difflib
 import builtins
-import sys
 
 #: Standard modules we'll consider while searching for undefined values - to be completed
 STAND_MODULES = set(['string', 'os', 'sys', 're', 'math', 'random', 'datetime', 'timeit', 'unittest', 'itertools', 'functools'])
@@ -93,23 +91,3 @@ def add_suggestions_to_exception(type, value, traceback):
         value.args = (value.args[0] + get_suggestion_string(sugg), )
         assert len(value.args) == 1
     # Could be added : IndexError, KeyError
-
-
-def didyoumean(func):
-    """Decorator to add a suggestions to error messages."""
-    @functools.wraps(func)
-    def decorated(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except:
-            type, value, traceback = sys.exc_info()
-            add_suggestions_to_exception(type, value, traceback)
-            raise
-    return decorated
-
-
-def didyoumean_hook(type, value, traceback, prev_hook=sys.excepthook):
-    """Hook to be substituted to sys.excepthook to enhance exceptions."""
-    add_suggestions_to_exception(type, value, traceback)
-    return prev_hook(type, value, traceback)
-# when it will work - sys.excepthook = didyoumean_hook
