@@ -4,6 +4,7 @@ from didyoumean import add_suggestions_to_exception
 import functools
 import sys
 
+
 def didyoumean(func):
     """Decorator to add a suggestions to error messages."""
     @functools.wraps(func)
@@ -15,4 +16,3 @@ def didyoumean(func):
             add_suggestions_to_exception(type, value, traceback)
             raise
     return decorated
-

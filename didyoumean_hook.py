@@ -3,6 +3,7 @@
 from didyoumean import add_suggestions_to_exception
 import sys
 
+
 def didyoumean_hook(type, value, traceback, prev_hook=sys.excepthook):
     """Hook to be substituted to sys.excepthook to enhance exceptions."""
     add_suggestions_to_exception(type, value, traceback)
