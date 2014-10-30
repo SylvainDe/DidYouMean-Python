@@ -1,6 +1,7 @@
 # -*- coding: utf-8
 """Logic to add suggestions to exceptions."""
 import difflib
+import re
 
 #: Standard modules we'll consider while searching for undefined values
 # To be completed
@@ -63,19 +64,6 @@ def get_method_suggestions(type_str, method, frame):
     return sugg
 
 
-def get_var_name_from_nameerror(exc):
-    """Extract the variable name from NameError."""
-    assert isinstance(exc, NameError)
-    return exc.args[0].split("'")[1]
-
-
-def get_data_from_attributeerror(exc):
-    """Extract the type and the method name from AttributeError."""
-    assert isinstance(exc, AttributeError)
-    split = exc.args[0].split("'")
-    return (split[1], split[3])
-
-
 def get_suggestion_string(sugg):
     """Return the suggestion list as a string."""
     return ". Did you mean " + ', '.join(sugg) if sugg else ""
@@ -106,14 +94,28 @@ def add_suggestions_to_exception(type_, value, traceback):
         end_traceback = end_traceback.tb_next
     if issubclass(type_, NameError):
         assert len(value.args) == 1
-        var = get_var_name_from_nameerror(value)
+        match = re.match("^(global )?name '(\w+)' is not defined$", value.args[0])
+        assert match, "No match for %s" % value.args[0]
+        _, var = match.groups()
         sugg = get_var_suggestions(var, end_traceback.tb_frame)
         value.args = (value.args[0] + get_suggestion_string(sugg), )
         assert len(value.args) == 1
     elif issubclass(type_, AttributeError):
         assert len(value.args) == 1
-        type_str, method = get_data_from_attributeerror(value)
+        match = re.match("^'(\w+)' object has no attribute '(\w+)'$", value.args[0])
+        assert match, "No match for %s" % value.args[0]
+        type_str, method = match.groups()
         sugg = get_method_suggestions(type_str, method, end_traceback.tb_frame)
         value.args = (value.args[0] + get_suggestion_string(sugg), )
         assert len(value.args) == 1
+    elif issubclass(type_, TypeError):
+        assert len(value.args) == 1
+        match = re.match("^'(\w+)' object is not subscriptable$", value.args[0])
+        if match:  # It could be cool to extract relevant info from the trace
+            type_str, = match.groups()
+            if type_str == 'function':
+                value.args = (value.args[0] + get_suggestion_string([type_str + '(value)']), )
+        assert len(value.args) == 1
+    else:
+        print(type_, value.args)
     # Could be added : IndexError, KeyError

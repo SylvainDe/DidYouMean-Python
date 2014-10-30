@@ -93,6 +93,12 @@ def attributeerror_from_class():
     return FoobarClass().this_is_cls_mth
 
 
+def typeerror_not_sub():
+    def inner_func(foo):
+        pass
+    return inner_func[2]
+
+
 def function_caller(name):
     """Dirty function to call test function without bothering about arguments
     or instances."""
@@ -124,6 +130,8 @@ def function_caller(name):
         return attributeerror_from_module()
     if name == 'attributeerror_from_class':
         return attributeerror_from_class()
+    if name == 'typeerror_not_sub':
+        return typeerror_not_sub()
     assert False
 
 
@@ -152,7 +160,7 @@ class AbstractTests(unittest.TestCase):
 class NameErrorTests(AbstractTests):
     """Class for tests related to NameError."""
     error_type = NameError
-    error_msg = "^(global )?name '[^']*' is not defined"
+    error_msg = "^(global )?name '\w+' is not defined"
     error_prefix = 'nameerror'
 
     def test_1_arg(self):
@@ -190,7 +198,7 @@ class NameErrorTests(AbstractTests):
 class AttributeErrorTest(AbstractTests):
     """Class for tests related to AttributeError."""
     error_type = AttributeError
-    error_msg = "^'[^']*' object has no attribute '[^']*'"
+    error_msg = "^'\w+' object has no attribute '\w+'"
     error_prefix = 'attributeerror'
 
     def test_method(self):
@@ -207,3 +215,17 @@ class AttributeErrorTest(AbstractTests):
 
     def test_from_class(self):
         self.run_input('from_class', ". Did you mean this_is_cls_mthd")
+
+
+class TypeErrorTests(AbstractTests):
+    """Class for tests related to TypeError."""
+    error_type = TypeError
+    error_prefix = 'typeerror'
+
+
+class TypeErrorTestsNotSub(TypeErrorTests):
+    """Class for tests related to substriptable."""
+    error_msg = "^'\w+' object is not subscriptable"
+
+    def test_not_sub(self):
+        self.run_input('not_sub', ". Did you mean function\\(value\\)")
