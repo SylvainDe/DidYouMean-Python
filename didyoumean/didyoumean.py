@@ -116,6 +116,17 @@ def add_suggestions_to_exception(type_, value, traceback):
             if type_str == 'function':
                 value.args = (value.args[0] + get_suggestion_string([type_str + '(value)']), )
         assert len(value.args) == 1
+    elif issubclass(type_, ImportError):
+        assert len(value.args) == 1
+        match = re.match("^No module named (\w+)$", value.args[0])
+        if match:
+            module_str, = match.groups()
+            sugg = get_close_matches(module_str, STAND_MODULES)
+            value.args = (value.args[0] + get_suggestion_string(sugg), )
+        else:
+            match = re.match("^cannot import name (\w+)$", value.args[0])
+            assert match, "No match for %s" % value.args[0]
+        assert len(value.args) == 1
     else:
         print(type_, value.args)
     # Could be added : IndexError, KeyError

@@ -90,13 +90,33 @@ class FoobarClass():
 
 
 def attributeerror_from_class():
+    """Should be 'this_is_cls_mthd'."""
     return FoobarClass().this_is_cls_mth
 
 
 def typeerror_not_sub():
+    """Should be 'inner_func(2)'."""
     def inner_func(foo):
         pass
     return inner_func[2]
+
+
+def importerror_no_module():
+    """Should be 'math'."""
+    import maths
+
+
+def importerror_no_module2():
+    """Should be 'math'."""
+    from maths import pi
+
+
+def importerror_wrong_import():
+    from itertools import pi
+
+
+def importerror_typo_in_method():
+    from math import pie
 
 
 def function_caller(name):
@@ -132,6 +152,14 @@ def function_caller(name):
         return attributeerror_from_class()
     if name == 'typeerror_not_sub':
         return typeerror_not_sub()
+    if name == 'importerror_no_module':
+        return importerror_no_module()
+    if name == 'importerror_no_module2':
+        return importerror_no_module2()
+    if name == 'importerror_wrong_import':
+        return importerror_wrong_import()
+    if name == 'importerror_typo_in_method':
+        return importerror_typo_in_method()
     assert False
 
 
@@ -229,3 +257,31 @@ class TypeErrorTestsNotSub(TypeErrorTests):
 
     def test_not_sub(self):
         self.run_input('not_sub', ". Did you mean function\\(value\\)")
+
+
+class ImportErrorTests(AbstractTests):
+    """Class for tests related to ImportError."""
+    error_type = ImportError
+    error_prefix = 'importerror'
+
+
+class ImportErrorTestsNoModule(ImportErrorTests):
+    """Class for tests related to no module."""
+    error_msg = "^No module named \w+"
+
+    def test_no_module(self):
+        self.run_input('no_module', ". Did you mean math")
+
+    def test_no_module2(self):
+        self.run_input('no_module2', ". Did you mean math")
+
+
+class ImportErrorTestsCannotImport(ImportErrorTests):
+    """Class for tests related to cannot import."""
+    error_msg = "^cannot import name \w+"
+
+    def test_wrong_import(self):
+        self.run_input('wrong_import', "")
+
+    def test_typo_in_method(self):
+        self.run_input('typo_in_method', "")
