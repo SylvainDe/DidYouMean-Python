@@ -162,10 +162,14 @@ class NameErrorTests(AbstractTests):
         self.run_input('self', ". Did you mean self.foo")
 
     def test_self2(self):
-        self.run_input('self2', ". Did you mean [^ ]*.this_is_cls_mthd, [^ ]*.this_is_cls_mthd")
+        self.run_input(
+            'self2',
+            ". Did you mean [^ ]*.this_is_cls_mthd, [^ ]*.this_is_cls_mthd")
 
     def test_cls(self):
-        self.run_input('cls', ". Did you mean [^ ]*.this_is_cls_mthd, [^ ]*.this_is_cls_mthd")
+        self.run_input(
+            'cls',
+            ". Did you mean [^ ]*.this_is_cls_mthd, [^ ]*.this_is_cls_mthd")
 
 
 class AttributeErrorTest(AbstractTests):

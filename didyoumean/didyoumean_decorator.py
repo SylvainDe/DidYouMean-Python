@@ -9,10 +9,11 @@ def didyoumean(func):
     """Decorator to add a suggestions to error messages."""
     @functools.wraps(func)
     def decorated(*args, **kwargs):
+        """Function returned by the decorator."""
         try:
             return func(*args, **kwargs)
         except:
-            type, value, traceback = sys.exc_info()
-            add_suggestions_to_exception(type, value, traceback)
+            type_, value, traceback = sys.exc_info()
+            add_suggestions_to_exception(type_, value, traceback)
             raise
     return decorated
