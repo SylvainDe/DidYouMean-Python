@@ -23,7 +23,7 @@ def get_var_suggestions(var, frame, lim=10, cutoff=0.6):
         frame.f_builtins,
         frame.f_globals,
         frame.f_locals
-        )
+    )
     for name, obj in objs.items():
         if hasattr(obj, var):
             sugg.append(name + '.' + var)
