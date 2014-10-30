@@ -2,6 +2,7 @@
 """Unit tests for code in didyoumean.py."""
 from didyoumean_decorator import didyoumean
 import unittest
+import math
 
 # Following code is bad on purpose - please do not fix ;-)
 
@@ -56,6 +57,11 @@ def attributeerror_no_sugg():
     lst.ldkjhfnvdlkjhvgfdhgf
 
 
+def attributeerror_from_module():
+    """Should be math.pi but I don't know how to manage this."""
+    return math.pie
+
+
 class FoobarClass():
     """Dummy class for testing purposes."""
 
@@ -81,6 +87,10 @@ class FoobarClass():
     def nameerror_cls(cls):
         """Should be cls.this_is_cls_mthd (or FoobarClass)."""
         return this_is_cls_mthd
+
+
+def attributeerror_from_class():
+    return FoobarClass().this_is_cls_mth
 
 
 def function_caller(name):
@@ -110,6 +120,11 @@ def function_caller(name):
         return attributeerror_method()
     if name == 'attributeerror_no_sugg':
         return attributeerror_no_sugg()
+    if name == 'attributeerror_from_module':
+        return attributeerror_from_module()
+    if name == 'attributeerror_from_class':
+        return attributeerror_from_class()
+    assert False
 
 
 @didyoumean
@@ -186,3 +201,9 @@ class AttributeErrorTest(AbstractTests):
 
     def test_no_sugg(self):
         self.run_input('no_sugg', "")
+
+    def test_from_module(self):
+        self.run_input('from_module', "")
+
+    def test_from_class(self):
+        self.run_input('from_class', ". Did you mean this_is_cls_mthd")

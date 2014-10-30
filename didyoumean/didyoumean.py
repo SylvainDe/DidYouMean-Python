@@ -55,9 +55,11 @@ def get_method_suggestions(type_str, method, frame):
     if method in frame.f_builtins:
         sugg.append(method + '(' + type_str + ')')
     # todo : add hardcoded logic for usual containers : add, append, etc
-    sugg.extend(get_close_matches(
-        method,
-        dir(get_objects_in_frame(frame)[type_str])))
+    if type_str != 'module':
+        objs = get_objects_in_frame(frame)
+        sugg.extend(get_close_matches(
+            method,
+            dir(objs[type_str])))
     return sugg
 
 
