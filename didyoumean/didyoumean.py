@@ -118,7 +118,7 @@ def add_suggestions_to_exception(type_, value, traceback):
         assert len(value.args) == 1
     elif issubclass(type_, ImportError):
         assert len(value.args) == 1
-        match = re.match("^No module named (\w+)$", value.args[0])
+        match = re.match("^No module named '?(\w+)'?$", value.args[0])
         if match:
             module_str, = match.groups()
             sugg = get_close_matches(module_str, STAND_MODULES)

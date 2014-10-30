@@ -112,10 +112,12 @@ def importerror_no_module2():
 
 
 def importerror_wrong_import():
+    """Should be 'math'."""
     from itertools import pi
 
 
 def importerror_typo_in_method():
+    """Should be 'pi'."""
     from math import pie
 
 
@@ -267,7 +269,7 @@ class ImportErrorTests(AbstractTests):
 
 class ImportErrorTestsNoModule(ImportErrorTests):
     """Class for tests related to no module."""
-    error_msg = "^No module named \w+"
+    error_msg = "^No module named '?\w+'?"
 
     def test_no_module(self):
         self.run_input('no_module', ". Did you mean math")
