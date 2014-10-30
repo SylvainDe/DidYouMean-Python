@@ -20,9 +20,9 @@ def get_var_suggestions(var, frame, lim=10, cutoff=0.6):
     """Get the lim suggestions closest to the variable names."""
     sugg = []
     objs = merge_dict(  # LEGB Rule (missing E atm - not sure if a problem)
-        frame.f_builtins,
+        frame.f_locals,
         frame.f_globals,
-        frame.f_locals
+        frame.f_builtins,
     )
     for name, obj in objs.items():
         if hasattr(obj, var):
