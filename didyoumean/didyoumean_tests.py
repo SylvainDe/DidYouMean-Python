@@ -5,6 +5,8 @@ import unittest
 
 # Following code is bad on purpose - please do not fix ;-)
 
+this_is_a_global_list = [1, 2]
+
 
 def nameerror_1_arg(foo):
     """Should be 'return foo'."""
@@ -19,6 +21,11 @@ def nameerror_n_args(fool, foot, bar):
 def nameerror_builtin():
     """Should be 'max'."""
     return maxi
+
+
+def nameerror_global():
+    """Should be this_is_a_global_list."""
+    return this_is_a_global_lis
 
 
 def nameerror_no_sugg():
@@ -67,12 +74,12 @@ class FoobarClass():
         return foo
 
     def nameerror_self2(self):
-        """Should be self.this_is_cls_mthd."""
+        """Should be self.this_is_cls_mthd (or FoobarClass)."""
         return this_is_cls_mthd
 
     @classmethod
     def nameerror_cls(cls):
-        """Should be cls.this_is_cls_mthd."""
+        """Should be cls.this_is_cls_mthd (or FoobarClass)."""
         return this_is_cls_mthd
 
 
@@ -85,6 +92,8 @@ def function_caller(name):
         return nameerror_n_args(1, 2, 3)
     if name == 'nameerror_builtin':
         return nameerror_builtin()
+    if name == 'nameerror_global':
+        return nameerror_global()
     if name == 'nameerror_no_sugg':
         return nameerror_no_sugg()
     if name == 'nameerror_import_sugg':
@@ -140,6 +149,9 @@ class NameErrorTests(AbstractTests):
     def test_builtin(self):
         self.run_input('builtin', ". Did you mean max")
 
+    def test_global(self):
+        self.run_input('global', ". Did you mean this_is_a_global_list")
+
     def test_no_sugg(self):
         self.run_input('no_sugg', "")
 
@@ -150,10 +162,10 @@ class NameErrorTests(AbstractTests):
         self.run_input('self', ". Did you mean self.foo")
 
     def test_self2(self):
-        self.run_input('self2', ". Did you mean self.this_is_cls_mthd")
+        self.run_input('self2', ". Did you mean [^ ]*.this_is_cls_mthd, [^ ]*.this_is_cls_mthd")
 
     def test_cls(self):
-        self.run_input('cls', ". Did you mean cls.this_is_cls_mthd")
+        self.run_input('cls', ". Did you mean [^ ]*.this_is_cls_mthd, [^ ]*.this_is_cls_mthd")
 
 
 class AttributeErrorTest(AbstractTests):

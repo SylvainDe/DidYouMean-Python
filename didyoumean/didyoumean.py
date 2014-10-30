@@ -7,20 +7,31 @@ import builtins
 STAND_MODULES = set(['string', 'os', 'sys', 're', 'math', 'random', 'datetime', 'timeit', 'unittest', 'itertools', 'functools'])
 
 
+def merge_dict(*dicts):
+    """Merge dictionnaries.
+    It gives priority to the beginning in case of duplicated keys()."""
+    ret = dict()
+    for d in reversed(dicts):
+        ret.update(d)
+    return ret
+
+
 def get_var_suggestions(var, frame, lim=10, cutoff=0.6):
     """Get the lim suggestions closest to the variable names."""
     sugg = []
-    local_var = frame.f_locals
-    for spec_var in ('self', 'cls'):
-        if hasattr(local_var.get(spec_var, None), var):
-            sugg.append(spec_var + '.' + var)
+    objs = merge_dict(  # LEGB Rule (missing E atm - not sure if a problem)
+        frame.f_builtins,
+        frame.f_globals,
+        frame.f_locals
+        )
+    for name, obj in objs.items():
+        if hasattr(obj, var):
+            sugg.append(name + '.' + var)
     if var in STAND_MODULES:
         sugg.append('import ' + var)
     sugg.extend(difflib.get_close_matches(
         var,
-        list(local_var.keys()) +
-        list(frame.f_globals.keys()) +
-        list(frame.f_builtins.keys()),
+        list(objs.keys()),
         lim,
         cutoff))
     return sugg
