@@ -16,4 +16,4 @@ before_script:
  - pep8 *.py */*.py --select=E501 || true
 
 script:
- - python3 -m unittest discover --start-directory=didyoumean --pattern=*.py
+ - python -m unittest discover --start-directory=didyoumean --pattern=*.py
