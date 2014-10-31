@@ -94,25 +94,25 @@ def add_suggestions_to_exception(type_, value, traceback):
         end_traceback = end_traceback.tb_next
     if issubclass(type_, NameError):
         assert len(value.args) == 1
-        match = re.match("^(global )?name '(\w+)' is not defined$", value.args[0])
+        match = re.match("^(?:global )?name '(\w+)' is not defined$", value.args[0])
         assert match, "No match for %s" % value.args[0]
-        _, var = match.groups()
+        var, = match.groups()
         sugg = get_var_suggestions(var, end_traceback.tb_frame)
         value.args = (value.args[0] + get_suggestion_string(sugg), )
         assert len(value.args) == 1
     elif issubclass(type_, AttributeError):
         assert len(value.args) == 1
-        match = re.match("^'?(\w+)'? (object|instance) has no attribute '(\w+)'$", value.args[0])
+        match = re.match("^'?(\w+)'? (?:object|instance) has no attribute '(\w+)'$", value.args[0])
         assert match, "No match for %s" % value.args[0]
-        type_str, _, method = match.groups()
+        type_str, method = match.groups()
         sugg = get_method_suggestions(type_str, method, end_traceback.tb_frame)
         value.args = (value.args[0] + get_suggestion_string(sugg), )
         assert len(value.args) == 1
     elif issubclass(type_, TypeError):
         assert len(value.args) == 1
-        match = re.match("^'(\w+)' object (is not subscriptable|has no attribute '__getitem__')$", value.args[0])
+        match = re.match("^'(\w+)' object (?:is (?:not |un)subscriptable|has no attribute '__getitem__')$", value.args[0])
         if match:  # It could be cool to extract relevant info from the trace
-            type_str, _ = match.groups()
+            type_str, = match.groups()
             if type_str == 'function':
                 value.args = (value.args[0] + get_suggestion_string([type_str + '(value)']), )
         assert len(value.args) == 1

@@ -1,7 +1,7 @@
 # -*- coding: utf-8
 """Unit tests for code in didyoumean.py."""
 from didyoumean_decorator import didyoumean
-import unittest
+import unittest2
 import math
 import sys
 
@@ -172,7 +172,7 @@ def function_caller_deco(name):
     return function_caller(name)
 
 
-class AbstractTests(unittest.TestCase):
+class AbstractTests(unittest2.TestCase):
     """Generic class for unit tests."""
 
     def run_input(self, name, sugg):
@@ -269,7 +269,7 @@ class TypeErrorTests(AbstractTests):
 
 class TypeErrorTestsNotSub(TypeErrorTests):
     """Class for tests related to substriptable."""
-    error_msg = "^'\w+' object (is not subscriptable|has no attribute '__getitem__')"
+    error_msg = "^'\w+' object (is (not |un)subscriptable|has no attribute '__getitem__')"
 
     def test_not_sub(self):
         self.run_input('not_sub', ". Did you mean function\\(value\\)")
