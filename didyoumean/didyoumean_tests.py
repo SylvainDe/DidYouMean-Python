@@ -195,8 +195,6 @@ class AbstractTests(unittest.TestCase):
             callable_(*args, **kwds)
         except:
             type_caught, value, traceback = sys.exc_info()
-            if not issubclass(type_arg, type_caught):
-                print(type_arg, type_caught)
             self.assertTrue(issubclass(type_arg, type_caught))
             self.assertRegexpMatches(''.join(value.args), message_re)
             return

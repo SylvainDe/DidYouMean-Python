@@ -112,7 +112,7 @@ def add_suggestions_to_exception(type_, value, traceback):
         assert len(value.args) == 1
         match = re.match("^'(\w+)' object (is not subscriptable|has no attribute '__getitem__')$", value.args[0])
         if match:  # It could be cool to extract relevant info from the trace
-            type_str, = match.groups()
+            type_str, _ = match.groups()
             if type_str == 'function':
                 value.args = (value.args[0] + get_suggestion_string([type_str + '(value)']), )
         assert len(value.args) == 1
