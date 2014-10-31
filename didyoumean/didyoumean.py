@@ -124,7 +124,7 @@ def add_suggestions_to_exception(type_, value, traceback):
             sugg = get_close_matches(module_str, STAND_MODULES)
             value.args = (value.args[0] + get_suggestion_string(sugg), )
         else:
-            match = re.match("^cannot import name (\w+)$", value.args[0])
+            match = re.match("^cannot import name '?(\w+)'?$", value.args[0])
             assert match, "No match for %s" % value.args[0]
         assert len(value.args) == 1
     else:

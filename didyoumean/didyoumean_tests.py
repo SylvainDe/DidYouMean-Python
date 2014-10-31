@@ -280,7 +280,7 @@ class ImportErrorTestsNoModule(ImportErrorTests):
 
 class ImportErrorTestsCannotImport(ImportErrorTests):
     """Class for tests related to cannot import."""
-    error_msg = "^cannot import name \w+"
+    error_msg = "^cannot import name '?\w+'?"
 
     def test_wrong_import(self):
         self.run_input('wrong_import', "")
