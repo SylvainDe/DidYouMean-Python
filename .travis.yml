@@ -9,6 +9,7 @@ python:
 install:
   - pip install pep8
   - pip install --upgrade pyflakes
+  - pip install unittest2
 
 before_script:
  - pep8 *.py */*.py --ignore=E501
@@ -16,4 +17,4 @@ before_script:
  - pep8 *.py */*.py --select=E501 || true
 
 script:
- - python -m unittest discover --start-directory=didyoumean --pattern=*.py
+ - python -m unittest2 discover --start-directory=didyoumean --pattern=*.py
