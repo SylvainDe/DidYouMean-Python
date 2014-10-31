@@ -122,6 +122,11 @@ def importerror_typo_in_method():
     from math import pie
 
 
+def importerror_typo_in_method2():
+    """Should be 'pi'."""
+    from math import e, pie, log
+
+
 def function_caller(name):
     """Dirty function to call test function without bothering about arguments
     or instances."""
@@ -163,6 +168,8 @@ def function_caller(name):
         return importerror_wrong_import()
     if name == 'importerror_typo_in_method':
         return importerror_typo_in_method()
+    if name == 'importerror_typo_in_method2':
+        return importerror_typo_in_method2()
     assert False
 
 
@@ -297,7 +304,10 @@ class ImportErrorTestsCannotImport(ImportErrorTests):
     error_msg = "^cannot import name '?\w+'?"
 
     def test_wrong_import(self):
-        self.run_input('wrong_import', "")
+        self.run_input('wrong_import', ". Did you mean from math import pi")
 
     def test_typo_in_method(self):
-        self.run_input('typo_in_method', "")
+        self.run_input('typo_in_method', ". Did you mean pi")
+
+    def test_typo_in_method2(self):
+        self.run_input('typo_in_method2', ". Did you mean pi")

@@ -36,7 +36,7 @@ def get_close_matches(word, possibilities):
 
 
 def get_var_suggestions(var, frame):
-    """Get the lim suggestions closest to the variable names."""
+    """Get the suggestions closest to the variable names."""
     sugg = []
     objs = get_objects_in_frame(frame)
     for name, obj in objs.items():
@@ -51,7 +51,7 @@ def get_var_suggestions(var, frame):
 
 
 def get_method_suggestions(type_str, method, frame):
-    """Get the lim suggestions closest to the method name for a given type."""
+    """Get the suggestions closest to the method name for a given type."""
     sugg = []
     if method in frame.f_builtins:
         sugg.append(method + '(' + type_str + ')')
@@ -61,6 +61,24 @@ def get_method_suggestions(type_str, method, frame):
         sugg.extend(get_close_matches(
             method,
             dir(objs[type_str])))
+    return sugg
+
+
+def import_from_frame(module_name, frame):
+    """Wrapper around import to use information from frame."""
+    return __import__(module_name, globals=frame.f_globals, locals=frame.f_locals)
+
+
+def get_imported_suggestion(imported_fail, frame):
+    """Get the suggestions closest to the failing import."""
+    sugg = []
+    module_name = frame.f_code.co_names[0]
+    sugg.extend(get_close_matches(
+        imported_fail,
+        dir(import_from_frame(module_name, frame))))
+    for mod in STAND_MODULES:
+        if imported_fail in dir(import_from_frame(mod, frame)):
+            sugg.append('from %s import %s' % (mod, imported_fail))
     return sugg
 
 
@@ -126,6 +144,9 @@ def add_suggestions_to_exception(type_, value, traceback):
         else:
             match = re.match("^cannot import name '?(\w+)'?$", value.args[0])
             assert match, "No match for %s" % value.args[0]
+            imported_fail, = match.groups()
+            sugg = get_imported_suggestion(imported_fail, end_traceback.tb_frame)
+            value.args = (value.args[0] + get_suggestion_string(sugg), )
         assert len(value.args) == 1
     else:
         print(type_, value.args)
