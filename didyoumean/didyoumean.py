@@ -102,15 +102,15 @@ def add_suggestions_to_exception(type_, value, traceback):
         assert len(value.args) == 1
     elif issubclass(type_, AttributeError):
         assert len(value.args) == 1
-        match = re.match("^'(\w+)' object has no attribute '(\w+)'$", value.args[0])
+        match = re.match("^'?(\w+)'? (object|instance) has no attribute '(\w+)'$", value.args[0])
         assert match, "No match for %s" % value.args[0]
-        type_str, method = match.groups()
+        type_str, _, method = match.groups()
         sugg = get_method_suggestions(type_str, method, end_traceback.tb_frame)
         value.args = (value.args[0] + get_suggestion_string(sugg), )
         assert len(value.args) == 1
     elif issubclass(type_, TypeError):
         assert len(value.args) == 1
-        match = re.match("^'(\w+)' object is not subscriptable$", value.args[0])
+        match = re.match("^'(\w+)' object (is not subscriptable|has no attribute '__getitem__')$", value.args[0])
         if match:  # It could be cool to extract relevant info from the trace
             type_str, = match.groups()
             if type_str == 'function':

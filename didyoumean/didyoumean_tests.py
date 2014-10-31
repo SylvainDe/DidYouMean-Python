@@ -3,6 +3,7 @@
 from didyoumean_decorator import didyoumean
 import unittest
 import math
+import sys
 
 # Following code is bad on purpose - please do not fix ;-)
 
@@ -177,14 +178,29 @@ class AbstractTests(unittest.TestCase):
     def run_input(self, name, sugg):
         """Helper function to run tests."""
         name = self.error_prefix + '_' + name
-        self.assertRaisesRegex(
+        self.my_assert_raises_rexp(
             self.error_type,
             self.error_msg + "$",
-            lambda: function_caller(name))
-        self.assertRaisesRegex(
+            function_caller,
+            name)
+        self.my_assert_raises_rexp(
             self.error_type,
             self.error_msg + sugg + "$",
-            lambda: function_caller_deco(name))
+            function_caller_deco,
+            name)
+
+    def my_assert_raises_rexp(self, type_arg, message_re, callable_, *args, **kwds):
+        """Substitute for TestCase.assertRaisesRegex as it is sometimes missing."""
+        try:
+            callable_(*args, **kwds)
+        except:
+            type_caught, value, traceback = sys.exc_info()
+            if not issubclass(type_arg, type_caught):
+                print(type_arg, type_caught)
+            self.assertTrue(issubclass(type_arg, type_caught))
+            self.assertRegexpMatches(''.join(value.args), message_re)
+            return
+        self.assertTrue(False)
 
 
 class NameErrorTests(AbstractTests):
@@ -228,7 +244,7 @@ class NameErrorTests(AbstractTests):
 class AttributeErrorTest(AbstractTests):
     """Class for tests related to AttributeError."""
     error_type = AttributeError
-    error_msg = "^'\w+' object has no attribute '\w+'"
+    error_msg = "^'?\w+'? (object|instance) has no attribute '\w+'"
     error_prefix = 'attributeerror'
 
     def test_method(self):
@@ -255,7 +271,7 @@ class TypeErrorTests(AbstractTests):
 
 class TypeErrorTestsNotSub(TypeErrorTests):
     """Class for tests related to substriptable."""
-    error_msg = "^'\w+' object is not subscriptable"
+    error_msg = "^'\w+' object (is not subscriptable|has no attribute '__getitem__')"
 
     def test_not_sub(self):
         self.run_input('not_sub', ". Did you mean function\\(value\\)")
