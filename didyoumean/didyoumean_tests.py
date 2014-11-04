@@ -58,9 +58,9 @@ def attributeerror_no_sugg():
     lst.ldkjhfnvdlkjhvgfdhgf
 
 
-def attributeerror_from_module():
-    """Should be math.pi but I don't know how to manage this."""
-    return math.pie
+def attributeerror_from_module(radius=1):
+    """Should be math.pi."""
+    return 2 * math.pie * radius
 
 
 class FoobarClass():
@@ -262,7 +262,7 @@ class AttributeErrorTest(AbstractTests):
         self.run_input('no_sugg', "")
 
     def test_from_module(self):
-        self.run_input('from_module', "")
+        self.run_input('from_module', ". Did you mean pi")
 
     def test_from_class(self):
         self.run_input('from_class', ". Did you mean this_is_cls_mthd")

@@ -56,11 +56,13 @@ def get_method_suggestions(type_str, method, frame):
     if method in frame.f_builtins:
         sugg.append(method + '(' + type_str + ')')
     # todo : add hardcoded logic for usual containers : add, append, etc
-    if type_str != 'module':
-        objs = get_objects_in_frame(frame)
-        sugg.extend(get_close_matches(
-            method,
-            dir(objs[type_str])))
+    # For module, we want to get the actual name of the module
+    if type_str == 'module':
+        type_str = frame.f_code.co_names[0]  # this probably works
+    attributes = dir(get_objects_in_frame(frame)[type_str])
+    sugg.extend(get_close_matches(
+        method,
+        attributes))
     return sugg
 
 
@@ -99,7 +101,8 @@ def debug_traceback(traceback):
               frame.f_lasti,
               traceback.tb_lineno,
               frame.f_lineno,
-              frame.f_code.co_name)
+              frame.f_code.co_name,
+              frame.f_code.co_names)
         traceback = traceback.tb_next
 
 
