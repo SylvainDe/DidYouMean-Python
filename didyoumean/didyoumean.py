@@ -55,11 +55,16 @@ def get_method_suggestions(type_str, method, frame):
     sugg = []
     if method in frame.f_builtins:
         sugg.append(method + '(' + type_str + ')')
-    # todo : add hardcoded logic for usual containers : add, append, etc
     # For module, we want to get the actual name of the module
     if type_str == 'module':
         type_str = frame.f_code.co_names[0]  # this probably works
-    attributes = dir(get_objects_in_frame(frame)[type_str])
+    attributes = set(dir(get_objects_in_frame(frame)[type_str]))
+
+    # Logic for usual containers : add <-> append, etc
+    for set_sub in [{'add', 'append'}]:
+        if method in set_sub:
+            sugg.extend(set_sub & attributes)
+
     sugg.extend(get_close_matches(
         method,
         attributes))
