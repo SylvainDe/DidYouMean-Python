@@ -30,7 +30,6 @@ _More examples can be found from the test file `didyoumean/didyoumean_tests.py`.
 ```python
 def my_func(foo, bar):
     return foob
-
 #>>> Before : NameError: global name 'foob' is not defined
 #>>> After : NameError: global name 'foob' is not defined. Did you mean foo
 
@@ -47,6 +46,18 @@ def my_func():
     return functools.wraps
 #>>> Before : NameError: global name 'functools' is not defined
 #>>> After : NameError: global name 'functools' is not defined. Did you mean import functools
+```
+
+
+##### Checking if name is the attribute of a defined object
+
+Useful when forgetting `self` or `cls` in a method.
+
+```python
+def my_meth(self):
+    return my_meth2()
+#>>> Before : NameError: global name 'my_meth2' is not defined
+#>>> After : NameError: global name 'my_meth2' is not defined. Did you mean self.my_meth2
 ```
 
 ### Attribute Error

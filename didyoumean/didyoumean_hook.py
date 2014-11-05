@@ -1,5 +1,5 @@
 # -*- coding: utf-8
-"""Hook on sys.excepthoob to add suggestions to exceptions."""
+"""Hook on sys.excepthook to add suggestions to exceptions."""
 from didyoumean import add_suggestions_to_exception
 import sys
 
