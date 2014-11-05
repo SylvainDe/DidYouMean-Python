@@ -97,7 +97,6 @@ from maths import pi
 
 ```python
 from math import pie
-```
 #>>> Before : ImportError: cannot import name pie
 #>>> After : ImportError: cannot import name pie. Did you mean pi
 ```
