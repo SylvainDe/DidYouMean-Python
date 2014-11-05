@@ -20,38 +20,88 @@ See also :
 Example
 -------
 
+_More examples can be found from the test file `didyoumean/didyoumean_tests.py`._
+
+
 ### Name Error
+
+##### Fuzzy matches on existing names
 
 ```python
 def my_func(foo, bar):
     return foob
 
-#>>> NameError: global name 'foob' is not defined
+#>>> Before : NameError: global name 'foob' is not defined
+#>>> After : NameError: global name 'foob' is not defined. Did you mean foo
 
-@didyoumean
-def my_func2(foo, bar):
-    return foob
+def my_func():
+    return maxi
+#>>> Before : NameError: global name 'maxi' is not defined
+#>>> After : NameError: global name 'maxi' is not defined. Did you mean max
+```
 
-#>>> NameError: global name 'foob' is not defined. Did you mean foo
+##### Looking for missing imports
+
+```python
+def my_func():
+    return functools.wraps
+#>>> Before : NameError: global name 'functools' is not defined
+#>>> After : NameError: global name 'functools' is not defined. Did you mean import functools
 ```
 
 ### Attribute Error
 
+##### Fuzzy matches on existing attributes
+
 ```python
 def my_func():
     lst = [1, 2, 3]
-    lst.len()
-
-#>>> AttributeError: 'list' object has no attribute 'len'
-
-@didyoumean
-def my_func2(foo, bar):
-    lst = [1, 2, 3]
-    lst.len()
-
-
-#>>> AttributeError: 'list' object has no attribute 'len'. Did you mean len(list)
+    lst.appendh(4)
+#>>> Before : AttributeError: 'list' object has no attribute 'appendh'
+#>>> After : AttributeError: 'list' object has no attribute 'appendh'. Did you mean append
 ```
+
+
+##### Detection of mis-used builtins
+
+```python
+def my_func():
+    lst = [1, 2, 3]
+    return lst.max()
+#>>> Before : AttributeError: 'list' object has no attribute 'max'
+#>>> After : AttributeError: 'list' object has no attribute 'max'. Did you mean max(list)
+```
+
+##### Trying to find method with similar meaning (hardcoded)
+
+```python
+def my_func():
+    lst = [1, 2, 3]
+    return lst.add(4)
+#>>> Before : AttributeError: 'list' object has no attribute 'add'
+#>>> After : AttributeError: 'list' object has no attribute 'add'. Did you mean append
+```
+
+### Import Error
+
+##### Fuzzy matches on existing modules
+
+```python
+from maths import pi
+#>>> Before : ImportError: No module named maths
+#>>> After : ImportError: No module named maths. Did you mean math
+```
+
+
+##### Fuzzy matches on elements of the module
+
+```python
+from math import pie
+```
+#>>> Before : ImportError: cannot import name pie
+#>>> After : ImportError: cannot import name pie. Did you mean pi
+```
+
 
 Usage
 -----
