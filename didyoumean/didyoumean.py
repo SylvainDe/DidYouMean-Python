@@ -61,7 +61,7 @@ def get_method_suggestions(type_str, method, frame):
     attributes = set(dir(get_objects_in_frame(frame)[type_str]))
 
     # Logic for usual containers : add <-> append, etc
-    for set_sub in [set(['add', 'append'])]:
+    for set_sub in [set(['add', 'append']), set(['extend', 'update'])]:
         if method in set_sub:
             sugg.extend(set_sub & attributes)
 

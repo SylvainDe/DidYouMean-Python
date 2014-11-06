@@ -58,6 +58,12 @@ def attributeerror_wrongmethod():
     lst.add(4)
 
 
+def attributeerror_wrongmethod2():
+    """Should be 'lst.extend([4, 5, 6])'."""
+    lst = [1, 2, 3]
+    lst.update([4, 5, 6])
+
+
 def attributeerror_no_sugg():
     """No suggestion."""
     lst = [1, 2, 3]
@@ -158,6 +164,8 @@ def function_caller(name):
         return attributeerror_builtin()
     if name == 'attributeerror_wrongmethod':
         return attributeerror_wrongmethod()
+    if name == 'attributeerror_wrongmethod2':
+        return attributeerror_wrongmethod2()
     if name == 'attributeerror_method':
         return attributeerror_method()
     if name == 'attributeerror_no_sugg':
@@ -268,6 +276,9 @@ class AttributeErrorTest(AbstractTests):
 
     def test_wrongmethod(self):
         self.run_input('wrongmethod', ". Did you mean append, __add__")
+
+    def test_wrongmethod2(self):
+        self.run_input('wrongmethod2', ". Did you mean extend")
 
     def test_no_sugg(self):
         self.run_input('no_sugg', "")
