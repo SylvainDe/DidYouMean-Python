@@ -120,7 +120,10 @@ def add_suggestions_to_exception(type_, value, traceback):
         end_traceback = end_traceback.tb_next
     if issubclass(type_, NameError):
         assert len(value.args) == 1
-        match = re.match("^(?:global )?name '(\w+)' is not defined$", value.args[0])
+        if issubclass(type_, UnboundLocalError):
+            match = re.match("^local variable '(\w+)' referenced before assignment$", value.args[0])
+        else:
+            match = re.match("^(?:global )?name '(\w+)' is not defined$", value.args[0])
         assert match, "No match for %s" % value.args[0]
         var, = match.groups()
         sugg = get_var_suggestions(var, end_traceback.tb_frame)

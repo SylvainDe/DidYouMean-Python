@@ -40,6 +40,13 @@ def nameerror_import_sugg():
     return functools.wraps
 
 
+def unboundlocalerror_1():
+    """Should be foo."""
+    foo = 1
+    foob += 1
+    return foo
+
+
 def attributeerror_method():
     """Should be 'append'."""
     lst = [1, 2, 3]
@@ -160,6 +167,8 @@ def function_caller(name):
         return FoobarClass().nameerror_self2()
     if name == 'nameerror_cls':
         return FoobarClass().nameerror_cls()
+    if name == 'unboundlocalerror_1':
+        return unboundlocalerror_1()
     if name == 'attributeerror_builtin':
         return attributeerror_builtin()
     if name == 'attributeerror_wrongmethod':
@@ -260,6 +269,16 @@ class NameErrorTests(AbstractTests):
         self.run_input(
             'cls',
             ". Did you mean [^ ]*.this_is_cls_mthd, [^ ]*.this_is_cls_mthd")
+
+
+class UnboundLocalErrorTests(AbstractTests):
+    """Class for tests related to UnboundLocalError."""
+    error_type = UnboundLocalError
+    error_msg = "^local variable '\w+' referenced before assignment"
+    error_prefix = 'unboundlocalerror'
+
+    def test_1(self):
+        self.run_input('1', '. Did you mean foo')
 
 
 class AttributeErrorTest(AbstractTests):
