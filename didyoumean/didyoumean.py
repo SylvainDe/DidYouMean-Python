@@ -1,5 +1,6 @@
 # -*- coding: utf-8
 """Logic to add suggestions to exceptions."""
+import keyword
 import difflib
 import re
 
@@ -46,7 +47,7 @@ def get_var_suggestions(var, frame):
         sugg.append('import ' + var)
     sugg.extend(get_close_matches(
         var,
-        list(objs.keys())))
+        list(objs.keys()) + keyword.kwlist))
     return sugg
 
 

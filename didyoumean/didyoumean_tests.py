@@ -25,6 +25,11 @@ def nameerror_builtin():
     return maxi
 
 
+def nameerror_keyword():
+    """Should be 'yield'."""
+    yieldd
+
+
 def nameerror_global():
     """Should be this_is_a_global_list."""
     return this_is_a_global_lis
@@ -87,7 +92,6 @@ class FoobarClass():
 
     def __init__(self):
         """Constructor."""
-        self.foo = 4
         self.bar = 2
 
     @classmethod
@@ -96,8 +100,8 @@ class FoobarClass():
         return 5
 
     def nameerror_self(self):
-        """Should be self.foo."""
-        return foo
+        """Should be self.bar."""
+        return bar
 
     def nameerror_self2(self):
         """Should be self.this_is_cls_mthd (or FoobarClass)."""
@@ -155,6 +159,8 @@ def function_caller(name):
         return nameerror_n_args(1, 2, 3)
     if name == 'nameerror_builtin':
         return nameerror_builtin()
+    if name == 'nameerror_keyword':
+        return nameerror_keyword()
     if name == 'nameerror_global':
         return nameerror_global()
     if name == 'nameerror_no_sugg':
@@ -248,6 +254,9 @@ class NameErrorTests(AbstractTests):
     def test_builtin(self):
         self.run_input('builtin', ". Did you mean 'max'\?")
 
+    def test_keyword(self):
+        self.run_input('keyword', ". Did you mean 'yield'\?")
+
     def test_global(self):
         self.run_input('global', ". Did you mean 'this_is_a_global_list'\?")
 
@@ -258,7 +267,7 @@ class NameErrorTests(AbstractTests):
         self.run_input('import_sugg', ". Did you mean 'import functools'\?")
 
     def test_self(self):
-        self.run_input('self', ". Did you mean 'self.foo'\?")
+        self.run_input('self', ". Did you mean 'self.bar'\?")
 
     def test_self2(self):
         self.run_input(
