@@ -240,35 +240,35 @@ class NameErrorTests(AbstractTests):
     error_prefix = 'nameerror'
 
     def test_1_arg(self):
-        self.run_input('1_arg', ". Did you mean foo")
+        self.run_input('1_arg', ". Did you mean 'foo'\?")
 
     def test_n_args(self):
-        self.run_input('n_args', ". Did you mean foot, fool")
+        self.run_input('n_args', ". Did you mean 'foot', 'fool'\?")
 
     def test_builtin(self):
-        self.run_input('builtin', ". Did you mean max")
+        self.run_input('builtin', ". Did you mean 'max'\?")
 
     def test_global(self):
-        self.run_input('global', ". Did you mean this_is_a_global_list")
+        self.run_input('global', ". Did you mean 'this_is_a_global_list'\?")
 
     def test_no_sugg(self):
         self.run_input('no_sugg', "")
 
     def test_import_sugg(self):
-        self.run_input('import_sugg', ". Did you mean import functools")
+        self.run_input('import_sugg', ". Did you mean 'import functools'\?")
 
     def test_self(self):
-        self.run_input('self', ". Did you mean self.foo")
+        self.run_input('self', ". Did you mean 'self.foo'\?")
 
     def test_self2(self):
         self.run_input(
             'self2',
-            ". Did you mean [^ ]*.this_is_cls_mthd, [^ ]*.this_is_cls_mthd")
+            ". Did you mean '[^ ]*.this_is_cls_mthd', '[^ ]*.this_is_cls_mthd'\?")
 
     def test_cls(self):
         self.run_input(
             'cls',
-            ". Did you mean [^ ]*.this_is_cls_mthd, [^ ]*.this_is_cls_mthd")
+            ". Did you mean '[^ ]*.this_is_cls_mthd', '[^ ]*.this_is_cls_mthd'\?")
 
 
 class UnboundLocalErrorTests(AbstractTests):
@@ -278,7 +278,7 @@ class UnboundLocalErrorTests(AbstractTests):
     error_prefix = 'unboundlocalerror'
 
     def test_1(self):
-        self.run_input('1', '. Did you mean foo')
+        self.run_input('1', ". Did you mean 'foo'\?")
 
 
 class AttributeErrorTest(AbstractTests):
@@ -288,25 +288,25 @@ class AttributeErrorTest(AbstractTests):
     error_prefix = 'attributeerror'
 
     def test_method(self):
-        self.run_input('method', ". Did you mean append")
+        self.run_input('method', ". Did you mean 'append'\?")
 
     def test_builtin(self):
-        self.run_input('builtin', ". Did you mean max\\(list\\)")
+        self.run_input('builtin', ". Did you mean 'max\\(list\\)'\?")
 
     def test_wrongmethod(self):
-        self.run_input('wrongmethod', ". Did you mean append, __add__")
+        self.run_input('wrongmethod', ". Did you mean 'append', '__add__'\?")
 
     def test_wrongmethod2(self):
-        self.run_input('wrongmethod2', ". Did you mean extend")
+        self.run_input('wrongmethod2', ". Did you mean 'extend'\?")
 
     def test_no_sugg(self):
         self.run_input('no_sugg', "")
 
     def test_from_module(self):
-        self.run_input('from_module', ". Did you mean pi")
+        self.run_input('from_module', ". Did you mean 'pi'\?")
 
     def test_from_class(self):
-        self.run_input('from_class', ". Did you mean this_is_cls_mthd")
+        self.run_input('from_class', ". Did you mean 'this_is_cls_mthd'\?")
 
 
 class TypeErrorTests(AbstractTests):
@@ -320,7 +320,7 @@ class TypeErrorTestsNotSub(TypeErrorTests):
     error_msg = "^'\w+' object (is (not |un)subscriptable|has no attribute '__getitem__')"
 
     def test_not_sub(self):
-        self.run_input('not_sub', ". Did you mean function\\(value\\)")
+        self.run_input('not_sub', ". Did you mean 'function\\(value\\)'\?")
 
 
 class ImportErrorTests(AbstractTests):
@@ -334,10 +334,10 @@ class ImportErrorTestsNoModule(ImportErrorTests):
     error_msg = "^No module named '?\w+'?"
 
     def test_no_module(self):
-        self.run_input('no_module', ". Did you mean math")
+        self.run_input('no_module', ". Did you mean 'math'\?")
 
     def test_no_module2(self):
-        self.run_input('no_module2', ". Did you mean math")
+        self.run_input('no_module2', ". Did you mean 'math'\?")
 
 
 class ImportErrorTestsCannotImport(ImportErrorTests):
@@ -345,10 +345,10 @@ class ImportErrorTestsCannotImport(ImportErrorTests):
     error_msg = "^cannot import name '?\w+'?"
 
     def test_wrong_import(self):
-        self.run_input('wrong_import', ". Did you mean from math import pi")
+        self.run_input('wrong_import', ". Did you mean 'from math import pi'\?")
 
     def test_typo_in_method(self):
-        self.run_input('typo_in_method', ". Did you mean pi")
+        self.run_input('typo_in_method', ". Did you mean 'pi'\?")
 
     def test_typo_in_method2(self):
-        self.run_input('typo_in_method2', ". Did you mean pi")
+        self.run_input('typo_in_method2', ". Did you mean 'pi'\?")

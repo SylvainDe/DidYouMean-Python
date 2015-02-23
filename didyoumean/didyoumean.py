@@ -91,7 +91,7 @@ def get_imported_suggestion(imported_fail, frame):
 
 def get_suggestion_string(sugg):
     """Return the suggestion list as a string."""
-    return ". Did you mean " + ', '.join(sugg) if sugg else ""
+    return ". Did you mean '" + "', '".join(sugg) + "'?" if sugg else ""
 
 
 def debug_traceback(traceback):

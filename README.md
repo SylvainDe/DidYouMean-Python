@@ -35,12 +35,12 @@ _More examples can be found from the test file `didyoumean/didyoumean_tests.py`.
 def my_func(foo, bar):
     return foob
 #>>> Before : NameError: global name 'foob' is not defined
-#>>> After : NameError: global name 'foob' is not defined. Did you mean foo
+#>>> After : NameError: global name 'foob' is not defined. Did you mean 'foo'?
 
 def my_func():
     return maxi
 #>>> Before : NameError: global name 'maxi' is not defined
-#>>> After : NameError: global name 'maxi' is not defined. Did you mean max
+#>>> After : NameError: global name 'maxi' is not defined. Did you mean 'max'?
 ```
 
 ##### Looking for missing imports
@@ -49,7 +49,7 @@ def my_func():
 def my_func():
     return functools.wraps
 #>>> Before : NameError: global name 'functools' is not defined
-#>>> After : NameError: global name 'functools' is not defined. Did you mean import functools
+#>>> After : NameError: global name 'functools' is not defined. Did you mean 'import functools'?
 ```
 
 
@@ -61,7 +61,7 @@ Useful when forgetting `self` or `cls` in a method.
 def my_meth(self):
     return my_meth2()
 #>>> Before : NameError: global name 'my_meth2' is not defined
-#>>> After : NameError: global name 'my_meth2' is not defined. Did you mean self.my_meth2
+#>>> After : NameError: global name 'my_meth2' is not defined. Did you mean 'self.my_meth2'?
 ```
 
 ### Attribute Error
@@ -73,7 +73,7 @@ def my_func():
     lst = [1, 2, 3]
     lst.appendh(4)
 #>>> Before : AttributeError: 'list' object has no attribute 'appendh'
-#>>> After : AttributeError: 'list' object has no attribute 'appendh'. Did you mean append
+#>>> After : AttributeError: 'list' object has no attribute 'appendh'. Did you mean 'append'?
 ```
 
 
@@ -84,7 +84,7 @@ def my_func():
     lst = [1, 2, 3]
     return lst.max()
 #>>> Before : AttributeError: 'list' object has no attribute 'max'
-#>>> After : AttributeError: 'list' object has no attribute 'max'. Did you mean max(list)
+#>>> After : AttributeError: 'list' object has no attribute 'max'. Did you mean 'max(list)'?
 ```
 
 ##### Trying to find method with similar meaning (hardcoded)
@@ -94,7 +94,7 @@ def my_func():
     lst = [1, 2, 3]
     return lst.add(4)
 #>>> Before : AttributeError: 'list' object has no attribute 'add'
-#>>> After : AttributeError: 'list' object has no attribute 'add'. Did you mean append
+#>>> After : AttributeError: 'list' object has no attribute 'add'. Did you mean 'append'?
 ```
 
 ### Import Error
@@ -104,7 +104,7 @@ def my_func():
 ```python
 from maths import pi
 #>>> Before : ImportError: No module named maths
-#>>> After : ImportError: No module named maths. Did you mean math
+#>>> After : ImportError: No module named maths. Did you mean 'math'?
 ```
 
 
@@ -113,7 +113,7 @@ from maths import pi
 ```python
 from math import pie
 #>>> Before : ImportError: cannot import name pie
-#>>> After : ImportError: cannot import name pie. Did you mean pi
+#>>> After : ImportError: cannot import name pie. Did you mean 'pi'?
 ```
 
 
