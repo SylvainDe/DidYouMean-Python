@@ -35,6 +35,11 @@ def nameerror_global():
     return this_is_a_global_lis
 
 
+def nameerror_imported():
+    """Should be math.pi."""
+    return pi
+
+
 def nameerror_no_sugg():
     """No suggestion."""
     return ldkjhfnvdlkjhvgfdhgf
@@ -125,6 +130,11 @@ def typeerror_not_sub():
     return inner_func[2]
 
 
+def importerror_no_module_no_sugg():
+    """No suggestion."""
+    import fqslkdfjslkqdjfqsd
+
+
 def importerror_no_module():
     """Should be 'math'."""
     import maths
@@ -134,6 +144,10 @@ def importerror_no_module2():
     """Should be 'math'."""
     from maths import pi
 
+
+def importerror_no_name_suggested():
+    """No suggestion."""
+    from math import fsfsdfdjlkf
 
 def importerror_wrong_import():
     """Should be 'math'."""
@@ -163,6 +177,8 @@ def function_caller(name):
         return nameerror_keyword()
     if name == 'nameerror_global':
         return nameerror_global()
+    if name == 'nameerror_imported':
+        return nameerror_imported()
     if name == 'nameerror_no_sugg':
         return nameerror_no_sugg()
     if name == 'nameerror_import_sugg':
@@ -191,10 +207,14 @@ def function_caller(name):
         return attributeerror_from_class()
     if name == 'typeerror_not_sub':
         return typeerror_not_sub()
+    if name == 'importerror_no_module_no_sugg':
+        return importerror_no_module_no_sugg()
     if name == 'importerror_no_module':
         return importerror_no_module()
     if name == 'importerror_no_module2':
         return importerror_no_module2()
+    if name == 'importerror_no_name_suggested':
+        return importerror_no_name_suggested()
     if name == 'importerror_wrong_import':
         return importerror_wrong_import()
     if name == 'importerror_typo_in_method':
@@ -259,6 +279,9 @@ class NameErrorTests(AbstractTests):
 
     def test_global(self):
         self.run_input('global', ". Did you mean 'this_is_a_global_list'\?")
+
+    def test_imported(self):
+        self.run_input('imported', ". Did you mean 'math.pi'\?")
 
     def test_no_sugg(self):
         self.run_input('no_sugg', "")
@@ -342,6 +365,9 @@ class ImportErrorTestsNoModule(ImportErrorTests):
     """Class for tests related to no module."""
     error_msg = "^No module named '?\w+'?"
 
+    def test_no_module_no_sugg(self):
+        self.run_input('no_module_no_sugg', "")
+
     def test_no_module(self):
         self.run_input('no_module', ". Did you mean 'math'\?")
 
@@ -352,6 +378,9 @@ class ImportErrorTestsNoModule(ImportErrorTests):
 class ImportErrorTestsCannotImport(ImportErrorTests):
     """Class for tests related to cannot import."""
     error_msg = "^cannot import name '?\w+'?"
+
+    def test_no_name_no_sugg(self):
+        self.run_input('no_name_suggested', "")
 
     def test_wrong_import(self):
         self.run_input('wrong_import', ". Did you mean 'from math import pi'\?")

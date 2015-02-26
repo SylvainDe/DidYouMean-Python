@@ -14,6 +14,15 @@ STAND_MODULES = set(['string', 'os', 'sys', 're', 'math', 'random',
 # To be completed
 SYNONYMS_SETS = [set(['add', 'append']), set(['extend', 'update'])]
 
+# Regular expressions to parse error messages
+UNBOUNDERROR_RE = r"^local variable '(\w+)' referenced before assignment$"
+NAMENOTDEFINED_RE = r"^(?:global )?name '(\w+)' is not defined$"
+ATTRIBUTEERROR_RE = r"^'?(\w+)'? (?:object|instance) has no attribute '(\w+)'$"
+TYPEERROR_RE = r"^'(\w+)' object " \
+    "(?:is (?:not |un)subscriptable|has no attribute '__getitem__')$"
+NOMODULE_RE = r"^No module named '?(\w+)'?$"
+CANNOTIMPORT_RE = r"^cannot import name '?(\w+)'?$"
+
 
 def merge_dict(*dicts):
     """Merge dictionnaries.
@@ -36,7 +45,7 @@ def get_objects_in_frame(frame):
 
 def get_close_matches(word, possibilities):
     """Wrapper around difflib.get_close_matches() to be able to
-    change default values or implementation defails easily."""
+    change default values or implementation details easily."""
     return difflib.get_close_matches(word, possibilities)
 
 
@@ -102,7 +111,8 @@ def get_attribute_suggestions(type_str, attribute, frame):
     # For module, we want to get the actual name of the module
     module_name = frame.f_code.co_names[0]
     type_or_module = module_name if type_str == 'module' else type_str
-    attributes = set(dir(get_objects_in_frame(frame)[type_or_module]))
+    objs = get_objects_in_frame(frame)
+    attributes = set(dir(objs[type_or_module]))
 
     return suggest_attribute_as_builtin(attribute, type_str, frame) + \
         suggest_attribute_synonyms(attribute, attributes) + \
@@ -117,27 +127,27 @@ def import_from_frame(module_name, frame):
         locals=frame.f_locals)
 
 
-def suggest_imported_name_as_typo(imported_fail, frame):
+def suggest_imported_name_as_typo(imported_name, frame):
     """Suggest that imported name could be a typo from actual name in module.
     Example: 'from math import pie' -> 'from math import pi'."""
     module_name = frame.f_code.co_names[0]
     return get_close_matches(
-        imported_fail,
+        imported_name,
         dir(import_from_frame(module_name, frame)))
 
 
-def suggest_import_from_standard_module(imported_fail, frame):
+def suggest_import_from_module(imported_name, frame):
     """Suggest than name could be found in a standard module.
     Example: 'from itertools import pi' -> 'from math import pi'."""
-    return ['from %s import %s' % (mod, imported_fail)
+    return ['from %s import %s' % (mod, imported_name)
             for mod in STAND_MODULES
-            if imported_fail in dir(import_from_frame(mod, frame))]
+            if imported_name in dir(import_from_frame(mod, frame))]
 
 
-def get_imported_suggestion(imported_fail, frame):
+def get_imported_name_suggestion(imported_name, frame):
     """Get the suggestions closest to the failing import."""
-    return suggest_imported_name_as_typo(imported_fail, frame) + \
-        suggest_import_from_standard_module(imported_fail, frame)
+    return suggest_imported_name_as_typo(imported_name, frame) + \
+        suggest_import_from_module(imported_name, frame)
 
 
 def get_module_name_suggestion(module_str):
@@ -168,6 +178,66 @@ def debug_traceback(traceback):
         traceback = traceback.tb_next
 
 
+def enhance_name_error(type_, value, frame):
+    """Enhance NameError exception."""
+    assert issubclass(type_, NameError)
+    assert len(value.args) == 1
+    error_msg = value.args[0]
+    error_re = UNBOUNDERROR_RE if issubclass(type_, UnboundLocalError) \
+        else NAMENOTDEFINED_RE
+    match = re.match(error_re, error_msg)
+    assert match, "No match for %s" % error_msg
+    var, = match.groups()
+    sugg = get_name_suggestions(var, frame)
+    value.args = (error_msg + get_suggestion_string(sugg), )
+    assert len(value.args) == 1
+
+
+def enhance_attribute_error(type_, value, frame):
+    """Enhance AttributeError exception."""
+    assert issubclass(type_, AttributeError)
+    assert len(value.args) == 1
+    error_msg = value.args[0]
+    match = re.match(ATTRIBUTEERROR_RE, error_msg)
+    assert match, "No match for %s" % error_msg
+    type_str, attr = match.groups()
+    sugg = get_attribute_suggestions(type_str, attr, frame)
+    value.args = (error_msg + get_suggestion_string(sugg), )
+    assert len(value.args) == 1
+
+
+def enhance_type_error(type_, value):
+    """Enhance TypeError exception."""
+    assert issubclass(type_, TypeError)
+    assert len(value.args) == 1
+    error_msg = value.args[0]
+    match = re.match(TYPEERROR_RE, error_msg)
+    if match:  # It could be cool to extract relevant info from the trace
+        type_str, = match.groups()
+        sugg = [type_str + '(value)'] if type_str == 'function' else []
+        value.args = (error_msg + get_suggestion_string(sugg), )
+    assert len(value.args) == 1
+
+
+def enhance_import_error(type_, value, frame):
+    """Enhance ImportError exception."""
+    assert issubclass(type_, ImportError)
+    assert len(value.args) == 1
+    error_msg = value.args[0]
+    match = re.match(NOMODULE_RE, error_msg)
+    if match:
+        module_str, = match.groups()
+        sugg = get_module_name_suggestion(module_str)
+        value.args = (error_msg + get_suggestion_string(sugg), )
+    else:
+        match = re.match(CANNOTIMPORT_RE, error_msg)
+        assert match, "No match for %s" % error_msg
+        imported_name, = match.groups()
+        sugg = get_imported_name_suggestion(imported_name, frame)
+        value.args = (error_msg + get_suggestion_string(sugg), )
+    assert len(value.args) == 1
+
+
 def add_suggestions_to_exception(type_, value, traceback):
     """Add suggestion to an exception.
     Arguments are such as provided by sys.exc_info()."""
@@ -175,51 +245,15 @@ def add_suggestions_to_exception(type_, value, traceback):
     end_traceback = traceback
     while end_traceback.tb_next:
         end_traceback = end_traceback.tb_next
+    last_frame = end_traceback.tb_frame
     if issubclass(type_, NameError):
-        assert len(value.args) == 1
-        error_msg = value.args[0]
-        if issubclass(type_, UnboundLocalError):
-            match = re.match("^local variable '(\w+)' referenced before assignment$", error_msg)
-        else:
-            match = re.match("^(?:global )?name '(\w+)' is not defined$", error_msg)
-        assert match, "No match for %s" % error_msg
-        var, = match.groups()
-        sugg = get_name_suggestions(var, end_traceback.tb_frame)
-        value.args = (error_msg + get_suggestion_string(sugg), )
-        assert len(value.args) == 1
+        enhance_name_error(type_, value, last_frame)
     elif issubclass(type_, AttributeError):
-        assert len(value.args) == 1
-        error_msg = value.args[0]
-        match = re.match("^'?(\w+)'? (?:object|instance) has no attribute '(\w+)'$", error_msg)
-        assert match, "No match for %s" % error_msg
-        type_str, attr = match.groups()
-        sugg = get_attribute_suggestions(type_str, attr, end_traceback.tb_frame)
-        value.args = (error_msg + get_suggestion_string(sugg), )
-        assert len(value.args) == 1
+        enhance_attribute_error(type_, value, last_frame)
     elif issubclass(type_, TypeError):
-        assert len(value.args) == 1
-        error_msg = value.args[0]
-        match = re.match("^'(\w+)' object (?:is (?:not |un)subscriptable|has no attribute '__getitem__')$", error_msg)
-        if match:  # It could be cool to extract relevant info from the trace
-            type_str, = match.groups()
-            if type_str == 'function':
-                value.args = (error_msg + get_suggestion_string([type_str + '(value)']), )
-        assert len(value.args) == 1
+        enhance_type_error(type_, value)
     elif issubclass(type_, ImportError):
-        assert len(value.args) == 1
-        error_msg = value.args[0]
-        match = re.match("^No module named '?(\w+)'?$", error_msg)
-        if match:
-            module_str, = match.groups()
-            sugg = get_module_name_suggestion(module_str)
-            value.args = (error_msg + get_suggestion_string(sugg), )
-        else:
-            match = re.match("^cannot import name '?(\w+)'?$", error_msg)
-            assert match, "No match for %s" % error_msg
-            imported_fail, = match.groups()
-            sugg = get_imported_suggestion(imported_fail, end_traceback.tb_frame)
-            value.args = (error_msg + get_suggestion_string(sugg), )
-        assert len(value.args) == 1
+        enhance_import_error(type_, value, last_frame)
     else:
         print(type_, value.args)
     # Could be added : IndexError, KeyError
