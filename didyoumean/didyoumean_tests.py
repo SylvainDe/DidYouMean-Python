@@ -149,6 +149,7 @@ def importerror_no_name_suggested():
     """No suggestion."""
     from math import fsfsdfdjlkf
 
+
 def importerror_wrong_import():
     """Should be 'math'."""
     from itertools import pi
