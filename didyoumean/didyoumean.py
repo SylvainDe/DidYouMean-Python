@@ -3,6 +3,7 @@
 import keyword
 import difflib
 import re
+import itertools
 
 #: Standard modules we'll consider while searching for undefined values
 # To be completed
@@ -52,15 +53,16 @@ def get_close_matches(word, possibilities):
 def suggest_name_as_attribute(name, objdict):
     """Suggest that name could be an attribute of an object.
     Example: 'do_stuff()' -> 'self.do_stuff()'."""
-    return [nameobj + '.' + name
-            for nameobj, obj in objdict.items()
-            if hasattr(obj, name)]
+    for nameobj, obj in objdict.items():
+        if hasattr(obj, name):
+            yield nameobj + '.' + name
 
 
 def suggest_name_as_standard_module(name):
     """Suggest that name could be a non-importer standard module.
     Example: 'os.whatever' -> 'import os' and then 'os.whatever'."""
-    return ['import ' + name] if name in STAND_MODULES else []
+    if name in STAND_MODULES:
+        yield 'import ' + name
 
 
 def suggest_name_as_name_typo(name, objdict):
@@ -78,26 +80,27 @@ def suggest_name_as_keyword_typo(name):
 def get_name_suggestions(name, frame):
     """Get the suggestions for name in case of NameError."""
     objs = get_objects_in_frame(frame)
-    return suggest_name_as_attribute(name, objs) + \
-        suggest_name_as_standard_module(name) + \
-        suggest_name_as_name_typo(name, objs) + \
-        suggest_name_as_keyword_typo(name)
+    return itertools.chain(
+        suggest_name_as_attribute(name, objs),
+        suggest_name_as_standard_module(name),
+        suggest_name_as_name_typo(name, objs),
+        suggest_name_as_keyword_typo(name))
 
 
 def suggest_attribute_as_builtin(attribute, type_str, frame):
     """Suggest that a builtin was used as an attribute.
     Example: 'lst.len()' -> 'len(lst)'."""
-    return [attribute + '(' + type_str + ')'] \
-        if attribute in frame.f_builtins else []
+    if attribute in frame.f_builtins:
+        yield attribute + '(' + type_str + ')'
 
 
 def suggest_attribute_synonyms(attribute, attributes):
     """Suggest that a method with a similar meaning was used.
     Example: 'lst.add(e)' -> 'lst.append(e)'."""
-    return [syn
-            for set_sub in SYNONYMS_SETS
-            if attribute in set_sub
-            for syn in set_sub & attributes]
+    for set_sub in SYNONYMS_SETS:
+        if attribute in set_sub:
+            for syn in set_sub & attributes:
+                yield syn
 
 
 def suggest_attribute_as_typo(attribute, attributes):
@@ -114,9 +117,10 @@ def get_attribute_suggestions(type_str, attribute, frame):
     objs = get_objects_in_frame(frame)
     attributes = set(dir(objs[type_or_module]))
 
-    return suggest_attribute_as_builtin(attribute, type_str, frame) + \
-        suggest_attribute_synonyms(attribute, attributes) + \
-        suggest_attribute_as_typo(attribute, attributes)
+    return itertools.chain(
+        suggest_attribute_as_builtin(attribute, type_str, frame),
+        suggest_attribute_synonyms(attribute, attributes),
+        suggest_attribute_as_typo(attribute, attributes))
 
 
 def import_from_frame(module_name, frame):
@@ -139,15 +143,16 @@ def suggest_imported_name_as_typo(imported_name, frame):
 def suggest_import_from_module(imported_name, frame):
     """Suggest than name could be found in a standard module.
     Example: 'from itertools import pi' -> 'from math import pi'."""
-    return ['from %s import %s' % (mod, imported_name)
-            for mod in STAND_MODULES
-            if imported_name in dir(import_from_frame(mod, frame))]
+    for mod in STAND_MODULES:
+        if imported_name in dir(import_from_frame(mod, frame)):
+            yield 'from %s import %s' % (mod, imported_name)
 
 
 def get_imported_name_suggestion(imported_name, frame):
     """Get the suggestions closest to the failing import."""
-    return suggest_imported_name_as_typo(imported_name, frame) + \
-        suggest_import_from_module(imported_name, frame)
+    return itertools.chain(
+        suggest_imported_name_as_typo(imported_name, frame),
+        suggest_import_from_module(imported_name, frame))
 
 
 def get_module_name_suggestion(module_str):
@@ -158,6 +163,7 @@ def get_module_name_suggestion(module_str):
 
 def get_suggestion_string(sugg):
     """Return the suggestion list as a string."""
+    sugg = list(sugg)
     return ". Did you mean '" + "', '".join(sugg) + "'?" if sugg else ""
 
 
@@ -187,8 +193,8 @@ def enhance_name_error(type_, value, frame):
         else NAMENOTDEFINED_RE
     match = re.match(error_re, error_msg)
     assert match, "No match for %s" % error_msg
-    var, = match.groups()
-    sugg = get_name_suggestions(var, frame)
+    name, = match.groups()
+    sugg = get_name_suggestions(name, frame)
     value.args = (error_msg + get_suggestion_string(sugg), )
     assert len(value.args) == 1
 
@@ -228,13 +234,12 @@ def enhance_import_error(type_, value, frame):
     if match:
         module_str, = match.groups()
         sugg = get_module_name_suggestion(module_str)
-        value.args = (error_msg + get_suggestion_string(sugg), )
     else:
         match = re.match(CANNOTIMPORT_RE, error_msg)
         assert match, "No match for %s" % error_msg
         imported_name, = match.groups()
         sugg = get_imported_name_suggestion(imported_name, frame)
-        value.args = (error_msg + get_suggestion_string(sugg), )
+    value.args = (error_msg + get_suggestion_string(sugg), )
     assert len(value.args) == 1
 
 
