@@ -35,6 +35,11 @@ def nameerror_global():
     return this_is_a_global_lis
 
 
+def nameerror_import():
+    """Should be math.pi."""
+    return maths.pi
+
+
 def nameerror_imported():
     """Should be math.pi."""
     return pi
@@ -165,70 +170,27 @@ def importerror_typo_in_method2():
     from math import e, pie, log
 
 
-def function_caller(name):
-    """Dirty function to call test function without bothering about arguments
-    or instances."""
-    if name == 'nameerror_1_arg':
-        return nameerror_1_arg(1)
-    if name == 'nameerror_n_args':
-        return nameerror_n_args(1, 2, 3)
-    if name == 'nameerror_builtin':
-        return nameerror_builtin()
-    if name == 'nameerror_keyword':
-        return nameerror_keyword()
-    if name == 'nameerror_global':
-        return nameerror_global()
-    if name == 'nameerror_imported':
-        return nameerror_imported()
-    if name == 'nameerror_no_sugg':
-        return nameerror_no_sugg()
-    if name == 'nameerror_import_sugg':
-        return nameerror_import_sugg()
-    if name == 'nameerror_self':
-        return FoobarClass().nameerror_self()
-    if name == 'nameerror_self2':
-        return FoobarClass().nameerror_self2()
-    if name == 'nameerror_cls':
-        return FoobarClass().nameerror_cls()
-    if name == 'unboundlocalerror_1':
-        return unboundlocalerror_1()
-    if name == 'attributeerror_builtin':
-        return attributeerror_builtin()
-    if name == 'attributeerror_wrongmethod':
-        return attributeerror_wrongmethod()
-    if name == 'attributeerror_wrongmethod2':
-        return attributeerror_wrongmethod2()
-    if name == 'attributeerror_method':
-        return attributeerror_method()
-    if name == 'attributeerror_no_sugg':
-        return attributeerror_no_sugg()
-    if name == 'attributeerror_from_module':
-        return attributeerror_from_module()
-    if name == 'attributeerror_from_class':
-        return attributeerror_from_class()
-    if name == 'typeerror_not_sub':
-        return typeerror_not_sub()
-    if name == 'importerror_no_module_no_sugg':
-        return importerror_no_module_no_sugg()
-    if name == 'importerror_no_module':
-        return importerror_no_module()
-    if name == 'importerror_no_module2':
-        return importerror_no_module2()
-    if name == 'importerror_no_name_suggested':
-        return importerror_no_name_suggested()
-    if name == 'importerror_wrong_import':
-        return importerror_wrong_import()
-    if name == 'importerror_typo_in_method':
-        return importerror_typo_in_method()
-    if name == 'importerror_typo_in_method2':
-        return importerror_typo_in_method2()
-    assert False
+def keyerror_no_sugg():
+    """No suggestion."""
+    dct = dict()
+    return dct['ffdsqmjklfqsd']
+
+
+def indexerror_no_sugg():
+    """No suggestion."""
+    lst = [1]
+    return lst[2]
+
+
+def eval_wrapper(name):
+    """Dirty function to eval_some_code."""
+    eval(name)
 
 
 @didyoumean
-def function_caller_deco(name):
-    """Wrapper around function_caller with a didyoumean decorator."""
-    return function_caller(name)
+def eval_wrapper_deco(name):
+    """Wrapper around eval_wrapper with a didyoumean decorator."""
+    return eval_wrapper(name)
 
 
 class AbstractTests(unittest2.TestCase):
@@ -236,16 +198,15 @@ class AbstractTests(unittest2.TestCase):
 
     def run_input(self, name, sugg):
         """Helper function to run tests."""
-        name = self.error_prefix + '_' + name
         self.my_assert_raises_rexp(
             self.error_type,
             self.error_msg + "$",
-            function_caller,
+            eval_wrapper,
             name)
         self.my_assert_raises_rexp(
             self.error_type,
             self.error_msg + sugg + "$",
-            function_caller_deco,
+            eval_wrapper_deco,
             name)
 
     def my_assert_raises_rexp(self, type_arg, message_re, callable_, *args, **kwds):
@@ -264,43 +225,45 @@ class NameErrorTests(AbstractTests):
     """Class for tests related to NameError."""
     error_type = NameError
     error_msg = "^(global )?name '\w+' is not defined"
-    error_prefix = 'nameerror'
 
     def test_1_arg(self):
-        self.run_input('1_arg', ". Did you mean 'foo'\?")
+        self.run_input('nameerror_1_arg(1)', ". Did you mean 'foo'\?")
 
     def test_n_args(self):
-        self.run_input('n_args', ". Did you mean 'foot', 'fool'\?")
+        self.run_input('nameerror_n_args(1, 2, 3)', ". Did you mean 'foot', 'fool'\?")
 
     def test_builtin(self):
-        self.run_input('builtin', ". Did you mean 'max'\?")
+        self.run_input('nameerror_builtin()', ". Did you mean 'max'\?")
 
     def test_keyword(self):
-        self.run_input('keyword', ". Did you mean 'yield'\?")
+        self.run_input('nameerror_keyword()', ". Did you mean 'yield'\?")
 
     def test_global(self):
-        self.run_input('global', ". Did you mean 'this_is_a_global_list'\?")
+        self.run_input('nameerror_global()', ". Did you mean 'this_is_a_global_list'\?")
+
+    def test_import(self):
+        self.run_input('nameerror_import()', ". Did you mean 'math'\?")
 
     def test_imported(self):
-        self.run_input('imported', ". Did you mean 'math.pi'\?")
+        self.run_input('nameerror_imported()', ". Did you mean 'math.pi'\?")
 
     def test_no_sugg(self):
-        self.run_input('no_sugg', "")
+        self.run_input('nameerror_no_sugg()', "")
 
     def test_import_sugg(self):
-        self.run_input('import_sugg', ". Did you mean 'import functools'\?")
+        self.run_input('nameerror_import_sugg()', ". Did you mean 'import functools'\?")
 
     def test_self(self):
-        self.run_input('self', ". Did you mean 'self.bar'\?")
+        self.run_input('FoobarClass().nameerror_self()', ". Did you mean 'self.bar'\?")
 
     def test_self2(self):
         self.run_input(
-            'self2',
+            'FoobarClass().nameerror_self2()',
             ". Did you mean '[^ ]*.this_is_cls_mthd', '[^ ]*.this_is_cls_mthd'\?")
 
     def test_cls(self):
         self.run_input(
-            'cls',
+            'FoobarClass().nameerror_cls()',
             ". Did you mean '[^ ]*.this_is_cls_mthd', '[^ ]*.this_is_cls_mthd'\?")
 
 
@@ -308,44 +271,41 @@ class UnboundLocalErrorTests(AbstractTests):
     """Class for tests related to UnboundLocalError."""
     error_type = UnboundLocalError
     error_msg = "^local variable '\w+' referenced before assignment"
-    error_prefix = 'unboundlocalerror'
 
     def test_1(self):
-        self.run_input('1', ". Did you mean 'foo'\?")
+        self.run_input('unboundlocalerror_1()', ". Did you mean 'foo'\?")
 
 
 class AttributeErrorTest(AbstractTests):
     """Class for tests related to AttributeError."""
     error_type = AttributeError
     error_msg = "^'?\w+'? (object|instance) has no attribute '\w+'"
-    error_prefix = 'attributeerror'
 
     def test_method(self):
-        self.run_input('method', ". Did you mean 'append'\?")
+        self.run_input('attributeerror_method()', ". Did you mean 'append'\?")
 
     def test_builtin(self):
-        self.run_input('builtin', ". Did you mean 'max\\(list\\)'\?")
+        self.run_input('attributeerror_builtin()', ". Did you mean 'max\\(list\\)'\?")
 
     def test_wrongmethod(self):
-        self.run_input('wrongmethod', ". Did you mean 'append', '__add__'\?")
+        self.run_input('attributeerror_wrongmethod()', ". Did you mean 'append', '__add__'\?")
 
     def test_wrongmethod2(self):
-        self.run_input('wrongmethod2', ". Did you mean 'extend'\?")
+        self.run_input('attributeerror_wrongmethod2()', ". Did you mean 'extend'\?")
 
     def test_no_sugg(self):
-        self.run_input('no_sugg', "")
+        self.run_input('attributeerror_no_sugg()', "")
 
     def test_from_module(self):
-        self.run_input('from_module', ". Did you mean 'pi'\?")
+        self.run_input('attributeerror_from_module()', ". Did you mean 'pi'\?")
 
     def test_from_class(self):
-        self.run_input('from_class', ". Did you mean 'this_is_cls_mthd'\?")
+        self.run_input('attributeerror_from_class()', ". Did you mean 'this_is_cls_mthd'\?")
 
 
 class TypeErrorTests(AbstractTests):
     """Class for tests related to TypeError."""
     error_type = TypeError
-    error_prefix = 'typeerror'
 
 
 class TypeErrorTestsNotSub(TypeErrorTests):
@@ -353,13 +313,12 @@ class TypeErrorTestsNotSub(TypeErrorTests):
     error_msg = "^'\w+' object (is (not |un)subscriptable|has no attribute '__getitem__')"
 
     def test_not_sub(self):
-        self.run_input('not_sub', ". Did you mean 'function\\(value\\)'\?")
+        self.run_input('typeerror_not_sub()', ". Did you mean 'function\\(value\\)'\?")
 
 
 class ImportErrorTests(AbstractTests):
     """Class for tests related to ImportError."""
     error_type = ImportError
-    error_prefix = 'importerror'
 
 
 class ImportErrorTestsNoModule(ImportErrorTests):
@@ -367,13 +326,13 @@ class ImportErrorTestsNoModule(ImportErrorTests):
     error_msg = "^No module named '?\w+'?"
 
     def test_no_module_no_sugg(self):
-        self.run_input('no_module_no_sugg', "")
+        self.run_input('importerror_no_module_no_sugg()', "")
 
     def test_no_module(self):
-        self.run_input('no_module', ". Did you mean 'math'\?")
+        self.run_input('importerror_no_module()', ". Did you mean 'math'\?")
 
     def test_no_module2(self):
-        self.run_input('no_module2', ". Did you mean 'math'\?")
+        self.run_input('importerror_no_module2()', ". Did you mean 'math'\?")
 
 
 class ImportErrorTestsCannotImport(ImportErrorTests):
@@ -381,13 +340,41 @@ class ImportErrorTestsCannotImport(ImportErrorTests):
     error_msg = "^cannot import name '?\w+'?"
 
     def test_no_name_no_sugg(self):
-        self.run_input('no_name_suggested', "")
+        self.run_input('importerror_no_name_suggested()', "")
 
     def test_wrong_import(self):
-        self.run_input('wrong_import', ". Did you mean 'from math import pi'\?")
+        self.run_input('importerror_wrong_import()', ". Did you mean 'from math import pi'\?")
 
     def test_typo_in_method(self):
-        self.run_input('typo_in_method', ". Did you mean 'pi'\?")
+        self.run_input('importerror_typo_in_method()', ". Did you mean 'pi'\?")
 
     def test_typo_in_method2(self):
-        self.run_input('typo_in_method2', ". Did you mean 'pi'\?")
+        self.run_input('importerror_typo_in_method2()', ". Did you mean 'pi'\?")
+
+
+class LookupErrorTests(AbstractTests):
+    """Class for tests related to LookupError."""
+    error_type = LookupError
+
+
+class KeyErrorTests(LookupErrorTests):
+    """Class for tests related to KeyError."""
+    error_type = KeyError
+    error_msg = ''
+
+    def test_no_sugg(self):
+        self.run_input('keyerror_no_sugg()', "")
+
+
+class IndexErrorTests(LookupErrorTests):
+    """Class for tests related to IndexError."""
+    error_type = IndexError
+    error_msg = "^list index out of range"
+
+    def test_no_sugg(self):
+        self.run_input('indexerror_no_sugg()', "")
+
+
+class SyntaxErrorTests(AbstractTests):
+    """Class for tests related to SyntaxError."""
+    pass

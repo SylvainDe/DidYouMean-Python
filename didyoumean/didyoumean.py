@@ -254,6 +254,4 @@ def add_suggestions_to_exception(type_, value, traceback):
         enhance_type_error(type_, value)
     elif issubclass(type_, ImportError):
         enhance_import_error(type_, value, last_frame)
-    else:
-        print(type_, value.args)
     # Could be added : IndexError, KeyError
