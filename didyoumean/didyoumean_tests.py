@@ -40,6 +40,12 @@ def nameerror_import():
     return maths.pi
 
 
+def nameerror_import2():
+    """Should be my_imported_math.pi."""
+    import math as my_imported_math
+    return my_imported_maths.pi
+
+
 def nameerror_imported():
     """Should be math.pi."""
     return pi
@@ -150,6 +156,16 @@ def importerror_no_module2():
     from maths import pi
 
 
+def importerror_no_module3():
+    """Should be 'math'."""
+    import maths as my_imported_math
+
+
+def importerror_no_module4():
+    """Should be 'math'."""
+    from maths import pi as three_something
+
+
 def importerror_no_name_suggested():
     """No suggestion."""
     from math import fsfsdfdjlkf
@@ -168,6 +184,11 @@ def importerror_typo_in_method():
 def importerror_typo_in_method2():
     """Should be 'pi'."""
     from math import e, pie, log
+
+
+def importerror_typo_in_method3():
+    """Should be 'pi'."""
+    from math import pie as three_something
 
 
 def keyerror_no_sugg():
@@ -243,6 +264,9 @@ class NameErrorTests(AbstractTests):
 
     def test_import(self):
         self.run_input('nameerror_import()', ". Did you mean 'math'\?")
+
+    def test_import2(self):
+        self.run_input('nameerror_import2()', ". Did you mean 'my_imported_math'\?")
 
     def test_imported(self):
         self.run_input('nameerror_imported()', ". Did you mean 'math.pi'\?")
@@ -334,6 +358,13 @@ class ImportErrorTestsNoModule(ImportErrorTests):
     def test_no_module2(self):
         self.run_input('importerror_no_module2()', ". Did you mean 'math'\?")
 
+    def test_no_module3(self):
+        self.run_input('importerror_no_module2()', ". Did you mean 'math'\?")
+
+    def test_no_module4(self):
+        self.run_input('importerror_no_module2()', ". Did you mean 'math'\?")
+
+
 
 class ImportErrorTestsCannotImport(ImportErrorTests):
     """Class for tests related to cannot import."""
@@ -349,6 +380,9 @@ class ImportErrorTestsCannotImport(ImportErrorTests):
         self.run_input('importerror_typo_in_method()', ". Did you mean 'pi'\?")
 
     def test_typo_in_method2(self):
+        self.run_input('importerror_typo_in_method2()', ". Did you mean 'pi'\?")
+
+    def test_typo_in_method3(self):
         self.run_input('importerror_typo_in_method2()', ". Did you mean 'pi'\?")
 
 
