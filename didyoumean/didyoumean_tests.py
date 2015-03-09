@@ -365,7 +365,6 @@ class ImportErrorTestsNoModule(ImportErrorTests):
         self.run_input('importerror_no_module2()', ". Did you mean 'math'\?")
 
 
-
 class ImportErrorTestsCannotImport(ImportErrorTests):
     """Class for tests related to cannot import."""
     error_msg = "^cannot import name '?\w+'?"
