@@ -325,7 +325,13 @@ class AttributeErrorTest(AbstractTests):
         self.run_input('attributeerror_builtin()', ". Did you mean 'max\\(list\\)'\?")
 
     def test_builtin2(self):
-        self.run_input('attributeerror_builtin2()', ". Did you mean 'next\\(generator\\)'\?")
+        code = 'attributeerror_builtin2()'
+        if sys.version_info >= (3, 0):
+            self.run_input(code, ". Did you mean 'next\\(generator\\)'\?")
+        else:
+            # Will not fail in previous versions
+            eval_wrapper(code)
+            eval_wrapper_deco(code)
 
     def test_wrongmethod(self):
         self.run_input('attributeerror_wrongmethod()', ". Did you mean 'append', '__add__'\?")
