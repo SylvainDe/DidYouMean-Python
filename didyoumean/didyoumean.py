@@ -111,11 +111,15 @@ def suggest_attribute_as_typo(attribute, attributes):
 
 def get_attribute_suggestions(type_str, attribute, frame):
     """Get the suggestions closest to the attribute name for a given type."""
-    # For module, we want to get the actual name of the module
-    module_name = frame.f_code.co_names[0]
-    type_or_module = module_name if type_str == 'module' else type_str
     objs = get_objects_in_frame(frame)
-    attributes = set(dir(objs[type_or_module]))
+    if type_str == 'module':
+        # For module, we want to get the actual name of the module
+        module_name = frame.f_code.co_names[0]
+        attributes = set(dir(objs[module_name]))
+    elif type_str == 'generator':
+        attributes = set()
+    else:
+        attributes = set(dir(objs[type_str]))
 
     return itertools.chain(
         suggest_attribute_as_builtin(attribute, type_str, frame),

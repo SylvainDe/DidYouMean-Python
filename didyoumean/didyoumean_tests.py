@@ -80,6 +80,19 @@ def attributeerror_builtin():
     lst.max()
 
 
+def my_generator():
+    """This is my generator.
+    This is my generator, baby."""
+    while True:
+        yield 1
+
+
+def attributeerror_builtin2():
+    """Should be 'next(gen)'."""
+    gen = my_generator()
+    return gen.next()
+
+
 def attributeerror_wrongmethod():
     """Should be 'lst.append(4)'."""
     lst = [1, 2, 3]
@@ -310,6 +323,9 @@ class AttributeErrorTest(AbstractTests):
 
     def test_builtin(self):
         self.run_input('attributeerror_builtin()', ". Did you mean 'max\\(list\\)'\?")
+
+    def test_builtin2(self):
+        self.run_input('attributeerror_builtin2()', ". Did you mean 'next\\(generator\\)'\?")
 
     def test_wrongmethod(self):
         self.run_input('attributeerror_wrongmethod()', ". Did you mean 'append', '__add__'\?")
