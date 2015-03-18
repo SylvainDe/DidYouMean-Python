@@ -229,6 +229,7 @@ ALL_VERSIONS = (FIRST_VERSION, LAST_VERSION)
 def from_version(version):
     return (version, LAST_VERSION)
 
+
 def up_to_version(version):
     return (FIRST_VERSION, version)
 
