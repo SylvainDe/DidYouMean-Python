@@ -225,17 +225,18 @@ FIRST_VERSION = (0, 0)
 LAST_VERSION = (10, 0)
 ALL_VERSIONS = (FIRST_VERSION, LAST_VERSION)
 
+
 class AbstractTests(unittest2.TestCase):
     """Generic class for unit tests."""
 
-    def code_runs(self, code, version_range = ALL_VERSIONS):
+    def code_runs(self, code, version_range=ALL_VERSIONS):
         """Helper function to run code and check it works."""
         beg, end = version_range
         if beg <= sys.version_info < end:
             eval_wrapper(code)
             eval_wrapper_deco(code)
 
-    def code_throws(self, code, sugg, version_range = ALL_VERSIONS):
+    def code_throws(self, code, sugg, version_range=ALL_VERSIONS):
         """Helper function to run code and check is throws."""
         beg, end = version_range
         if beg <= sys.version_info < end:
