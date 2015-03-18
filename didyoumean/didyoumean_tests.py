@@ -61,6 +61,11 @@ def nameerror_import_sugg():
     return functools.wraps
 
 
+def nameerror_removed_1():
+    """Builtin cmp is removed."""
+    return cmp(1, 2)
+
+
 def unboundlocalerror_1():
     """Should be foo."""
     foo = 1
@@ -141,6 +146,11 @@ def attributeerror_from_class():
     return FoobarClass().this_is_cls_mth
 
 
+def attributeerror_removed_1():
+    """Method has_key is removed from dict."""
+    return dict().has_key(1)
+
+
 def typeerror_not_sub():
     """Should be 'inner_func(2)'."""
     def inner_func(foo):
@@ -210,9 +220,23 @@ def indexerror_no_sugg():
     return lst[2]
 
 
-def eval_wrapper(name):
-    """Dirty function to eval_some_code."""
-    eval(name)
+# Logic to be able to have different tests on various version of Python
+FIRST_VERSION = (0, 0)
+LAST_VERSION = (10, 0)
+ALL_VERSIONS = (FIRST_VERSION, LAST_VERSION)
+
+
+def from_version(version):
+    return (version, LAST_VERSION)
+
+def up_to_version(version):
+    return (FIRST_VERSION, version)
+
+
+# Wrappers to eval some code with or without a decorator."""
+def eval_wrapper(code):
+    """Dirty function to eval some code."""
+    eval(code)
 
 
 @didyoumean
@@ -221,11 +245,7 @@ def eval_wrapper_deco(code):
     return eval_wrapper(code)
 
 
-FIRST_VERSION = (0, 0)
-LAST_VERSION = (10, 0)
-ALL_VERSIONS = (FIRST_VERSION, LAST_VERSION)
-
-
+# Tests
 class AbstractTests(unittest2.TestCase):
     """Generic class for unit tests."""
 
@@ -295,6 +315,12 @@ class NameErrorTests(AbstractTests):
     def test_no_sugg(self):
         self.code_throws('nameerror_no_sugg()', "")
 
+    def test_removed_1(self):
+        code = 'nameerror_removed_1()'
+        version = (3, 0, 1)
+        self.code_runs(code, up_to_version(version))
+        self.code_throws(code, "", from_version(version))
+
     def test_import_sugg(self):
         self.code_throws('nameerror_import_sugg()', ". Did you mean 'import functools'\?")
 
@@ -334,11 +360,12 @@ class AttributeErrorTest(AbstractTests):
 
     def test_builtin2(self):
         code = 'attributeerror_builtin2()'
-        self.code_runs(code, (FIRST_VERSION, (3, 0)))
-        self.code_throws(code, ". Did you mean 'next\\(generator\\)'\?", ((3, 0), LAST_VERSION))
+        version = (3, 0)
+        self.code_runs(code, up_to_version(version))
+        self.code_throws(code, ". Did you mean 'next\\(generator\\)'\?", from_version(version))
 
     def test_wrongmethod(self):
-        self.code_throws('attributeerror_wrongmethod()', ". Did you mean 'append', '__add__'\?")
+        self.code_throws('attributeerror_wrongmethod()', ". Did you mean 'append'\?")
 
     def test_wrongmethod2(self):
         self.code_throws('attributeerror_wrongmethod2()', ". Did you mean 'extend'\?")
@@ -351,6 +378,12 @@ class AttributeErrorTest(AbstractTests):
 
     def test_from_class(self):
         self.code_throws('attributeerror_from_class()', ". Did you mean 'this_is_cls_mthd'\?")
+
+    def test_removed_1(self):
+        code = 'attributeerror_removed_1()'
+        version = (3, 0)
+        self.code_runs(code, up_to_version(version))
+        self.code_throws(code, "", from_version(version))
 
 
 class TypeErrorTests(AbstractTests):

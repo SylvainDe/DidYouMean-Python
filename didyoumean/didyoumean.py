@@ -47,7 +47,7 @@ def get_objects_in_frame(frame):
 def get_close_matches(word, possibilities):
     """Wrapper around difflib.get_close_matches() to be able to
     change default values or implementation details easily."""
-    return difflib.get_close_matches(word, possibilities)
+    return difflib.get_close_matches(word, possibilities, 3, 0.7)
 
 
 def suggest_name_as_attribute(name, objdict):
