@@ -49,7 +49,7 @@ def my_func():
 def my_func():
     return functools.wraps
 #>>> Before : NameError: global name 'functools' is not defined
-#>>> After : NameError: global name 'functools' is not defined. Did you mean 'import functools'?
+#>>> After : NameError: global name 'functools' is not defined. Did you mean to import functools first?
 ```
 
 

@@ -47,7 +47,8 @@ def get_objects_in_frame(frame):
 def get_close_matches(word, possibilities):
     """Wrapper around difflib.get_close_matches() to be able to
     change default values or implementation details easily."""
-    return difflib.get_close_matches(word, possibilities, 3, 0.7)
+    for s in difflib.get_close_matches(word, possibilities, 3, 0.7):
+        yield quote(s)
 
 
 def suggest_name_as_attribute(name, objdict):
@@ -55,14 +56,14 @@ def suggest_name_as_attribute(name, objdict):
     Example: 'do_stuff()' -> 'self.do_stuff()'."""
     for nameobj, obj in objdict.items():
         if hasattr(obj, name):
-            yield nameobj + '.' + name
+            yield quote(nameobj + '.' + name)
 
 
 def suggest_name_as_standard_module(name):
     """Suggest that name could be a non-importer standard module.
     Example: 'os.whatever' -> 'import os' and then 'os.whatever'."""
     if name in STAND_MODULES:
-        yield 'import ' + name
+        yield 'to import %s first' % name
 
 
 def suggest_name_as_name_typo(name, objdict):
@@ -91,7 +92,7 @@ def suggest_attribute_as_builtin(attribute, type_str, frame):
     """Suggest that a builtin was used as an attribute.
     Example: 'lst.len()' -> 'len(lst)'."""
     if attribute in frame.f_builtins:
-        yield attribute + '(' + type_str + ')'
+        yield quote(attribute + '(' + type_str + ')')
 
 
 def suggest_attribute_synonyms(attribute, attributes):
@@ -100,7 +101,7 @@ def suggest_attribute_synonyms(attribute, attributes):
     for set_sub in SYNONYMS_SETS:
         if attribute in set_sub:
             for syn in set_sub & attributes:
-                yield syn
+                yield quote(syn)
 
 
 def suggest_attribute_as_typo(attribute, attributes):
@@ -149,7 +150,7 @@ def suggest_import_from_module(imported_name, frame):
     Example: 'from itertools import pi' -> 'from math import pi'."""
     for mod in STAND_MODULES:
         if imported_name in dir(import_from_frame(mod, frame)):
-            yield 'from %s import %s' % (mod, imported_name)
+            yield quote('from %s import %s' % (mod, imported_name))
 
 
 def get_imported_name_suggestion(imported_name, frame):
@@ -165,10 +166,15 @@ def get_module_name_suggestion(module_str):
     return get_close_matches(module_str, STAND_MODULES)
 
 
+def quote(string):
+    """Surround string with single quotes."""
+    return "'%s'" % string
+
+
 def get_suggestion_string(sugg):
     """Return the suggestion list as a string."""
     sugg = list(sugg)
-    return ". Did you mean '" + "', '".join(sugg) + "'?" if sugg else ""
+    return ". Did you mean " + ", ".join(sugg) + "?" if sugg else ""
 
 
 def debug_traceback(traceback):
@@ -224,7 +230,7 @@ def enhance_type_error(type_, value):
     match = re.match(TYPEERROR_RE, error_msg)
     if match:  # It could be cool to extract relevant info from the trace
         type_str, = match.groups()
-        sugg = [type_str + '(value)'] if type_str == 'function' else []
+        sugg = [quote(type_str + '(value)')] if type_str == 'function' else []
         value.args = (error_msg + get_suggestion_string(sugg), )
     assert len(value.args) == 1
 

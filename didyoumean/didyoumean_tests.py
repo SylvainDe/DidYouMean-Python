@@ -323,7 +323,7 @@ class NameErrorTests(AbstractTests):
         self.code_throws(code, "", from_version(version))
 
     def test_import_sugg(self):
-        self.code_throws('nameerror_import_sugg()', ". Did you mean 'import functools'\?")
+        self.code_throws('nameerror_import_sugg()', ". Did you mean to import functools first\?")
 
     def test_self(self):
         self.code_throws('FoobarClass().nameerror_self()', ". Did you mean 'self.bar'\?")
