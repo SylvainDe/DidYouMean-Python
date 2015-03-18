@@ -104,6 +104,11 @@ def attributeerror_wrongmethod2():
     """Should be 'lst.extend([4, 5, 6])'."""
     [1, 2, 3].update([4, 5, 6])
 
+def attributeerror_hidden():
+    """Accessing wrong string object."""
+    import string
+    string = 'a'
+    return string.ascii_letters
 
 def attributeerror_no_sugg():
     """No suggestion."""
@@ -370,6 +375,9 @@ class AttributeErrorTest(AbstractTests):
 
     def test_wrongmethod2(self):
         self.code_throws('attributeerror_wrongmethod2()', ". Did you mean 'extend'\?")
+
+    def test_hidden(self):
+        self.code_throws('attributeerror_hidden()', "")
 
     def test_no_sugg(self):
         self.code_throws('attributeerror_no_sugg()', "")
