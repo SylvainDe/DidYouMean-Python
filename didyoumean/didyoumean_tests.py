@@ -279,7 +279,7 @@ class AbstractTests(unittest2.TestCase):
         except:
             type_caught, value, traceback = sys.exc_info()
             self.assertTrue(issubclass(type_arg, type_caught))
-            self.assertRegexpMatches(''.join(value.args), message_re)
+            self.assertRegexpMatches(''.join(value.args[0]), message_re)
             return
         self.assertTrue(False)
 
@@ -470,4 +470,17 @@ class IndexErrorTests(LookupErrorTests):
 
 class SyntaxErrorTests(AbstractTests):
     """Class for tests related to SyntaxError."""
-    pass
+    error_type = SyntaxError
+    error_msg = 'invalid syntax'
+
+    def test_print(self):
+        code = 'print "a"'
+        version = (3, 0)
+        self.code_runs(code, up_to_version(version))
+        self.code_throws(code, "", from_version(version))
+
+    def test_old_comparison(self):
+        code = '1 <> 2'
+        version = (3, 0)
+        self.code_runs(code, up_to_version(version))
+        self.code_throws(code, "", from_version(version))
