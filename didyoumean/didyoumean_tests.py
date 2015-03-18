@@ -104,11 +104,13 @@ def attributeerror_wrongmethod2():
     """Should be 'lst.extend([4, 5, 6])'."""
     [1, 2, 3].update([4, 5, 6])
 
+
 def attributeerror_hidden():
     """Accessing wrong string object."""
     import string
     string = 'a'
     return string.ascii_letters
+
 
 def attributeerror_no_sugg():
     """No suggestion."""
