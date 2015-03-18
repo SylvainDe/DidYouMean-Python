@@ -70,14 +70,12 @@ def unboundlocalerror_1():
 
 def attributeerror_method():
     """Should be 'append'."""
-    lst = [1, 2, 3]
-    lst.appendh(4)
+    [1, 2, 3].appendh(4)
 
 
 def attributeerror_builtin():
     """Should be 'max(lst)'."""
-    lst = [1, 2, 3]
-    lst.max()
+    [1, 2, 3].max()
 
 
 def my_generator():
@@ -89,26 +87,22 @@ def my_generator():
 
 def attributeerror_builtin2():
     """Should be 'next(gen)'."""
-    gen = my_generator()
-    return gen.next()
+    return my_generator().next()
 
 
 def attributeerror_wrongmethod():
     """Should be 'lst.append(4)'."""
-    lst = [1, 2, 3]
-    lst.add(4)
+    [1, 2, 3].add(4)
 
 
 def attributeerror_wrongmethod2():
     """Should be 'lst.extend([4, 5, 6])'."""
-    lst = [1, 2, 3]
-    lst.update([4, 5, 6])
+    [1, 2, 3].update([4, 5, 6])
 
 
 def attributeerror_no_sugg():
     """No suggestion."""
-    lst = [1, 2, 3]
-    lst.ldkjhfnvdlkjhvgfdhgf
+    [1, 2, 3].ldkjhfnvdlkjhvgfdhgf
 
 
 def attributeerror_from_module(radius=1):
@@ -222,26 +216,39 @@ def eval_wrapper(name):
 
 
 @didyoumean
-def eval_wrapper_deco(name):
+def eval_wrapper_deco(code):
     """Wrapper around eval_wrapper with a didyoumean decorator."""
-    return eval_wrapper(name)
+    return eval_wrapper(code)
 
+
+FIRST_VERSION = (0, 0)
+LAST_VERSION = (10, 0)
+ALL_VERSIONS = (FIRST_VERSION, LAST_VERSION)
 
 class AbstractTests(unittest2.TestCase):
     """Generic class for unit tests."""
 
-    def run_input(self, name, sugg):
-        """Helper function to run tests."""
-        self.my_assert_raises_rexp(
-            self.error_type,
-            self.error_msg + "$",
-            eval_wrapper,
-            name)
-        self.my_assert_raises_rexp(
-            self.error_type,
-            self.error_msg + sugg + "$",
-            eval_wrapper_deco,
-            name)
+    def code_runs(self, code, version_range = ALL_VERSIONS):
+        """Helper function to run code and check it works."""
+        beg, end = version_range
+        if beg <= sys.version_info < end:
+            eval_wrapper(code)
+            eval_wrapper_deco(code)
+
+    def code_throws(self, code, sugg, version_range = ALL_VERSIONS):
+        """Helper function to run code and check is throws."""
+        beg, end = version_range
+        if beg <= sys.version_info < end:
+            self.my_assert_raises_rexp(
+                self.error_type,
+                self.error_msg + "$",
+                eval_wrapper,
+                code)
+            self.my_assert_raises_rexp(
+                self.error_type,
+                self.error_msg + sugg + "$",
+                eval_wrapper_deco,
+                code)
 
     def my_assert_raises_rexp(self, type_arg, message_re, callable_, *args, **kwds):
         """Substitute for TestCase.assertRaisesRegex as it is sometimes missing."""
@@ -261,45 +268,45 @@ class NameErrorTests(AbstractTests):
     error_msg = "^(global )?name '\w+' is not defined"
 
     def test_1_arg(self):
-        self.run_input('nameerror_1_arg(1)', ". Did you mean 'foo'\?")
+        self.code_throws('nameerror_1_arg(1)', ". Did you mean 'foo'\?")
 
     def test_n_args(self):
-        self.run_input('nameerror_n_args(1, 2, 3)', ". Did you mean 'foot', 'fool'\?")
+        self.code_throws('nameerror_n_args(1, 2, 3)', ". Did you mean 'foot', 'fool'\?")
 
     def test_builtin(self):
-        self.run_input('nameerror_builtin()', ". Did you mean 'max'\?")
+        self.code_throws('nameerror_builtin()', ". Did you mean 'max'\?")
 
     def test_keyword(self):
-        self.run_input('nameerror_keyword()', ". Did you mean 'yield'\?")
+        self.code_throws('nameerror_keyword()', ". Did you mean 'yield'\?")
 
     def test_global(self):
-        self.run_input('nameerror_global()', ". Did you mean 'this_is_a_global_list'\?")
+        self.code_throws('nameerror_global()', ". Did you mean 'this_is_a_global_list'\?")
 
     def test_import(self):
-        self.run_input('nameerror_import()', ". Did you mean 'math'\?")
+        self.code_throws('nameerror_import()', ". Did you mean 'math'\?")
 
     def test_import2(self):
-        self.run_input('nameerror_import2()', ". Did you mean 'my_imported_math'\?")
+        self.code_throws('nameerror_import2()', ". Did you mean 'my_imported_math'\?")
 
     def test_imported(self):
-        self.run_input('nameerror_imported()', ". Did you mean 'math.pi'\?")
+        self.code_throws('nameerror_imported()', ". Did you mean 'math.pi'\?")
 
     def test_no_sugg(self):
-        self.run_input('nameerror_no_sugg()', "")
+        self.code_throws('nameerror_no_sugg()', "")
 
     def test_import_sugg(self):
-        self.run_input('nameerror_import_sugg()', ". Did you mean 'import functools'\?")
+        self.code_throws('nameerror_import_sugg()', ". Did you mean 'import functools'\?")
 
     def test_self(self):
-        self.run_input('FoobarClass().nameerror_self()', ". Did you mean 'self.bar'\?")
+        self.code_throws('FoobarClass().nameerror_self()', ". Did you mean 'self.bar'\?")
 
     def test_self2(self):
-        self.run_input(
+        self.code_throws(
             'FoobarClass().nameerror_self2()',
             ". Did you mean '[^ ]*.this_is_cls_mthd', '[^ ]*.this_is_cls_mthd'\?")
 
     def test_cls(self):
-        self.run_input(
+        self.code_throws(
             'FoobarClass().nameerror_cls()',
             ". Did you mean '[^ ]*.this_is_cls_mthd', '[^ ]*.this_is_cls_mthd'\?")
 
@@ -310,7 +317,7 @@ class UnboundLocalErrorTests(AbstractTests):
     error_msg = "^local variable '\w+' referenced before assignment"
 
     def test_1(self):
-        self.run_input('unboundlocalerror_1()', ". Did you mean 'foo'\?")
+        self.code_throws('unboundlocalerror_1()', ". Did you mean 'foo'\?")
 
 
 class AttributeErrorTest(AbstractTests):
@@ -319,34 +326,30 @@ class AttributeErrorTest(AbstractTests):
     error_msg = "^'?\w+'? (object|instance) has no attribute '\w+'"
 
     def test_method(self):
-        self.run_input('attributeerror_method()', ". Did you mean 'append'\?")
+        self.code_throws('attributeerror_method()', ". Did you mean 'append'\?")
 
     def test_builtin(self):
-        self.run_input('attributeerror_builtin()', ". Did you mean 'max\\(list\\)'\?")
+        self.code_throws('attributeerror_builtin()', ". Did you mean 'max\\(list\\)'\?")
 
     def test_builtin2(self):
         code = 'attributeerror_builtin2()'
-        if sys.version_info >= (3, 0):
-            self.run_input(code, ". Did you mean 'next\\(generator\\)'\?")
-        else:
-            # Will not fail in previous versions
-            eval_wrapper(code)
-            eval_wrapper_deco(code)
+        self.code_runs(code, (FIRST_VERSION, (3, 0)))
+        self.code_throws(code, ". Did you mean 'next\\(generator\\)'\?", ((3, 0), LAST_VERSION))
 
     def test_wrongmethod(self):
-        self.run_input('attributeerror_wrongmethod()', ". Did you mean 'append', '__add__'\?")
+        self.code_throws('attributeerror_wrongmethod()', ". Did you mean 'append', '__add__'\?")
 
     def test_wrongmethod2(self):
-        self.run_input('attributeerror_wrongmethod2()', ". Did you mean 'extend'\?")
+        self.code_throws('attributeerror_wrongmethod2()', ". Did you mean 'extend'\?")
 
     def test_no_sugg(self):
-        self.run_input('attributeerror_no_sugg()', "")
+        self.code_throws('attributeerror_no_sugg()', "")
 
     def test_from_module(self):
-        self.run_input('attributeerror_from_module()', ". Did you mean 'pi'\?")
+        self.code_throws('attributeerror_from_module()', ". Did you mean 'pi'\?")
 
     def test_from_class(self):
-        self.run_input('attributeerror_from_class()', ". Did you mean 'this_is_cls_mthd'\?")
+        self.code_throws('attributeerror_from_class()', ". Did you mean 'this_is_cls_mthd'\?")
 
 
 class TypeErrorTests(AbstractTests):
@@ -359,7 +362,7 @@ class TypeErrorTestsNotSub(TypeErrorTests):
     error_msg = "^'\w+' object (is (not |un)subscriptable|has no attribute '__getitem__')"
 
     def test_not_sub(self):
-        self.run_input('typeerror_not_sub()', ". Did you mean 'function\\(value\\)'\?")
+        self.code_throws('typeerror_not_sub()', ". Did you mean 'function\\(value\\)'\?")
 
 
 class ImportErrorTests(AbstractTests):
@@ -372,19 +375,19 @@ class ImportErrorTestsNoModule(ImportErrorTests):
     error_msg = "^No module named '?\w+'?"
 
     def test_no_module_no_sugg(self):
-        self.run_input('importerror_no_module_no_sugg()', "")
+        self.code_throws('importerror_no_module_no_sugg()', "")
 
     def test_no_module(self):
-        self.run_input('importerror_no_module()', ". Did you mean 'math'\?")
+        self.code_throws('importerror_no_module()', ". Did you mean 'math'\?")
 
     def test_no_module2(self):
-        self.run_input('importerror_no_module2()', ". Did you mean 'math'\?")
+        self.code_throws('importerror_no_module2()', ". Did you mean 'math'\?")
 
     def test_no_module3(self):
-        self.run_input('importerror_no_module2()', ". Did you mean 'math'\?")
+        self.code_throws('importerror_no_module2()', ". Did you mean 'math'\?")
 
     def test_no_module4(self):
-        self.run_input('importerror_no_module2()', ". Did you mean 'math'\?")
+        self.code_throws('importerror_no_module2()', ". Did you mean 'math'\?")
 
 
 class ImportErrorTestsCannotImport(ImportErrorTests):
@@ -392,19 +395,19 @@ class ImportErrorTestsCannotImport(ImportErrorTests):
     error_msg = "^cannot import name '?\w+'?"
 
     def test_no_name_no_sugg(self):
-        self.run_input('importerror_no_name_suggested()', "")
+        self.code_throws('importerror_no_name_suggested()', "")
 
     def test_wrong_import(self):
-        self.run_input('importerror_wrong_import()', ". Did you mean 'from math import pi'\?")
+        self.code_throws('importerror_wrong_import()', ". Did you mean 'from math import pi'\?")
 
     def test_typo_in_method(self):
-        self.run_input('importerror_typo_in_method()', ". Did you mean 'pi'\?")
+        self.code_throws('importerror_typo_in_method()', ". Did you mean 'pi'\?")
 
     def test_typo_in_method2(self):
-        self.run_input('importerror_typo_in_method2()', ". Did you mean 'pi'\?")
+        self.code_throws('importerror_typo_in_method2()', ". Did you mean 'pi'\?")
 
     def test_typo_in_method3(self):
-        self.run_input('importerror_typo_in_method2()', ". Did you mean 'pi'\?")
+        self.code_throws('importerror_typo_in_method2()', ". Did you mean 'pi'\?")
 
 
 class LookupErrorTests(AbstractTests):
@@ -418,7 +421,7 @@ class KeyErrorTests(LookupErrorTests):
     error_msg = ''
 
     def test_no_sugg(self):
-        self.run_input('keyerror_no_sugg()', "")
+        self.code_throws('keyerror_no_sugg()', "")
 
 
 class IndexErrorTests(LookupErrorTests):
@@ -427,7 +430,7 @@ class IndexErrorTests(LookupErrorTests):
     error_msg = "^list index out of range"
 
     def test_no_sugg(self):
-        self.run_input('indexerror_no_sugg()', "")
+        self.code_throws('indexerror_no_sugg()', "")
 
 
 class SyntaxErrorTests(AbstractTests):
