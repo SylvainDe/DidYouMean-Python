@@ -61,6 +61,12 @@ def nameerror_import_sugg():
     return functools.wraps
 
 
+def nameerror_attribute_hidden():
+    """Should be math.pi but module math is hidden."""
+    math = ''
+    return pi
+
+
 def nameerror_removed_1():
     """Builtin cmp is removed."""
     return cmp(1, 2)
@@ -331,6 +337,9 @@ class NameErrorTests(AbstractTests):
 
     def test_import_sugg(self):
         self.code_throws('nameerror_import_sugg()', ". Did you mean to import functools first\?")
+
+    def test_attribute_hidden(self):
+        self.code_throws('nameerror_attribute_hidden()', ". Did you mean 'math.pi' \(hidden\)\?")
 
     def test_self(self):
         self.code_throws('FoobarClass().nameerror_self()', ". Did you mean 'self.bar'\?")

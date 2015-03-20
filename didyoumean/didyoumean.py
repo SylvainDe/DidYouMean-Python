@@ -26,11 +26,12 @@ CANNOTIMPORT_RE = r"^cannot import name '?(\w+)'?$"
 
 
 def merge_dict(*dicts):
-    """Merge dictionnaries.
-    It gives priority to the beginning in case of duplicated keys()."""
+    """Merge dicts and return a dictionnary mapping key to list of values.
+    Order of the values corresponds to the order of the original dicts."""
     ret = dict()
-    for dict_ in reversed(dicts):
-        ret.update(dict_)
+    for dict_ in dicts:
+        for key, val in dict_.items():
+            ret.setdefault(key, []).append(val)
     return ret
 
 
@@ -54,9 +55,10 @@ def get_close_matches(word, possibilities):
 def suggest_name_as_attribute(name, objdict):
     """Suggest that name could be an attribute of an object.
     Example: 'do_stuff()' -> 'self.do_stuff()'."""
-    for nameobj, obj in objdict.items():
-        if hasattr(obj, name):
-            yield quote(nameobj + '.' + name)
+    for nameobj, objs in objdict.items():
+        for i, obj in enumerate(objs):
+            if hasattr(obj, name):
+                yield quote(nameobj + '.' + name) + (' (hidden)' if i else '')
 
 
 def suggest_name_as_standard_module(name):
