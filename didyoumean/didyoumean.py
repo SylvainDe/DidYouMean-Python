@@ -255,6 +255,21 @@ def enhance_import_error(type_, value, frame):
     assert len(value.args) == 1
 
 
+def enhance_syntax_error(type_, value, frame):
+    """Enhance SyntaxError exception."""
+    assert issubclass(type_, SyntaxError)
+    assert len(value.args) == 2
+    arg1, arg2 = value.args
+    sugg = []
+    offset = value.offset
+    if offset > 2:
+        two_last = value.text[offset-2:offset]
+        if two_last == '<>':
+            sugg.append(quote('!='))
+    value.args = (arg1 + get_suggestion_string(sugg), arg2)
+    assert len(value.args) == 2
+
+
 def add_suggestions_to_exception(type_, value, traceback):
     """Add suggestion to an exception.
     Arguments are such as provided by sys.exc_info()."""
@@ -271,4 +286,6 @@ def add_suggestions_to_exception(type_, value, traceback):
         enhance_type_error(type_, value)
     elif issubclass(type_, ImportError):
         enhance_import_error(type_, value, last_frame)
+    elif issubclass(type_, SyntaxError):
+        enhance_syntax_error(type_, value, last_frame)
     # Could be added : IndexError, KeyError

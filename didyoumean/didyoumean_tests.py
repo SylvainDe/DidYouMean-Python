@@ -492,6 +492,9 @@ class SyntaxErrorTests(AbstractTests):
     error_type = SyntaxError
     error_msg = 'invalid syntax'
 
+    def test_no_error(self):
+        self.code_runs("1 + 2 == 2")
+
     def test_print(self):
         code = 'print "a"'
         version = (3, 0)
@@ -502,4 +505,4 @@ class SyntaxErrorTests(AbstractTests):
         code = '1 <> 2'
         version = (3, 0)
         self.code_runs(code, up_to_version(version))
-        self.code_throws(code, "", from_version(version))
+        self.code_throws(code, ". Did you mean '!='\?", from_version(version))
