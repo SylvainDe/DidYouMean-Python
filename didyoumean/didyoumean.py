@@ -118,11 +118,11 @@ def get_attribute_suggestions(type_str, attribute, frame):
     if type_str == 'module':
         # For module, we want to get the actual name of the module
         module_name = frame.f_code.co_names[0]
-        attributes = set(dir(objs[module_name]))
+        attributes = set(dir(objs[module_name][0]))
     elif type_str == 'generator':
         attributes = set()
     else:
-        attributes = set(dir(objs[type_str]))
+        attributes = set(dir(objs[type_str][0]))
 
     return itertools.chain(
         suggest_attribute_as_builtin(attribute, type_str, frame),
