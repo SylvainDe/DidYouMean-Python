@@ -263,7 +263,7 @@ def enhance_syntax_error(type_, value, frame):
     sugg = []
     offset = value.offset
     if offset > 2:
-        two_last = value.text[offset-2:offset]
+        two_last = value.text[offset - 2:offset]
         if two_last == '<>':
             sugg.append(quote('!='))
     value.args = (arg1 + get_suggestion_string(sugg), arg2)
