@@ -196,96 +196,102 @@ def debug_traceback(traceback):
         traceback = traceback.tb_next
 
 
-def enhance_name_error(type_, value, frame):
-    """Enhance NameError exception."""
+def get_name_error_sugg(type_, value, frame):
+    """Get suggestions for NameError exception."""
     assert issubclass(type_, NameError)
     assert len(value.args) == 1
-    error_msg = value.args[0]
+    error_msg, = value.args
     error_re = UNBOUNDERROR_RE if issubclass(type_, UnboundLocalError) \
         else NAMENOTDEFINED_RE
     match = re.match(error_re, error_msg)
     assert match, "No match for %s" % error_msg
     name, = match.groups()
-    sugg = get_name_suggestions(name, frame)
-    value.args = (error_msg + get_suggestion_string(sugg), )
-    assert len(value.args) == 1
+    return get_name_suggestions(name, frame)
 
 
-def enhance_attribute_error(type_, value, frame):
-    """Enhance AttributeError exception."""
+def get_attribute_error_sugg(type_, value, frame):
+    """Get suggestions for AttributeError exception."""
     assert issubclass(type_, AttributeError)
     assert len(value.args) == 1
-    error_msg = value.args[0]
+    error_msg, = value.args
     match = re.match(ATTRIBUTEERROR_RE, error_msg)
     assert match, "No match for %s" % error_msg
     type_str, attr = match.groups()
-    sugg = get_attribute_suggestions(type_str, attr, frame)
-    value.args = (error_msg + get_suggestion_string(sugg), )
-    assert len(value.args) == 1
+    return get_attribute_suggestions(type_str, attr, frame)
 
 
-def enhance_type_error(type_, value):
-    """Enhance TypeError exception."""
+def get_type_error_sugg(type_, value, frame):
+    """Get suggestions for TypeError exception."""
     assert issubclass(type_, TypeError)
     assert len(value.args) == 1
-    error_msg = value.args[0]
+    error_msg, = value.args
     match = re.match(TYPEERROR_RE, error_msg)
     if match:  # It could be cool to extract relevant info from the trace
         type_str, = match.groups()
-        sugg = [quote(type_str + '(value)')] if type_str == 'function' else []
-        value.args = (error_msg + get_suggestion_string(sugg), )
-    assert len(value.args) == 1
+        if type_str == 'function':
+            yield quote(type_str + '(value)')
 
 
-def enhance_import_error(type_, value, frame):
-    """Enhance ImportError exception."""
+def get_import_error_sugg(type_, value, frame):
+    """Get suggestions for ImportError exception."""
     assert issubclass(type_, ImportError)
     assert len(value.args) == 1
-    error_msg = value.args[0]
+    error_msg, = value.args
     match = re.match(NOMODULE_RE, error_msg)
     if match:
         module_str, = match.groups()
-        sugg = get_module_name_suggestion(module_str)
+        return get_module_name_suggestion(module_str)
     else:
         match = re.match(CANNOTIMPORT_RE, error_msg)
         assert match, "No match for %s" % error_msg
         imported_name, = match.groups()
-        sugg = get_imported_name_suggestion(imported_name, frame)
-    value.args = (error_msg + get_suggestion_string(sugg), )
-    assert len(value.args) == 1
+        return get_imported_name_suggestion(imported_name, frame)
 
 
-def enhance_syntax_error(type_, value, frame):
-    """Enhance SyntaxError exception."""
+def get_syntax_error_sugg(type_, value, frame):
+    """Get suggestions for SyntaxError exception."""
     assert issubclass(type_, SyntaxError)
-    assert len(value.args) == 2
-    arg1, arg2 = value.args
-    sugg = []
     offset = value.offset
     if offset > 2:
         two_last = value.text[offset - 2:offset]
         if two_last == '<>':
-            sugg.append(quote('!='))
-    value.args = (arg1 + get_suggestion_string(sugg), arg2)
-    assert len(value.args) == 2
+            yield quote('!=')
+
+
+def get_suggestions_for_exception(type_, value, frame):
+    """Get suggestions for an exception."""
+    error_types = {
+        NameError: get_name_error_sugg,
+        AttributeError: get_attribute_error_sugg,
+        TypeError: get_type_error_sugg,
+        ImportError: get_import_error_sugg,
+        SyntaxError: get_syntax_error_sugg,
+    }  # Could be added : IndexError, KeyError
+    for error_type, func in error_types.items():
+        if issubclass(type_, error_type):
+            return func(type_, value, frame)
+    return []
+
+
+def add_string_to_exception(value, string):
+    """Add string to the exception parameter."""
+    nb_args = len(value.args)
+    if string and nb_args:
+        error_msg, *other_args = value.args
+        value.args = tuple([error_msg + string] + other_args)
+        assert len(value.args) == nb_args
+
+
+def get_last_frame(traceback):
+    """Extract last frame from a traceback."""
+    while traceback.tb_next:
+        traceback = traceback.tb_next
+    return traceback.tb_frame
 
 
 def add_suggestions_to_exception(type_, value, traceback):
     """Add suggestion to an exception.
     Arguments are such as provided by sys.exc_info()."""
-    # We care about the last element of the traceback
-    end_traceback = traceback
-    while end_traceback.tb_next:
-        end_traceback = end_traceback.tb_next
-    last_frame = end_traceback.tb_frame
-    if issubclass(type_, NameError):
-        enhance_name_error(type_, value, last_frame)
-    elif issubclass(type_, AttributeError):
-        enhance_attribute_error(type_, value, last_frame)
-    elif issubclass(type_, TypeError):
-        enhance_type_error(type_, value)
-    elif issubclass(type_, ImportError):
-        enhance_import_error(type_, value, last_frame)
-    elif issubclass(type_, SyntaxError):
-        enhance_syntax_error(type_, value, last_frame)
-    # Could be added : IndexError, KeyError
+    add_string_to_exception(
+        value,
+        get_suggestion_string(get_suggestions_for_exception(type_, value, get_last_frame(traceback))))
