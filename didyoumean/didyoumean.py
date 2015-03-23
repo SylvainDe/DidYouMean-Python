@@ -275,10 +275,10 @@ def get_suggestions_for_exception(type_, value, frame):
 
 def add_string_to_exception(value, string):
     """Add string to the exception parameter."""
+    assert type(value.args) == tuple
     nb_args = len(value.args)
     if string and nb_args:
-        error_msg, *other_args = value.args
-        value.args = tuple([error_msg + string] + other_args)
+        value.args = tuple([value.args[0] + string] + list(value.args[1:]))
         assert len(value.args) == nb_args
 
 
