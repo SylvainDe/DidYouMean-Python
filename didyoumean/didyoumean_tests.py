@@ -442,6 +442,7 @@ class TypeErrorTestsNotSub(TypeErrorTests):
     def test_not_sub(self):
         self.code_throws('typeerror_not_sub()', ". Did you mean 'function\\(value\\)'\?")
 
+
 class TypeErrorTestsNumberArgs(TypeErrorTests):
     """Class for tests related to number of arguments."""
 
