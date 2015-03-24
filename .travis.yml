@@ -13,9 +13,9 @@ install:
   - pip install coveralls
 
 before_script:
- - pep8 *.py */*.py --ignore=E501,W601
+ - pep8 *.py */*.py --ignore=W601
   # to have the list anyway
- - pep8 *.py */*.py --select=E501,W601 || true
+ - pep8 *.py */*.py --select=W601 || true
 
 script:
  - coverage run -m unittest2.__main__ discover --start-directory=didyoumean --pattern=*.py
