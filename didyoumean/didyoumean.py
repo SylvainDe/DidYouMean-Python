@@ -25,6 +25,26 @@ NOMODULE_RE = r"^No module named '?(\w+)'?$"
 CANNOTIMPORT_RE = r"^cannot import name '?(\w+)'?$"
 
 
+# Helper function for string manipulation
+def quote(string):
+    """Surround string with single quotes."""
+    return "'%s'" % string
+
+
+def get_close_matches(word, possibilities):
+    """Wrapper around difflib.get_close_matches() to be able to
+    change default values or implementation details easily."""
+    for s in difflib.get_close_matches(word, possibilities, 3, 0.7):
+        yield quote(s)
+
+
+def get_suggestion_string(sugg):
+    """Return the suggestion list as a string."""
+    sugg = list(sugg)
+    return ". Did you mean " + ", ".join(sugg) + "?" if sugg else ""
+
+
+# Helper functions for code introspection
 def merge_dict(*dicts):
     """Merge dicts and return a dictionnary mapping key to list of values.
     Order of the values corresponds to the order of the original dicts."""
@@ -45,11 +65,53 @@ def get_objects_in_frame(frame):
     )
 
 
-def get_close_matches(word, possibilities):
-    """Wrapper around difflib.get_close_matches() to be able to
-    change default values or implementation details easily."""
-    for s in difflib.get_close_matches(word, possibilities, 3, 0.7):
-        yield quote(s)
+def import_from_frame(module_name, frame):
+    """Wrapper around import to use information from frame."""
+    return __import__(
+        module_name,
+        globals=frame.f_globals,
+        locals=frame.f_locals)
+
+
+def debug_traceback(traceback):
+    """Print information from the traceback for debugging purposes."""
+    while traceback:
+        frame = traceback.tb_frame
+        if not traceback.tb_next:
+            assert traceback.tb_lineno == frame.f_lineno
+            assert traceback.tb_lasti == frame.f_lasti
+        print(traceback,
+              traceback.tb_lasti,
+              frame.f_lasti,
+              traceback.tb_lineno,
+              frame.f_lineno,
+              frame.f_code.co_name,
+              frame.f_code.co_names)
+        traceback = traceback.tb_next
+
+
+# Functions related to NameError
+def get_name_error_sugg(type_, value, frame):
+    """Get suggestions for NameError exception."""
+    assert issubclass(type_, NameError)
+    assert len(value.args) == 1
+    error_msg, = value.args
+    error_re = UNBOUNDERROR_RE if issubclass(type_, UnboundLocalError) \
+        else NAMENOTDEFINED_RE
+    match = re.match(error_re, error_msg)
+    assert match, "No match for %s" % error_msg
+    name, = match.groups()
+    return get_name_suggestions(name, frame)
+
+
+def get_name_suggestions(name, frame):
+    """Get the suggestions for name in case of NameError."""
+    objs = get_objects_in_frame(frame)
+    return itertools.chain(
+        suggest_name_as_attribute(name, objs),
+        suggest_name_as_standard_module(name),
+        suggest_name_as_name_typo(name, objs),
+        suggest_name_as_keyword_typo(name))
 
 
 def suggest_name_as_attribute(name, objdict):
@@ -80,14 +142,34 @@ def suggest_name_as_keyword_typo(name):
     return get_close_matches(name, keyword.kwlist)
 
 
-def get_name_suggestions(name, frame):
-    """Get the suggestions for name in case of NameError."""
+# Functions related to AttributeError
+def get_attribute_error_sugg(type_, value, frame):
+    """Get suggestions for AttributeError exception."""
+    assert issubclass(type_, AttributeError)
+    assert len(value.args) == 1
+    error_msg, = value.args
+    match = re.match(ATTRIBUTEERROR_RE, error_msg)
+    assert match, "No match for %s" % error_msg
+    type_str, attr = match.groups()
+    return get_attribute_suggestions(type_str, attr, frame)
+
+
+def get_attribute_suggestions(type_str, attribute, frame):
+    """Get the suggestions closest to the attribute name for a given type."""
     objs = get_objects_in_frame(frame)
+    if type_str == 'module':
+        # For module, we want to get the actual name of the module
+        module_name = frame.f_code.co_names[0]
+        attributes = set(dir(objs[module_name][0]))
+    elif type_str == 'generator':
+        attributes = set()
+    else:
+        attributes = set(dir(objs[type_str][0]))
+
     return itertools.chain(
-        suggest_name_as_attribute(name, objs),
-        suggest_name_as_standard_module(name),
-        suggest_name_as_name_typo(name, objs),
-        suggest_name_as_keyword_typo(name))
+        suggest_attribute_as_builtin(attribute, type_str, frame),
+        suggest_attribute_synonyms(attribute, attributes),
+        suggest_attribute_as_typo(attribute, attributes))
 
 
 def suggest_attribute_as_builtin(attribute, type_str, frame):
@@ -112,30 +194,34 @@ def suggest_attribute_as_typo(attribute, attributes):
     return get_close_matches(attribute, attributes)
 
 
-def get_attribute_suggestions(type_str, attribute, frame):
-    """Get the suggestions closest to the attribute name for a given type."""
-    objs = get_objects_in_frame(frame)
-    if type_str == 'module':
-        # For module, we want to get the actual name of the module
-        module_name = frame.f_code.co_names[0]
-        attributes = set(dir(objs[module_name][0]))
-    elif type_str == 'generator':
-        attributes = set()
+# Functions related to ImportError
+def get_import_error_sugg(type_, value, frame):
+    """Get suggestions for ImportError exception."""
+    assert issubclass(type_, ImportError)
+    assert len(value.args) == 1
+    error_msg, = value.args
+    match = re.match(NOMODULE_RE, error_msg)
+    if match:
+        module_str, = match.groups()
+        return get_module_name_suggestion(module_str)
     else:
-        attributes = set(dir(objs[type_str][0]))
+        match = re.match(CANNOTIMPORT_RE, error_msg)
+        assert match, "No match for %s" % error_msg
+        imported_name, = match.groups()
+        return get_imported_name_suggestion(imported_name, frame)
 
+
+def get_module_name_suggestion(module_str):
+    """Get the suggestions closest to the failing module import.
+    Example: 'import maths' -> 'import math'."""
+    return get_close_matches(module_str, STAND_MODULES)
+
+
+def get_imported_name_suggestion(imported_name, frame):
+    """Get the suggestions closest to the failing import."""
     return itertools.chain(
-        suggest_attribute_as_builtin(attribute, type_str, frame),
-        suggest_attribute_synonyms(attribute, attributes),
-        suggest_attribute_as_typo(attribute, attributes))
-
-
-def import_from_frame(module_name, frame):
-    """Wrapper around import to use information from frame."""
-    return __import__(
-        module_name,
-        globals=frame.f_globals,
-        locals=frame.f_locals)
+        suggest_imported_name_as_typo(imported_name, frame),
+        suggest_import_from_module(imported_name, frame))
 
 
 def suggest_imported_name_as_typo(imported_name, frame):
@@ -155,71 +241,7 @@ def suggest_import_from_module(imported_name, frame):
             yield quote('from %s import %s' % (mod, imported_name))
 
 
-def get_imported_name_suggestion(imported_name, frame):
-    """Get the suggestions closest to the failing import."""
-    return itertools.chain(
-        suggest_imported_name_as_typo(imported_name, frame),
-        suggest_import_from_module(imported_name, frame))
-
-
-def get_module_name_suggestion(module_str):
-    """Get the suggestions closest to the failing module import.
-    Example: 'import maths' -> 'import math'."""
-    return get_close_matches(module_str, STAND_MODULES)
-
-
-def quote(string):
-    """Surround string with single quotes."""
-    return "'%s'" % string
-
-
-def get_suggestion_string(sugg):
-    """Return the suggestion list as a string."""
-    sugg = list(sugg)
-    return ". Did you mean " + ", ".join(sugg) + "?" if sugg else ""
-
-
-def debug_traceback(traceback):
-    """Print information from the traceback for debugging purposes."""
-    while traceback:
-        frame = traceback.tb_frame
-        if not traceback.tb_next:
-            assert traceback.tb_lineno == frame.f_lineno
-            assert traceback.tb_lasti == frame.f_lasti
-        print(traceback,
-              traceback.tb_lasti,
-              frame.f_lasti,
-              traceback.tb_lineno,
-              frame.f_lineno,
-              frame.f_code.co_name,
-              frame.f_code.co_names)
-        traceback = traceback.tb_next
-
-
-def get_name_error_sugg(type_, value, frame):
-    """Get suggestions for NameError exception."""
-    assert issubclass(type_, NameError)
-    assert len(value.args) == 1
-    error_msg, = value.args
-    error_re = UNBOUNDERROR_RE if issubclass(type_, UnboundLocalError) \
-        else NAMENOTDEFINED_RE
-    match = re.match(error_re, error_msg)
-    assert match, "No match for %s" % error_msg
-    name, = match.groups()
-    return get_name_suggestions(name, frame)
-
-
-def get_attribute_error_sugg(type_, value, frame):
-    """Get suggestions for AttributeError exception."""
-    assert issubclass(type_, AttributeError)
-    assert len(value.args) == 1
-    error_msg, = value.args
-    match = re.match(ATTRIBUTEERROR_RE, error_msg)
-    assert match, "No match for %s" % error_msg
-    type_str, attr = match.groups()
-    return get_attribute_suggestions(type_str, attr, frame)
-
-
+# Functions related to TypeError
 def get_type_error_sugg(type_, value, frame):
     """Get suggestions for TypeError exception."""
     assert issubclass(type_, TypeError)
@@ -232,22 +254,7 @@ def get_type_error_sugg(type_, value, frame):
             yield quote(type_str + '(value)')
 
 
-def get_import_error_sugg(type_, value, frame):
-    """Get suggestions for ImportError exception."""
-    assert issubclass(type_, ImportError)
-    assert len(value.args) == 1
-    error_msg, = value.args
-    match = re.match(NOMODULE_RE, error_msg)
-    if match:
-        module_str, = match.groups()
-        return get_module_name_suggestion(module_str)
-    else:
-        match = re.match(CANNOTIMPORT_RE, error_msg)
-        assert match, "No match for %s" % error_msg
-        imported_name, = match.groups()
-        return get_imported_name_suggestion(imported_name, frame)
-
-
+# Functions related to SyntaxError
 def get_syntax_error_sugg(type_, value, frame):
     """Get suggestions for SyntaxError exception."""
     assert issubclass(type_, SyntaxError)
@@ -258,6 +265,33 @@ def get_syntax_error_sugg(type_, value, frame):
             yield quote('!=')
 
 
+# Functions related to ValueError
+def get_value_error_sugg(type_, value, frame):
+    """Get suggestions for ValueError exception."""
+    assert issubclass(type_, ValueError)
+    assert len(value.args) == 1
+    error_msg, = value.args
+    return []
+
+
+# Functions related to IndexError
+def get_index_error_sugg(type_, value, frame):
+    """Get suggestions for IndexError exception."""
+    assert issubclass(type_, IndexError)
+    assert len(value.args) == 1
+    error_msg, = value.args
+    return []
+
+
+# Functions related to KeyError
+def get_key_error_sugg(type_, value, frame):
+    """Get suggestions for KeyError exception."""
+    assert issubclass(type_, KeyError)
+    assert len(value.args) == 1
+    error_msg, = value.args
+    return []
+
+
 def get_suggestions_for_exception(type_, value, frame):
     """Get suggestions for an exception."""
     error_types = {
@@ -266,7 +300,10 @@ def get_suggestions_for_exception(type_, value, frame):
         TypeError: get_type_error_sugg,
         ImportError: get_import_error_sugg,
         SyntaxError: get_syntax_error_sugg,
-    }  # Could be added : IndexError, KeyError
+        ValueError: get_value_error_sugg,
+        IndexError: get_index_error_sugg,
+        KeyError: get_key_error_sugg,
+    }
     for error_type, func in error_types.items():
         if issubclass(type_, error_type):
             return func(type_, value, frame)
@@ -294,4 +331,8 @@ def add_suggestions_to_exception(type_, value, traceback):
     Arguments are such as provided by sys.exc_info()."""
     add_string_to_exception(
         value,
-        get_suggestion_string(get_suggestions_for_exception(type_, value, get_last_frame(traceback))))
+        get_suggestion_string(
+            get_suggestions_for_exception(
+                type_,
+                value,
+                get_last_frame(traceback))))

@@ -171,6 +171,13 @@ def typeerror_not_sub():
     return inner_func[2]
 
 
+def typeerror_nb_args():
+    """Should be 'inner_func(1)'."""
+    def inner_func(foo):
+        pass
+    return inner_func(1, 2)
+
+
 def importerror_no_module_no_sugg():
     """No suggestion."""
     import fqslkdfjslkqdjfqsd
@@ -233,6 +240,22 @@ def indexerror_no_sugg():
     return lst[2]
 
 
+def valueerror_too_many_values():
+    a, b, c = [1, 2, 3, 4]
+
+
+def valueerror_not_enough_values():
+    a, b, c = [1, 2]
+
+
+def valueerror_conversion_fails():
+    return int('toto')
+
+
+def valueerror_math_domain():
+    return math.log(-1)
+
+
 # Logic to be able to have different tests on various version of Python
 FIRST_VERSION = (0, 0)
 LAST_VERSION = (10, 0)
@@ -255,13 +278,14 @@ def eval_wrapper(code):
 
 @didyoumean
 def eval_wrapper_deco(code):
-    """Wrapper around eval_wrapper with a didyoumean decorator."""
-    return eval_wrapper(code)
+    """Dirty function to eval some code with a didyoumean decorator."""
+    eval(code)
 
 
 # Tests
 class AbstractTests(unittest2.TestCase):
     """Generic class for unit tests."""
+    error_msg = ''
 
     def code_runs(self, code, version_range=ALL_VERSIONS):
         """Helper function to run code and check it works."""
@@ -418,6 +442,12 @@ class TypeErrorTestsNotSub(TypeErrorTests):
     def test_not_sub(self):
         self.code_throws('typeerror_not_sub()', ". Did you mean 'function\\(value\\)'\?")
 
+class TypeErrorTestsNumberArgs(TypeErrorTests):
+    """Class for tests related to number of arguments."""
+
+    def test_nb_args(self):
+        self.code_throws('typeerror_nb_args()', "")
+
 
 class ImportErrorTests(AbstractTests):
     """Class for tests related to ImportError."""
@@ -472,7 +502,6 @@ class LookupErrorTests(AbstractTests):
 class KeyErrorTests(LookupErrorTests):
     """Class for tests related to KeyError."""
     error_type = KeyError
-    error_msg = ''
 
     def test_no_sugg(self):
         self.code_throws('keyerror_no_sugg()', "")
@@ -506,3 +535,20 @@ class SyntaxErrorTests(AbstractTests):
         version = (3, 0)
         self.code_runs(code, up_to_version(version))
         self.code_throws(code, ". Did you mean '!='\?", from_version(version))
+
+
+class ValueErrorTests(AbstractTests):
+    """Class for tests related to ValueError."""
+    error_type = ValueError
+
+    def test_too_many_values(self):
+        self.code_throws('valueerror_too_many_values()', "")
+
+    def test_not_enough_values(self):
+        self.code_throws('valueerror_not_enough_values()', "")
+
+    def test_conversion_fails(self):
+        self.code_throws('valueerror_conversion_fails()', "")
+
+    def test_math_domain(self):
+        self.code_throws('valueerror_math_domain()', "")
