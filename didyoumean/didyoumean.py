@@ -304,10 +304,10 @@ def get_suggestions_for_exception(type_, value, frame):
         IndexError: get_index_error_sugg,
         KeyError: get_key_error_sugg,
     }
-    for error_type, func in error_types.items():
-        if issubclass(type_, error_type):
-            return func(type_, value, frame)
-    return []
+    return itertools.chain.from_iterable(
+        func(type_, value, frame)
+        for error_type, func in error_types.items()
+        if issubclass(type_, error_type))
 
 
 def add_string_to_exception(value, string):
