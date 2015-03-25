@@ -67,9 +67,39 @@ def nameerror_attribute_hidden():
     return pi
 
 
-def nameerror_removed_1():
+def nameerror_removed_cmp():
     """Builtin cmp is removed."""
     return cmp(1, 2)
+
+
+def nameerror_removed_reduce():
+    """Builtin reduce is removed - moved to functools."""
+    return reduce(lambda x, y: x+y, [1, 2, 3, 4, 5])
+
+
+def nameerror_removed_apply():
+    """Builtin apply is removed."""
+    return apply(sum, [1, 2, 3])
+
+
+def nameerror_removed_intern():
+    """Builtin intern is removed - moved to sys."""
+    return intern('toto')
+
+
+def nameerror_removed_execfile():
+    """Builtin execfile is removed - use exec() and compile()."""
+    return execfile('some_filename')
+
+
+def nameerror_removed_raw_input():
+    """Builtin raw_input is removed - use input() instead."""
+    return raw_input('Prompt:')
+
+
+def nameerror_removed_buffer():
+    """Builtin buffer is removed - use memoryview instead."""
+    return buffer('abc')
 
 
 def unboundlocalerror_1():
@@ -153,29 +183,41 @@ class FoobarClass():
         """Should be cls.this_is_cls_mthd (or FoobarClass)."""
         return this_is_cls_mthd
 
+    def some_method(self):
+        pass
+
 
 def attributeerror_from_class():
     """Should be 'this_is_cls_mthd'."""
     return FoobarClass().this_is_cls_mth
 
 
-def attributeerror_removed_1():
+def attributeerror_removed_has_key():
     """Method has_key is removed from dict."""
     return dict().has_key(1)
 
 
+def attributeerror_removed_xreadlines():
+    """Method xreadlines from dict."""
+    import os
+    with open(os.path.realpath(__file__)) as f:
+        for l in f.xreadlines():
+            pass
+
+
+def some_func(foo):
+    """Dummy function for testing purposes."""
+    pass
+
+
 def typeerror_not_sub():
-    """Should be 'inner_func(2)'."""
-    def inner_func(foo):
-        pass
-    return inner_func[2]
+    """Should be 'some_func(2)'."""
+    return some_func[2]
 
 
 def typeerror_nb_args():
-    """Should be 'inner_func(1)'."""
-    def inner_func(foo):
-        pass
-    return inner_func(1, 2)
+    """Should be 'some_func(1)'."""
+    return some_func(1, 2)
 
 
 def importerror_no_module_no_sugg():
@@ -358,10 +400,52 @@ class NameErrorTests(AbstractTests):
     def test_no_sugg(self):
         self.code_throws('nameerror_no_sugg()', "")
 
-    def test_removed_1(self):
-        code = 'nameerror_removed_1()'
+    def test_removed_cmp(self):
+        code = 'nameerror_removed_cmp()'
         version = (3, 0, 1)
         self.code_runs(code, up_to_version(version))
+        self.code_throws(code, "", from_version(version))
+
+    def test_removed_reduce(self):
+        code = 'nameerror_removed_reduce()'
+        version = (3, 0)
+        self.code_runs(code, up_to_version(version))
+        self.code_throws(code, "", from_version(version))
+
+    def test_removed_apply(self):
+        code = 'nameerror_removed_apply()'
+        version = (3, 0)
+        self.code_runs(code, up_to_version(version))
+        self.code_throws(code, "", from_version(version))
+
+    def test_removed_intern(self):
+        code = 'nameerror_removed_intern()'
+        version = (3, 0)
+        self.code_runs(code, up_to_version(version))
+        self.code_throws(
+            code,
+            ". Did you mean 'sys.intern', 'iter'\?",
+            from_version(version))
+
+    def test_removed_execfile(self):
+        code = 'nameerror_removed_execfile()'
+        version = (3, 0)
+        # self.code_runs(code, up_to_version(version))
+        self.code_throws(code, "", from_version(version))
+
+    def test_removed_raw_input(self):
+        code = 'nameerror_removed_raw_input()'
+        version = (3, 0)
+        # self.code_runs(code, up_to_version(version))
+        self.code_throws(
+            code,
+            ". Did you mean 'input'\?",
+            from_version(version))
+
+    def test_removed_buffer(self):
+        code = 'nameerror_removed_buffer()'
+        version = (3, 0)
+        # self.code_runs(code, up_to_version(version))
         self.code_throws(code, "", from_version(version))
 
     def test_import_sugg(self):
@@ -403,7 +487,7 @@ class UnboundLocalErrorTests(AbstractTests):
 class AttributeErrorTest(AbstractTests):
     """Class for tests related to AttributeError."""
     error_type = AttributeError
-    error_msg = "^'?\w+'? (object|instance) has no attribute '\w+'"
+    error_msg = "^'?[\w\.]+'? (object|instance) has no attribute '\w+'"
 
     def test_method(self):
         self.code_throws(
@@ -445,11 +529,37 @@ class AttributeErrorTest(AbstractTests):
             'attributeerror_from_class()',
             ". Did you mean 'this_is_cls_mthd'\?")
 
-    def test_removed_1(self):
-        code = 'attributeerror_removed_1()'
+    def test_removed_has_key(self):
+        code = 'attributeerror_removed_has_key()'
+        version = (3, 0)
+        self.code_runs(code, up_to_version(version))
+        self.code_throws(
+            code, ". Did you mean 'key in dict'\?", from_version(version))
+
+    def test_removed_xreadlines(self):
+        code = 'attributeerror_removed_xreadlines()'
         version = (3, 0)
         self.code_runs(code, up_to_version(version))
         self.code_throws(code, "", from_version(version))
+
+    def test_removed_function_attributes(self):
+        version = (3, 0)
+        func_name = 'some_func'
+        attributes = ['func_name', 'func_doc', 'func_default', 'func_dict',
+                      'func_closure', 'func_globals', 'func_code']
+        for att in attributes:
+            code = func_name + '.' + att
+            self.code_runs(code, up_to_version(version))
+            self.code_throws(code, "", from_version(version))
+
+    def test_removed_method_attributes(self):
+        version = (3, 0)
+        meth_name = 'some_func'
+        attributes = ['im_func', 'im_self', 'im_class']
+        for att in attributes:
+            code = meth_name + '.' + att
+            self.code_runs(code, up_to_version(version))
+            self.code_throws(code, "", from_version(version))
 
 
 class TypeErrorTests(AbstractTests):
@@ -558,6 +668,12 @@ class SyntaxErrorTests(AbstractTests):
         code = 'print "a"'
         version = (3, 0)
         self.code_throws(code, "", up_to_version(version))  # WHY ?
+        self.code_throws(code, "", from_version(version))
+
+    def test_exec(self):
+        code = 'exec "some_python_code = 1"'
+        version = (3, 0)
+        self.code_runs(code, up_to_version(version))
         self.code_throws(code, "", from_version(version))
 
     def test_old_comparison(self):

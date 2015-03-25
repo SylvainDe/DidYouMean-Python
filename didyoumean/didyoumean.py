@@ -18,7 +18,8 @@ SYNONYMS_SETS = [set(['add', 'append']), set(['extend', 'update'])]
 # Regular expressions to parse error messages
 UNBOUNDERROR_RE = r"^local variable '(\w+)' referenced before assignment$"
 NAMENOTDEFINED_RE = r"^(?:global )?name '(\w+)' is not defined$"
-ATTRIBUTEERROR_RE = r"^'?(\w+)'? (?:object|instance) has no attribute '(\w+)'$"
+ATTRIBUTEERROR_RE = r"^'?([\w\.]+)'? (?:object|instance) " \
+    "has no attribute '(\w+)'$"
 TYPEERROR_RE = r"^'(\w+)' object " \
     "(?:is (?:not |un)subscriptable|has no attribute '__getitem__')$"
 NOMODULE_RE = r"^No module named '?(\w+)'?$"
@@ -124,7 +125,7 @@ def suggest_name_as_attribute(name, objdict):
 
 
 def suggest_name_as_standard_module(name):
-    """Suggest that name could be a non-importer standard module.
+    """Suggest that name could be a non-imported standard module.
     Example: 'os.whatever' -> 'import os' and then 'os.whatever'."""
     if name in STAND_MODULES:
         yield 'to import %s first' % name
@@ -161,13 +162,14 @@ def get_attribute_suggestions(type_str, attribute, frame):
         # For module, we want to get the actual name of the module
         module_name = frame.f_code.co_names[0]
         attributes = set(dir(objs[module_name][0]))
-    elif type_str == 'generator':
-        attributes = set()
-    else:
+    elif type_str in objs:
         attributes = set(dir(objs[type_str][0]))
+    else:  # could/should be more precise
+        attributes = set()
 
     return itertools.chain(
         suggest_attribute_as_builtin(attribute, type_str, frame),
+        suggest_attribute_as_removed(attribute, type_str, attributes),
         suggest_attribute_synonyms(attribute, attributes),
         suggest_attribute_as_typo(attribute, attributes))
 
@@ -177,6 +179,11 @@ def suggest_attribute_as_builtin(attribute, type_str, frame):
     Example: 'lst.len()' -> 'len(lst)'."""
     if attribute in frame.f_builtins:
         yield quote(attribute + '(' + type_str + ')')
+
+
+def suggest_attribute_as_removed(attribute, type_str, attributes):
+    if attribute == 'has_key' and '__contains__' in attributes:
+        yield quote('key in ' + type_str)
 
 
 def suggest_attribute_synonyms(attribute, attributes):
