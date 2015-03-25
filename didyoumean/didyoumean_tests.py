@@ -74,7 +74,7 @@ def nameerror_removed_cmp():
 
 def nameerror_removed_reduce():
     """Builtin reduce is removed - moved to functools."""
-    return reduce(lambda x, y: x+y, [1, 2, 3, 4, 5])
+    return reduce(lambda x, y: x + y, [1, 2, 3, 4, 5])
 
 
 def nameerror_removed_apply():
