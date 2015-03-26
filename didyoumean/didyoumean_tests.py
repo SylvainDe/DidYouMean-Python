@@ -79,7 +79,7 @@ def nameerror_removed_reduce():
 
 def nameerror_removed_apply():
     """Builtin apply is removed."""
-    return apply(sum, [1, 2, 3])
+    return apply(sum, [[1, 2, 3]])
 
 
 def nameerror_removed_intern():
@@ -545,7 +545,7 @@ class AttributeErrorTest(AbstractTests):
     def test_removed_function_attributes(self):
         version = (3, 0)
         func_name = 'some_func'
-        attributes = ['func_name', 'func_doc', 'func_default', 'func_dict',
+        attributes = ['func_name', 'func_doc', 'func_defaults', 'func_dict',
                       'func_closure', 'func_globals', 'func_code']
         for att in attributes:
             code = func_name + '.' + att
@@ -554,7 +554,7 @@ class AttributeErrorTest(AbstractTests):
 
     def test_removed_method_attributes(self):
         version = (3, 0)
-        meth_name = 'some_func'
+        meth_name = 'FoobarClass.some_method'
         attributes = ['im_func', 'im_self', 'im_class']
         for att in attributes:
             code = meth_name + '.' + att
@@ -679,7 +679,7 @@ class SyntaxErrorTests(AbstractTests):
     def test_old_comparison(self):
         code = '1 <> 2'
         version = (3, 0)
-        self.code_runs(code, up_to_version(version))
+        self.code_throws(code, "", up_to_version(version))  # WHY ?
         self.code_throws(code, ". Did you mean '!='\?", from_version(version))
 
 
