@@ -109,6 +109,13 @@ def unboundlocalerror_1():
     return foo
 
 
+def attributeerror_nonetype():
+    """In-place methods like sort returns None.
+    Might also happen if the functions misses a return."""
+    my_list = [3, 2, 1].sort()
+    my_list.append(4)
+
+
 def attributeerror_method():
     """Should be 'append'."""
     [1, 2, 3].appendh(4)
@@ -489,6 +496,10 @@ class AttributeErrorTest(AbstractTests):
     error_type = AttributeError
     error_msg = "^'?[\w\.]+'? (object|instance) has no attribute '\w+'"
 
+    def test_nonetype(self):
+        self.code_throws(
+            'attributeerror_nonetype()', "")
+
     def test_method(self):
         self.code_throws(
             'attributeerror_method()', ". Did you mean 'append'\?")
@@ -545,21 +556,34 @@ class AttributeErrorTest(AbstractTests):
     def test_removed_function_attributes(self):
         version = (3, 0)
         func_name = 'some_func'
-        attributes = ['func_name', 'func_doc', 'func_defaults', 'func_dict',
-                      'func_closure', 'func_globals', 'func_code']
-        for att in attributes:
-            code = func_name + '.' + att
-            self.code_runs(code, up_to_version(version))
-            self.code_throws(code, "", from_version(version))
+        attributes = [('func_name', '__name__'),
+                      ('func_doc', '__doc__'),
+                      ('func_defaults', '__defaults__'),
+                      ('func_dict', '__dict__'),
+                      ('func_closure', '__closure__'),
+                      ('func_globals', '__globals__'),
+                      ('func_code', '__code__')]
+        for (old_att, new_att) in attributes:
+            old_code = func_name + '.' + old_att
+            new_code = func_name + '.' + new_att
+            self.code_runs(old_code, up_to_version(version))
+            self.code_throws(old_code, "", from_version(version))
+            self.code_runs(new_code, up_to_version(version))
+            self.code_runs(new_code, from_version(version))
 
     def test_removed_method_attributes(self):
         version = (3, 0)
-        meth_name = 'FoobarClass.some_method'
-        attributes = ['im_func', 'im_self', 'im_class']
-        for att in attributes:
-            code = meth_name + '.' + att
-            self.code_runs(code, up_to_version(version))
-            self.code_throws(code, "", from_version(version))
+        meth_name = 'FoobarClass().some_method'
+        attributes = [('im_func', '__func__'),
+                      ('im_self', '__self__'),
+                      ('im_class', '__self__.__class__')]
+        for (old_att, new_att) in attributes:
+            old_code = meth_name + '.' + old_att
+            new_code = meth_name + '.' + new_att
+            self.code_runs(old_code, up_to_version(version))
+            self.code_throws(old_code, "", from_version(version))
+            self.code_runs(new_code, up_to_version(version))
+            self.code_runs(new_code, from_version(version))
 
 
 class TypeErrorTests(AbstractTests):
@@ -698,3 +722,6 @@ class ValueErrorTests(AbstractTests):
 
     def test_math_domain(self):
         self.code_throws('valueerror_math_domain()', "")
+
+if __name__ == '__main__':
+    unittest2.main()
