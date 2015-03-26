@@ -673,13 +673,13 @@ class SyntaxErrorTests(AbstractTests):
     def test_exec(self):
         code = 'exec "some_python_code = 1"'
         version = (3, 0)
-        self.code_runs(code, up_to_version(version))
+        self.code_throws(code, "", up_to_version(version))  # WHY ?
         self.code_throws(code, "", from_version(version))
 
     def test_old_comparison(self):
         code = '1 <> 2'
         version = (3, 0)
-        self.code_throws(code, "", up_to_version(version))  # WHY ?
+        self.code_runs(code, up_to_version(version))
         self.code_throws(code, ". Did you mean '!='\?", from_version(version))
 
 
