@@ -20,7 +20,7 @@ UNBOUNDERROR_RE = r"^local variable '(\w+)' referenced before assignment$"
 NAMENOTDEFINED_RE = r"^(?:global )?name '(\w+)' is not defined$"
 ATTRIBUTEERROR_RE = r"^'?([\w\.]+)'? (?:object|instance) " \
     "has no attribute '(\w+)'$"
-TYPEERROR_RE = r"^'(\w+)' object " \
+UNSUBSCRIBTABLE_RE = r"^'(\w+)' object " \
     "(?:is (?:not |un)subscriptable|has no attribute '__getitem__')$"
 NOMODULE_RE = r"^No module named '?(\w+)'?$"
 CANNOTIMPORT_RE = r"^cannot import name '?(\w+)'?$"
@@ -163,6 +163,9 @@ def get_attribute_suggestions(type_str, attribute, frame):
         module_name = frame.f_code.co_names[0]
         attributes = set(dir(objs[module_name][0]))
     elif type_str in objs:
+        # it kind of sucks that we retrieve the representation of the
+        # type (as in 'str(type(whatever))' which might not be a known
+        # name.
         attributes = set(dir(objs[type_str][0]))
     else:  # could/should be more precise
         attributes = set()
@@ -254,7 +257,7 @@ def get_type_error_sugg(type_, value, frame):
     assert issubclass(type_, TypeError)
     assert len(value.args) == 1
     error_msg, = value.args
-    match = re.match(TYPEERROR_RE, error_msg)
+    match = re.match(UNSUBSCRIBTABLE_RE, error_msg)
     if match:  # It could be cool to extract relevant info from the trace
         type_str, = match.groups()
         if type_str == 'function':

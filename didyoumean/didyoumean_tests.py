@@ -100,6 +100,11 @@ def some_func(foo):
     pass
 
 
+def some_func2(abc=None):
+    """Dummy function for testing purposes."""
+    pass
+
+
 # Logic to be able to have different tests on various version of Python
 FIRST_VERSION = (0, 0)
 LAST_VERSION = (10, 0)
@@ -229,6 +234,14 @@ class NameErrorTests(AbstractTests):
     def test_removed_apply(self):
         """Builtin apply is removed."""
         code = 'apply(sum, [[1, 2, 3]])'
+        version = (3, 0)
+        self.code_runs(code, up_to_version(version))
+        self.code_throws(code, "", from_version(version))
+
+    def test_removed_reload(self):
+        """Builtin reload is removed
+        Moved to importlib.reload or imp.reload depending on version."""
+        code = 'reload(math)'
         version = (3, 0)
         self.code_runs(code, up_to_version(version))
         self.code_throws(code, "", from_version(version))
@@ -422,6 +435,13 @@ class TypeErrorTests(AbstractTests):
     error_type = TypeError
 
 
+class TypeErrorMiscTests(TypeErrorTests):
+    """Class for misc tests related to TypeError."""
+
+    def test_unhashable(self):
+        self.code_throws('dict()[list()] = 1', "")
+
+
 class TypeErrorTestsNotSub(TypeErrorTests):
     """Class for tests related to substriptable."""
     error_msg = ("^'\w+' object (is (not |un)subscriptable"
@@ -439,6 +459,14 @@ class TypeErrorTestsNumberArgs(TypeErrorTests):
     def test_nb_args(self):
         """Should be 'some_func(1)'."""
         self.code_throws('some_func(1, 2)', "")
+
+    def test_keyword_args(self):
+        """Should be 'some_func(1)'."""
+        self.code_throws('some_func(a=1)', "")
+
+    def test_keyword_args2(self):
+        """Should be 'some_func2(abc=1)'."""
+        self.code_throws('some_func2(abd=1)', "")
 
 
 class ImportErrorTests(AbstractTests):
@@ -590,4 +618,5 @@ class ValueErrorTests(AbstractTests):
         self.code_throws('lg = math.log(-1)', "")
 
 if __name__ == '__main__':
+    print(sys.version_info)
     unittest2.main()
