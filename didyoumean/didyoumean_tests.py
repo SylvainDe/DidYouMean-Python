@@ -20,86 +20,16 @@ def nameerror_n_args(fool, foot, bar):
     return foob
 
 
-def nameerror_builtin():
-    """Should be 'max'."""
-    return maxi
-
-
-def nameerror_keyword():
-    """Should be 'yield'."""
-    yieldd
-
-
-def nameerror_global():
-    """Should be this_is_a_global_list."""
-    return this_is_a_global_lis
-
-
-def nameerror_import():
-    """Should be math.pi."""
-    return maths.pi
-
-
 def nameerror_import2():
     """Should be my_imported_math.pi."""
     import math as my_imported_math
     return my_imported_maths.pi
 
 
-def nameerror_imported():
-    """Should be math.pi."""
-    return pi
-
-
-def nameerror_no_sugg():
-    """No suggestion."""
-    return ldkjhfnvdlkjhvgfdhgf
-
-
-def nameerror_import_sugg():
-    """Should import functools first."""
-    return functools.wraps
-
-
 def nameerror_attribute_hidden():
     """Should be math.pi but module math is hidden."""
     math = ''
     return pi
-
-
-def nameerror_removed_cmp():
-    """Builtin cmp is removed."""
-    return cmp(1, 2)
-
-
-def nameerror_removed_reduce():
-    """Builtin reduce is removed - moved to functools."""
-    return reduce(lambda x, y: x + y, [1, 2, 3, 4, 5])
-
-
-def nameerror_removed_apply():
-    """Builtin apply is removed."""
-    return apply(sum, [[1, 2, 3]])
-
-
-def nameerror_removed_intern():
-    """Builtin intern is removed - moved to sys."""
-    return intern('toto')
-
-
-def nameerror_removed_execfile():
-    """Builtin execfile is removed - use exec() and compile()."""
-    return execfile('some_filename')
-
-
-def nameerror_removed_raw_input():
-    """Builtin raw_input is removed - use input() instead."""
-    return raw_input('Prompt:')
-
-
-def nameerror_removed_buffer():
-    """Builtin buffer is removed - use memoryview instead."""
-    return buffer('abc')
 
 
 def unboundlocalerror_1():
@@ -109,23 +39,6 @@ def unboundlocalerror_1():
     return foo
 
 
-def attributeerror_nonetype():
-    """In-place methods like sort returns None.
-    Might also happen if the functions misses a return."""
-    my_list = [3, 2, 1].sort()
-    my_list.append(4)
-
-
-def attributeerror_method():
-    """Should be 'append'."""
-    [1, 2, 3].appendh(4)
-
-
-def attributeerror_builtin():
-    """Should be 'max(lst)'."""
-    [1, 2, 3].max()
-
-
 def my_generator():
     """This is my generator.
     This is my generator, baby."""
@@ -133,31 +46,11 @@ def my_generator():
         yield 1
 
 
-def attributeerror_builtin2():
-    """Should be 'next(gen)'."""
-    return my_generator().next()
-
-
-def attributeerror_wrongmethod():
-    """Should be 'lst.append(4)'."""
-    [1, 2, 3].add(4)
-
-
-def attributeerror_wrongmethod2():
-    """Should be 'lst.extend([4, 5, 6])'."""
-    [1, 2, 3].update([4, 5, 6])
-
-
 def attributeerror_hidden():
     """Accessing wrong string object."""
     import string
     string = 'a'
     return string.ascii_letters
-
-
-def attributeerror_no_sugg():
-    """No suggestion."""
-    [1, 2, 3].ldkjhfnvdlkjhvgfdhgf
 
 
 def attributeerror_from_module(radius=1):
@@ -194,16 +87,6 @@ class FoobarClass():
         pass
 
 
-def attributeerror_from_class():
-    """Should be 'this_is_cls_mthd'."""
-    return FoobarClass().this_is_cls_mth
-
-
-def attributeerror_removed_has_key():
-    """Method has_key is removed from dict."""
-    return dict().has_key(1)
-
-
 def attributeerror_removed_xreadlines():
     """Method xreadlines from dict."""
     import os
@@ -215,94 +98,6 @@ def attributeerror_removed_xreadlines():
 def some_func(foo):
     """Dummy function for testing purposes."""
     pass
-
-
-def typeerror_not_sub():
-    """Should be 'some_func(2)'."""
-    return some_func[2]
-
-
-def typeerror_nb_args():
-    """Should be 'some_func(1)'."""
-    return some_func(1, 2)
-
-
-def importerror_no_module_no_sugg():
-    """No suggestion."""
-    import fqslkdfjslkqdjfqsd
-
-
-def importerror_no_module():
-    """Should be 'math'."""
-    import maths
-
-
-def importerror_no_module2():
-    """Should be 'math'."""
-    from maths import pi
-
-
-def importerror_no_module3():
-    """Should be 'math'."""
-    import maths as my_imported_math
-
-
-def importerror_no_module4():
-    """Should be 'math'."""
-    from maths import pi as three_something
-
-
-def importerror_no_name_suggested():
-    """No suggestion."""
-    from math import fsfsdfdjlkf
-
-
-def importerror_wrong_import():
-    """Should be 'math'."""
-    from itertools import pi
-
-
-def importerror_typo_in_method():
-    """Should be 'pi'."""
-    from math import pie
-
-
-def importerror_typo_in_method2():
-    """Should be 'pi'."""
-    from math import e, pie, log
-
-
-def importerror_typo_in_method3():
-    """Should be 'pi'."""
-    from math import pie as three_something
-
-
-def keyerror_no_sugg():
-    """No suggestion."""
-    dct = dict()
-    return dct['ffdsqmjklfqsd']
-
-
-def indexerror_no_sugg():
-    """No suggestion."""
-    lst = [1]
-    return lst[2]
-
-
-def valueerror_too_many_values():
-    a, b, c = [1, 2, 3, 4]
-
-
-def valueerror_not_enough_values():
-    a, b, c = [1, 2]
-
-
-def valueerror_conversion_fails():
-    return int('toto')
-
-
-def valueerror_math_domain():
-    return math.log(-1)
 
 
 # Logic to be able to have different tests on various version of Python
@@ -319,16 +114,16 @@ def up_to_version(version):
     return (FIRST_VERSION, version)
 
 
-# Wrappers to eval some code with or without a decorator."""
-def eval_wrapper(code):
-    """Dirty function to eval some code."""
-    eval(code)
+# Wrappers to exec some code with or without a decorator."""
+def exec_wrapper(code):
+    """Dirty function to exec some code."""
+    exec(code)
 
 
 @didyoumean
-def eval_wrapper_deco(code):
-    """Dirty function to eval some code with a didyoumean decorator."""
-    eval(code)
+def exec_wrapper_deco(code):
+    """Dirty function to exec some code with a didyoumean decorator."""
+    exec(code)
 
 
 # Tests
@@ -340,8 +135,8 @@ class AbstractTests(unittest2.TestCase):
         """Helper function to run code and check it works."""
         beg, end = version_range
         if beg <= sys.version_info < end:
-            eval_wrapper(code)
-            eval_wrapper_deco(code)
+            exec_wrapper(code)
+            exec_wrapper_deco(code)
 
     def code_throws(self, code, sugg, version_range=ALL_VERSIONS):
         """Helper function to run code and check is throws."""
@@ -350,12 +145,12 @@ class AbstractTests(unittest2.TestCase):
             self.my_assert_raises_rexp(
                 self.error_type,
                 self.error_msg + "$",
-                eval_wrapper,
+                exec_wrapper,
                 code)
             self.my_assert_raises_rexp(
                 self.error_type,
                 self.error_msg + sugg + "$",
-                eval_wrapper_deco,
+                exec_wrapper_deco,
                 code)
 
     def my_assert_raises_rexp(self, type_arg, message_re, func, *args, **kwds):
@@ -384,64 +179,82 @@ class NameErrorTests(AbstractTests):
             'nameerror_n_args(1, 2, 3)', ". Did you mean 'foot', 'fool'\?")
 
     def test_builtin(self):
-        self.code_throws('nameerror_builtin()', ". Did you mean 'max'\?")
+        """Should be 'max'."""
+        self.code_throws('m = maxi', ". Did you mean 'max'\?")
+        self.code_runs('m = max')
 
     def test_keyword(self):
-        self.code_throws('nameerror_keyword()', ". Did you mean 'yield'\?")
+        """Should be 'yield'."""
+        self.code_throws('yieldd', ". Did you mean 'yield'\?")
 
     def test_global(self):
+        """Should be this_is_a_global_list."""
         self.code_throws(
-            'nameerror_global()', ". Did you mean 'this_is_a_global_list'\?")
+            'a = this_is_a_global_lis',
+            ". Did you mean 'this_is_a_global_list'\?")
+        self.code_runs('a = this_is_a_global_list')
 
     def test_import(self):
-        self.code_throws('nameerror_import()', ". Did you mean 'math'\?")
+        """Should be math.pi."""
+        self.code_throws('p = maths.pi', ". Did you mean 'math'\?")
+        self.code_runs('p = math.pi')
 
     def test_import2(self):
         self.code_throws(
             'nameerror_import2()', ". Did you mean 'my_imported_math'\?")
 
     def test_imported(self):
-        self.code_throws(
-            'nameerror_imported()', ". Did you mean 'math.pi'\?")
+        """Should be math.pi."""
+        self.code_throws('p = pi', ". Did you mean 'math.pi'\?")
+        self.code_runs('p = math.pi')
 
     def test_no_sugg(self):
-        self.code_throws('nameerror_no_sugg()', "")
+        """No suggestion."""
+        self.code_throws('a = ldkjhfnvdlkjhvgfdhgf', "")
 
     def test_removed_cmp(self):
-        code = 'nameerror_removed_cmp()'
+        """Builtin cmp is removed."""
+        code = 'cmp(1, 2)'
         version = (3, 0, 1)
         self.code_runs(code, up_to_version(version))
         self.code_throws(code, "", from_version(version))
 
     def test_removed_reduce(self):
-        code = 'nameerror_removed_reduce()'
+        """Builtin reduce is removed - moved to functools."""
+        code = 'reduce(lambda x, y: x + y, [1, 2, 3, 4, 5])'
         version = (3, 0)
         self.code_runs(code, up_to_version(version))
         self.code_throws(code, "", from_version(version))
 
     def test_removed_apply(self):
-        code = 'nameerror_removed_apply()'
+        """Builtin apply is removed."""
+        code = 'apply(sum, [[1, 2, 3]])'
         version = (3, 0)
         self.code_runs(code, up_to_version(version))
         self.code_throws(code, "", from_version(version))
 
     def test_removed_intern(self):
-        code = 'nameerror_removed_intern()'
+        """Builtin intern is removed - moved to sys."""
+        code = 'intern("toto")'
+        new_code = 'sys.intern("toto")'
         version = (3, 0)
         self.code_runs(code, up_to_version(version))
         self.code_throws(
             code,
             ". Did you mean 'sys.intern', 'iter'\?",
             from_version(version))
+        self.code_runs(new_code, from_version(version))
 
     def test_removed_execfile(self):
-        code = 'nameerror_removed_execfile()'
+        """Builtin execfile is removed - use exec() and compile()."""
+        code = 'execfile("some_filename")'
         version = (3, 0)
         # self.code_runs(code, up_to_version(version))
         self.code_throws(code, "", from_version(version))
 
     def test_removed_raw_input(self):
-        code = 'nameerror_removed_raw_input()'
+        """Builtin raw_input is removed - use input() instead."""
+        code = 'i = raw_input("Prompt:")'
         version = (3, 0)
         # self.code_runs(code, up_to_version(version))
         self.code_throws(
@@ -450,14 +263,16 @@ class NameErrorTests(AbstractTests):
             from_version(version))
 
     def test_removed_buffer(self):
-        code = 'nameerror_removed_buffer()'
+        """Builtin buffer is removed - use memoryview instead."""
+        code = 'buffer("abc")'
         version = (3, 0)
-        # self.code_runs(code, up_to_version(version))
+        self.code_runs(code, up_to_version(version))
         self.code_throws(code, "", from_version(version))
 
     def test_import_sugg(self):
+        """Should import functools first."""
         self.code_throws(
-            'nameerror_import_sugg()',
+            'w = functools.wraps',
             ". Did you mean to import functools first\?")
 
     def test_attribute_hidden(self):
@@ -497,55 +312,73 @@ class AttributeErrorTest(AbstractTests):
     error_msg = "^'?[\w\.]+'? (object|instance) has no attribute '\w+'"
 
     def test_nonetype(self):
+        """In-place methods like sort returns None.
+        Might also happen if the functions misses a return."""
         self.code_throws(
-            'attributeerror_nonetype()', "")
+            '[3, 2, 1].sort().append(4)', "")
 
     def test_method(self):
+        """Should be 'append'."""
         self.code_throws(
-            'attributeerror_method()', ". Did you mean 'append'\?")
+            '[1, 2, 3].appendh(4)', ". Did you mean 'append'\?")
+        self.code_runs('[1, 2, 3].append(4)')
 
     def test_builtin(self):
+        """Should be 'max(lst)'."""
         self.code_throws(
-            'attributeerror_builtin()', ". Did you mean 'max\\(list\\)'\?")
+            '[1, 2, 3].max()', ". Did you mean 'max\\(list\\)'\?")
+        self.code_runs('max([1, 2, 3])')
 
     def test_builtin2(self):
-        code = 'attributeerror_builtin2()'
+        """Should be 'next(gen)'."""
+        code = 'my_generator().next()'
+        new_code = 'next(my_generator())'
         version = (3, 0)
         self.code_runs(code, up_to_version(version))
         self.code_throws(
             code,
             ". Did you mean 'next\\(generator\\)'\?",
             from_version(version))
+        self.code_runs(new_code)
 
     def test_wrongmethod(self):
+        """Should be 'lst.append(4)'."""
         self.code_throws(
-            'attributeerror_wrongmethod()', ". Did you mean 'append'\?")
+            '[1, 2, 3].add(4)', ". Did you mean 'append'\?")
+        self.code_runs('[1, 2, 3].append(4)')
 
     def test_wrongmethod2(self):
+        """Should be 'lst.extend([4, 5, 6])'."""
         self.code_throws(
-            'attributeerror_wrongmethod2()', ". Did you mean 'extend'\?")
+            '[1, 2, 3].update([4, 5, 6])', ". Did you mean 'extend'\?")
+        self.code_runs('[1, 2, 3].extend([4, 5, 6])')
 
     def test_hidden(self):
         self.code_throws('attributeerror_hidden()', "")
 
     def test_no_sugg(self):
-        self.code_throws('attributeerror_no_sugg()', "")
+        """No suggestion."""
+        self.code_throws('[1, 2, 3].ldkjhfnvdlkjhvgfdhgf', "")
 
     def test_from_module(self):
         self.code_throws(
             'attributeerror_from_module()', ". Did you mean 'pi'\?")
 
     def test_from_class(self):
+        """Should be 'this_is_cls_mthd'."""
         self.code_throws(
-            'attributeerror_from_class()',
+            'FoobarClass().this_is_cls_mth()',
             ". Did you mean 'this_is_cls_mthd'\?")
 
     def test_removed_has_key(self):
-        code = 'attributeerror_removed_has_key()'
+        """Method has_key is removed from dict."""
+        code = 'dict().has_key(1)'
+        new_code = '1 in dict()'
         version = (3, 0)
         self.code_runs(code, up_to_version(version))
         self.code_throws(
             code, ". Did you mean 'key in dict'\?", from_version(version))
+        self.code_runs(new_code)
 
     def test_removed_xreadlines(self):
         code = 'attributeerror_removed_xreadlines()'
@@ -568,8 +401,7 @@ class AttributeErrorTest(AbstractTests):
             new_code = func_name + '.' + new_att
             self.code_runs(old_code, up_to_version(version))
             self.code_throws(old_code, "", from_version(version))
-            self.code_runs(new_code, up_to_version(version))
-            self.code_runs(new_code, from_version(version))
+            self.code_runs(new_code)
 
     def test_removed_method_attributes(self):
         version = (3, 0)
@@ -582,8 +414,7 @@ class AttributeErrorTest(AbstractTests):
             new_code = meth_name + '.' + new_att
             self.code_runs(old_code, up_to_version(version))
             self.code_throws(old_code, "", from_version(version))
-            self.code_runs(new_code, up_to_version(version))
-            self.code_runs(new_code, from_version(version))
+            self.code_runs(new_code)
 
 
 class TypeErrorTests(AbstractTests):
@@ -597,15 +428,17 @@ class TypeErrorTestsNotSub(TypeErrorTests):
                  "|has no attribute '__getitem__')")
 
     def test_not_sub(self):
+        """Should be 'some_func(2)'."""
         self.code_throws(
-            'typeerror_not_sub()', ". Did you mean 'function\\(value\\)'\?")
+            'some_func[2]', ". Did you mean 'function\\(value\\)'\?")
 
 
 class TypeErrorTestsNumberArgs(TypeErrorTests):
     """Class for tests related to number of arguments."""
 
     def test_nb_args(self):
-        self.code_throws('typeerror_nb_args()', "")
+        """Should be 'some_func(1)'."""
+        self.code_throws('some_func(1, 2)', "")
 
 
 class ImportErrorTests(AbstractTests):
@@ -618,19 +451,32 @@ class ImportErrorTestsNoModule(ImportErrorTests):
     error_msg = "^No module named '?\w+'?"
 
     def test_no_module_no_sugg(self):
-        self.code_throws('importerror_no_module_no_sugg()', "")
+        """No suggestion."""
+        self.code_throws('import fqslkdfjslkqdjfqsd', "")
 
     def test_no_module(self):
-        self.code_throws('importerror_no_module()', ". Did you mean 'math'\?")
+        """Should be 'math'."""
+        self.code_throws('import maths', ". Did you mean 'math'\?")
+        self.code_runs('import math')
 
     def test_no_module2(self):
-        self.code_throws('importerror_no_module2()', ". Did you mean 'math'\?")
+        """Should be 'math'."""
+        self.code_throws(
+            'from maths import pi', ". Did you mean 'math'\?")
+        self.code_runs('from math import pi')
 
     def test_no_module3(self):
-        self.code_throws('importerror_no_module2()', ". Did you mean 'math'\?")
+        """Should be 'math'."""
+        self.code_throws(
+            'import maths as my_imported_math', ". Did you mean 'math'\?")
+        self.code_runs('import math as my_imported_math')
 
     def test_no_module4(self):
-        self.code_throws('importerror_no_module2()', ". Did you mean 'math'\?")
+        """Should be 'math'."""
+        self.code_throws(
+            'from maths import pi as three_something',
+            ". Did you mean 'math'\?")
+        self.code_runs('from math import pi as three_something')
 
 
 class ImportErrorTestsCannotImport(ImportErrorTests):
@@ -638,24 +484,33 @@ class ImportErrorTestsCannotImport(ImportErrorTests):
     error_msg = "^cannot import name '?\w+'?"
 
     def test_no_name_no_sugg(self):
-        self.code_throws('importerror_no_name_suggested()', "")
+        """No suggestion."""
+        self.code_throws('from math import fsfsdfdjlkf', "")
 
     def test_wrong_import(self):
+        """Should be 'math'."""
         self.code_throws(
-            'importerror_wrong_import()',
+            'from itertools import pi',
             ". Did you mean 'from math import pi'\?")
+        self.code_runs('from math import pi')
 
     def test_typo_in_method(self):
+        """Should be 'pi'."""
         self.code_throws(
-            'importerror_typo_in_method()', ". Did you mean 'pi'\?")
+            'from math import pie', ". Did you mean 'pi'\?")
+        self.code_runs('from math import pi')
 
     def test_typo_in_method2(self):
+        """Should be 'pi'."""
         self.code_throws(
-            'importerror_typo_in_method2()', ". Did you mean 'pi'\?")
+            'from math import e, pie, log', ". Did you mean 'pi'\?")
+        self.code_runs('from math import e, pi, log')
 
     def test_typo_in_method3(self):
+        """Should be 'pi'."""
         self.code_throws(
-            'importerror_typo_in_method2()', ". Did you mean 'pi'\?")
+            'from math import pie as three_something', ". Did you mean 'pi'\?")
+        self.code_runs('from math import pi as three_something')
 
 
 class LookupErrorTests(AbstractTests):
@@ -668,7 +523,8 @@ class KeyErrorTests(LookupErrorTests):
     error_type = KeyError
 
     def test_no_sugg(self):
-        self.code_throws('keyerror_no_sugg()', "")
+        """No suggestion."""
+        self.code_throws('dict()["ffdsqmjklfqsd"]', "")
 
 
 class IndexErrorTests(LookupErrorTests):
@@ -677,34 +533,44 @@ class IndexErrorTests(LookupErrorTests):
     error_msg = "^list index out of range"
 
     def test_no_sugg(self):
-        self.code_throws('indexerror_no_sugg()', "")
+        """No suggestion."""
+        self.code_throws('list()[2]', "")
 
 
 class SyntaxErrorTests(AbstractTests):
     """Class for tests related to SyntaxError."""
     error_type = SyntaxError
-    error_msg = 'invalid syntax'
 
     def test_no_error(self):
         self.code_runs("1 + 2 == 2")
 
+    def test_yield_return_out_of_func(self):
+        self.code_throws("yield 1", "")
+        self.code_throws("return 1", "")
+
     def test_print(self):
         code = 'print "a"'
+        new_code = 'print("a")'
         version = (3, 0)
-        self.code_throws(code, "", up_to_version(version))  # WHY ?
+        self.code_runs(code, up_to_version(version))
         self.code_throws(code, "", from_version(version))
+        self.code_runs(new_code)
 
     def test_exec(self):
         code = 'exec "some_python_code = 1"'
+        new_code = 'exec("some_python_code = 1")'
         version = (3, 0)
-        self.code_throws(code, "", up_to_version(version))  # WHY ?
+        self.code_runs(code, up_to_version(version))
         self.code_throws(code, "", from_version(version))
+        self.code_runs(new_code)
 
     def test_old_comparison(self):
         code = '1 <> 2'
+        new_code = '1 != 2'
         version = (3, 0)
         self.code_runs(code, up_to_version(version))
         self.code_throws(code, ". Did you mean '!='\?", from_version(version))
+        self.code_runs(new_code)
 
 
 class ValueErrorTests(AbstractTests):
@@ -712,16 +578,16 @@ class ValueErrorTests(AbstractTests):
     error_type = ValueError
 
     def test_too_many_values(self):
-        self.code_throws('valueerror_too_many_values()', "")
+        self.code_throws('a, b, c = [1, 2, 3, 4]', "")
 
     def test_not_enough_values(self):
-        self.code_throws('valueerror_not_enough_values()', "")
+        self.code_throws('a, b, c = [1, 2]', "")
 
     def test_conversion_fails(self):
-        self.code_throws('valueerror_conversion_fails()', "")
+        self.code_throws('int("toto")', "")
 
     def test_math_domain(self):
-        self.code_throws('valueerror_math_domain()', "")
+        self.code_throws('lg = math.log(-1)', "")
 
 if __name__ == '__main__':
     unittest2.main()
