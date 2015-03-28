@@ -70,10 +70,11 @@ def import_from_frame(module_name, frame):
     """Wrapper around import to use information from frame."""
     return __import__(
         module_name,
-        globals=frame.f_globals,
-        locals=frame.f_locals)
+        frame.f_globals,
+        frame.f_locals)
 
 
+# Debug functions
 def debug_traceback(traceback):
     """Print information from the traceback for debugging purposes."""
     while traceback:
@@ -89,6 +90,14 @@ def debug_traceback(traceback):
               frame.f_code.co_name,
               frame.f_code.co_names)
         traceback = traceback.tb_next
+
+
+def print_error_info(type_, value, _):
+    """Print error information."""
+    assert issubclass(type_, Exception)
+    print(type_, value)
+    return
+    yield
 
 
 # Functions related to NameError
@@ -252,7 +261,7 @@ def suggest_import_from_module(imported_name, frame):
 
 
 # Functions related to TypeError
-def get_type_error_sugg(type_, value, frame):
+def get_type_error_sugg(type_, value, _):
     """Get suggestions for TypeError exception."""
     assert issubclass(type_, TypeError)
     assert len(value.args) == 1
@@ -265,7 +274,7 @@ def get_type_error_sugg(type_, value, frame):
 
 
 # Functions related to SyntaxError
-def get_syntax_error_sugg(type_, value, frame):
+def get_syntax_error_sugg(type_, value, _):
     """Get suggestions for SyntaxError exception."""
     assert issubclass(type_, SyntaxError)
     offset = value.offset
@@ -276,7 +285,7 @@ def get_syntax_error_sugg(type_, value, frame):
 
 
 # Functions related to ValueError
-def get_value_error_sugg(type_, value, frame):
+def get_value_error_sugg(type_, value, _):
     """Get suggestions for ValueError exception."""
     assert issubclass(type_, ValueError)
     assert len(value.args) == 1
@@ -285,7 +294,7 @@ def get_value_error_sugg(type_, value, frame):
 
 
 # Functions related to IndexError
-def get_index_error_sugg(type_, value, frame):
+def get_index_error_sugg(type_, value, _):
     """Get suggestions for IndexError exception."""
     assert issubclass(type_, IndexError)
     assert len(value.args) == 1
@@ -294,7 +303,7 @@ def get_index_error_sugg(type_, value, frame):
 
 
 # Functions related to KeyError
-def get_key_error_sugg(type_, value, frame):
+def get_key_error_sugg(type_, value, _):
     """Get suggestions for KeyError exception."""
     assert issubclass(type_, KeyError)
     assert len(value.args) == 1
@@ -305,6 +314,7 @@ def get_key_error_sugg(type_, value, frame):
 def get_suggestions_for_exception(type_, value, frame):
     """Get suggestions for an exception."""
     error_types = {
+        Exception: print_error_info,
         NameError: get_name_error_sugg,
         AttributeError: get_attribute_error_sugg,
         TypeError: get_type_error_sugg,

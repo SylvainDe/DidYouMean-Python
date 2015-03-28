@@ -36,7 +36,6 @@ def unboundlocalerror_1():
     """Should be foo."""
     foo = 1
     foob += 1
-    return foo
 
 
 def my_generator():
@@ -300,14 +299,14 @@ class NameErrorTests(AbstractTests):
     def test_self2(self):
         self.code_throws(
             'FoobarClass().nameerror_self2()',
-            (". Did you mean '[^ ]*.this_is_cls_mthd', "
-             "'[^ ]*.this_is_cls_mthd'\?"))
+            (". Did you mean 'FoobarClass.this_is_cls_mthd', "
+             "'self.this_is_cls_mthd'\?"))
 
     def test_cls(self):
         self.code_throws(
             'FoobarClass().nameerror_cls()',
-            (". Did you mean '[^ ]*.this_is_cls_mthd', "
-             "'[^ ]*.this_is_cls_mthd'\?"))
+            (". Did you mean 'cls.this_is_cls_mthd', "
+             "'FoobarClass.this_is_cls_mthd'\?"))
 
 
 class UnboundLocalErrorTests(AbstractTests):
