@@ -4,6 +4,7 @@ import keyword
 import difflib
 import re
 import itertools
+import inspect
 
 #: Standard modules we'll consider while searching for undefined values
 # To be completed
@@ -22,6 +23,7 @@ ATTRIBUTEERROR_RE = r"^'?([\w\.]+)'? (?:object|instance) " \
     "has no attribute '(\w+)'$"
 UNSUBSCRIBTABLE_RE = r"^'(\w+)' object " \
     "(?:is (?:not |un)subscriptable|has no attribute '__getitem__')$"
+UNEXPECTED_KEYWOORDARG_RE = r"(\w+)\(\) got an unexpected keyword argument '(\w+)'"
 NOMODULE_RE = r"^No module named '?(\w+)'?$"
 CANNOTIMPORT_RE = r"^cannot import name '?(\w+)'?$"
 
@@ -261,7 +263,7 @@ def suggest_import_from_module(imported_name, frame):
 
 
 # Functions related to TypeError
-def get_type_error_sugg(type_, value, _):
+def get_type_error_sugg(type_, value, frame):
     """Get suggestions for TypeError exception."""
     assert issubclass(type_, TypeError)
     assert len(value.args) == 1
@@ -271,6 +273,15 @@ def get_type_error_sugg(type_, value, _):
         type_str, = match.groups()
         if type_str == 'function':
             yield quote(type_str + '(value)')
+    else:
+        match = re.match(UNEXPECTED_KEYWOORDARG_RE, error_msg)
+        if match:
+            func_name, kw_arg = match.groups()
+            objs = get_objects_in_frame(frame)
+            func = objs[func_name][0]
+            args = inspect.getargspec(func).args
+            for m in get_close_matches(kw_arg, args):
+                yield m
 
 
 # Functions related to SyntaxError

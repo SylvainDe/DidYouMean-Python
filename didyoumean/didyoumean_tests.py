@@ -99,7 +99,7 @@ def some_func(foo):
     pass
 
 
-def some_func2(abc=None):
+def some_func2(abcdef=None):
     """Dummy function for testing purposes."""
     pass
 
@@ -459,13 +459,17 @@ class TypeErrorTestsNumberArgs(TypeErrorTests):
         """Should be 'some_func(1)'."""
         self.code_throws('some_func(1, 2)', "")
 
+
+class TypeErrorTestsUnexpectedKwArg(TypeErrorTests):
+    error_msg = "^(\w+)\(\) got an unexpected keyword argument '(\w+)'"
+
     def test_keyword_args(self):
         """Should be 'some_func(1)'."""
         self.code_throws('some_func(a=1)', "")
 
     def test_keyword_args2(self):
-        """Should be 'some_func2(abc=1)'."""
-        self.code_throws('some_func2(abd=1)', "")
+        """Should be 'some_func2(abcdef=1)'."""
+        self.code_throws('some_func2(abcdf=1)', ". Did you mean 'abcdef'\?")
 
 
 class ImportErrorTests(AbstractTests):
