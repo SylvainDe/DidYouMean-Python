@@ -297,16 +297,16 @@ class NameErrorTests(AbstractTests):
             'FoobarClass().nameerror_self()', ". Did you mean 'self.bar'\?")
 
     def test_self2(self):
+        sugg = "'[^ ]*.this_is_cls_mthd'"
         self.code_throws(
             'FoobarClass().nameerror_self2()',
-            (". Did you mean 'FoobarClass.this_is_cls_mthd', "
-             "'self.this_is_cls_mthd'\?"))
+            (". Did you mean " + sugg + ", " + sugg + "\?"))
 
     def test_cls(self):
+        sugg = "'[^ ]*.this_is_cls_mthd'"
         self.code_throws(
             'FoobarClass().nameerror_cls()',
-            (". Did you mean 'cls.this_is_cls_mthd', "
-             "'FoobarClass.this_is_cls_mthd'\?"))
+            (". Did you mean " + sugg + ", " + sugg + "\?"))
 
 
 class UnboundLocalErrorTests(AbstractTests):

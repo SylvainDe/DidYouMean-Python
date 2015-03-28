@@ -314,7 +314,7 @@ def get_key_error_sugg(type_, value, _):
 def get_suggestions_for_exception(type_, value, frame):
     """Get suggestions for an exception."""
     error_types = {
-        Exception: print_error_info,
+#        Exception: print_error_info,
         NameError: get_name_error_sugg,
         AttributeError: get_attribute_error_sugg,
         TypeError: get_type_error_sugg,
