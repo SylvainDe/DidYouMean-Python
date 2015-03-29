@@ -1,6 +1,9 @@
 # -*- coding: utf-8
 """Unit tests for code in didyoumean.py."""
 from didyoumean_decorator import didyoumean
+from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
+    ATTRIBUTEERROR_RE, UNSUBSCRIBTABLE_RE, UNEXPECTED_KEYWORDARG_RE,\
+    NOMODULE_RE, CANNOTIMPORT_RE, INDEXOUTOFRANGE_RE
 import unittest2
 import math
 import sys
@@ -153,7 +156,7 @@ class AbstractTests(unittest2.TestCase):
                 code)
             self.my_assert_raises_rexp(
                 self.error_type,
-                self.error_msg + sugg + "$",
+                self.get_error_msg_to_be_expanded() + sugg + "$",
                 exec_wrapper_deco,
                 code)
 
@@ -169,11 +172,19 @@ class AbstractTests(unittest2.TestCase):
             return
         self.assertTrue(False)
 
+    def get_error_msg_to_be_expanded(self):
+        """Remove final '$' from error message regexp to expand it."""
+        msg = self.error_msg
+        # I'd like to "assert msg.endswith('$')" at some point but not now...
+        if msg.endswith('$'):
+            return msg[:-1]
+        return msg
+
 
 class NameErrorTests(AbstractTests):
     """Class for tests related to NameError."""
     error_type = NameError
-    error_msg = "^(global )?name '\w+' is not defined"
+    error_msg = NAMENOTDEFINED_RE
 
     def test_1_arg(self):
         self.code_throws('nameerror_1_arg(1)', ". Did you mean 'foo'\?")
@@ -312,7 +323,7 @@ class NameErrorTests(AbstractTests):
 class UnboundLocalErrorTests(AbstractTests):
     """Class for tests related to UnboundLocalError."""
     error_type = UnboundLocalError
-    error_msg = "^local variable '\w+' referenced before assignment"
+    error_msg = UNBOUNDERROR_RE
 
     def test_1(self):
         self.code_throws('unboundlocalerror_1()', ". Did you mean 'foo'\?")
@@ -321,7 +332,7 @@ class UnboundLocalErrorTests(AbstractTests):
 class AttributeErrorTest(AbstractTests):
     """Class for tests related to AttributeError."""
     error_type = AttributeError
-    error_msg = "^'?[\w\.]+'? (object|instance) has no attribute '\w+'"
+    error_msg = ATTRIBUTEERROR_RE
 
     def test_nonetype(self):
         """In-place methods like sort returns None.
@@ -443,8 +454,7 @@ class TypeErrorMiscTests(TypeErrorTests):
 
 class TypeErrorTestsNotSub(TypeErrorTests):
     """Class for tests related to substriptable."""
-    error_msg = ("^'\w+' object (is (not |un)subscriptable"
-                 "|has no attribute '__getitem__')")
+    error_msg = UNSUBSCRIBTABLE_RE
 
     def test_not_sub(self):
         """Should be 'some_func(2)'."""
@@ -461,7 +471,7 @@ class TypeErrorTestsNumberArgs(TypeErrorTests):
 
 
 class TypeErrorTestsUnexpectedKwArg(TypeErrorTests):
-    error_msg = "^(\w+)\(\) got an unexpected keyword argument '(\w+)'"
+    error_msg = UNEXPECTED_KEYWORDARG_RE
 
     def test_keyword_args(self):
         """Should be 'some_func(1)'."""
@@ -479,7 +489,7 @@ class ImportErrorTests(AbstractTests):
 
 class ImportErrorTestsNoModule(ImportErrorTests):
     """Class for tests related to no module."""
-    error_msg = "^No module named '?\w+'?"
+    error_msg = NOMODULE_RE
 
     def test_no_module_no_sugg(self):
         """No suggestion."""
@@ -512,7 +522,7 @@ class ImportErrorTestsNoModule(ImportErrorTests):
 
 class ImportErrorTestsCannotImport(ImportErrorTests):
     """Class for tests related to cannot import."""
-    error_msg = "^cannot import name '?\w+'?"
+    error_msg = CANNOTIMPORT_RE
 
     def test_no_name_no_sugg(self):
         """No suggestion."""
@@ -561,7 +571,7 @@ class KeyErrorTests(LookupErrorTests):
 class IndexErrorTests(LookupErrorTests):
     """Class for tests related to IndexError."""
     error_type = IndexError
-    error_msg = "^list index out of range"
+    error_msg = INDEXOUTOFRANGE_RE
 
     def test_no_sugg(self):
         """No suggestion."""

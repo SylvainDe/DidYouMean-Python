@@ -5,6 +5,9 @@ import difflib
 import re
 import itertools
 import inspect
+from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
+    ATTRIBUTEERROR_RE, UNSUBSCRIBTABLE_RE, UNEXPECTED_KEYWORDARG_RE,\
+    NOMODULE_RE, CANNOTIMPORT_RE
 
 #: Standard modules we'll consider while searching for undefined values
 # To be completed
@@ -15,18 +18,6 @@ STAND_MODULES = set(['string', 'os', 'sys', 're', 'math', 'random',
 #: Almost synonyms methods that can be confused from one type to another
 # To be completed
 SYNONYMS_SETS = [set(['add', 'append']), set(['extend', 'update'])]
-
-# Regular expressions to parse error messages
-UNBOUNDERROR_RE = r"^local variable '(\w+)' referenced before assignment$"
-NAMENOTDEFINED_RE = r"^(?:global )?name '(\w+)' is not defined$"
-ATTRIBUTEERROR_RE = r"^'?([\w\.]+)'? (?:object|instance) " \
-    "has no attribute '(\w+)'$"
-UNSUBSCRIBTABLE_RE = r"^'(\w+)' object " \
-    "(?:is (?:not |un)subscriptable|has no attribute '__getitem__')$"
-UNEXPECTED_KEYWOORDARG_RE = r"(\w+)\(\) " \
-    "got an unexpected keyword argument '(\w+)'"
-NOMODULE_RE = r"^No module named '?(\w+)'?$"
-CANNOTIMPORT_RE = r"^cannot import name '?(\w+)'?$"
 
 
 # Helper function for string manipulation
@@ -275,7 +266,7 @@ def get_type_error_sugg(type_, value, frame):
         if type_str == 'function':
             yield quote(type_str + '(value)')
     else:
-        match = re.match(UNEXPECTED_KEYWOORDARG_RE, error_msg)
+        match = re.match(UNEXPECTED_KEYWORDARG_RE, error_msg)
         if match:
             func_name, kw_arg = match.groups()
             objs = get_objects_in_frame(frame)
