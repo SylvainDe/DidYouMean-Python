@@ -13,16 +13,6 @@ import sys
 this_is_a_global_list = [1, 2]
 
 
-def nameerror_1_arg(foo):
-    """Should be 'return foo'."""
-    return foob
-
-
-def nameerror_n_args(fool, foot, bar):
-    """Should be 'fool' or 'foot'."""
-    return foob
-
-
 def nameerror_import2():
     """Should be my_imported_math.pi."""
     import math as my_imported_math
@@ -146,7 +136,7 @@ class AbstractTests(unittest2.TestCase):
             exec_wrapper_deco(code)
 
     def code_throws(self, code, sugg, version_range=ALL_VERSIONS):
-        """Helper function to run code and check is throws."""
+        """Helper function to run code and check it throws."""
         beg, end = version_range
         if beg <= sys.version_info < end:
             self.my_assert_raises_rexp(
@@ -187,11 +177,26 @@ class NameErrorTests(AbstractTests):
     error_msg = NAMENOTDEFINED_RE
 
     def test_1_arg(self):
-        self.code_throws('nameerror_1_arg(1)', ". Did you mean 'foo'\?")
+        """Should be 'return foo'."""
+        code_beg = "def nameerror_1_arg(foo):\n\treturn "
+        code_end = "\nnameerror_1_arg(1)"
+        typo = "foob"
+        sugg = "foo"
+        bad_code = code_beg + typo + code_end
+        good_code = code_beg + sugg + code_end
+        self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(good_code)
 
     def test_n_args(self):
-        self.code_throws(
-            'nameerror_n_args(1, 2, 3)', ". Did you mean 'foot', 'fool'\?")
+        """Should be 'fool' or 'foot'."""
+        code_beg = "def nameerror_n_args(fool, foot, bar):\n\treturn "
+        code_end = "\nnameerror_n_args(1, 2, 3)"
+        typo = "foob"
+        bad_code = code_beg + typo + code_end
+        self.code_throws(bad_code, ". Did you mean 'foot', 'fool'\?")
+        for sugg in ['foot', 'fool']:
+            good_code = code_beg + sugg + code_end
+            self.code_runs(good_code)
 
     def test_builtin(self):
         """Should be 'max'."""
