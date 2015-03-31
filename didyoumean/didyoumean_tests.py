@@ -13,41 +13,11 @@ import sys
 this_is_a_global_list = [1, 2]
 
 
-def nameerror_import2():
-    """Should be my_imported_math.pi."""
-    import math as my_imported_math
-    return my_imported_maths.pi
-
-
-def nameerror_attribute_hidden():
-    """Should be math.pi but module math is hidden."""
-    math = ''
-    return pi
-
-
-def unboundlocalerror_1():
-    """Should be foo."""
-    foo = 1
-    foob += 1
-
-
 def my_generator():
     """This is my generator.
     This is my generator, baby."""
     while True:
         yield 1
-
-
-def attributeerror_hidden():
-    """Accessing wrong string object."""
-    import string
-    string = 'a'
-    return string.ascii_letters
-
-
-def attributeerror_from_module(radius=1):
-    """Should be math.pi."""
-    return 2 * math.pie * radius
 
 
 class FoobarClass():
@@ -220,8 +190,15 @@ class NameErrorTests(AbstractTests):
         self.code_runs('p = math.pi')
 
     def test_import2(self):
-        self.code_throws(
-            'nameerror_import2()', ". Did you mean 'my_imported_math'\?")
+        """Should be my_imported_math.pi."""
+        code_beg = 'import math as my_imported_math\np = '
+        code_end = '.pi'
+        typo = 'my_imported_maths'
+        sugg = 'my_imported_math'
+        bad_code = code_beg + typo + code_end
+        good_code = code_beg + sugg + code_end
+        self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(good_code)
 
     def test_imported(self):
         """Should be math.pi."""
@@ -304,9 +281,9 @@ class NameErrorTests(AbstractTests):
             ". Did you mean to import functools first\?")
 
     def test_attribute_hidden(self):
-        self.code_throws(
-            'nameerror_attribute_hidden()',
-            ". Did you mean 'math.pi' \(hidden\)\?")
+        """Should be math.pi but module math is hidden."""
+        code = 'math = ""\np = pi'
+        self.code_throws(code, ". Did you mean 'math.pi' \(hidden\)\?")
 
     def test_self(self):
         self.code_throws(
@@ -331,7 +308,15 @@ class UnboundLocalErrorTests(AbstractTests):
     error_msg = UNBOUNDERROR_RE
 
     def test_1(self):
-        self.code_throws('unboundlocalerror_1()', ". Did you mean 'foo'\?")
+        """Should be foo."""
+        code_beg = 'def unboundlocalerror():\n\tfoo = 1\n\t'
+        code_end = ' +=1\nunboundlocalerror()'
+        typo = "foob"
+        sugg = "foo"
+        bad_code = code_beg + typo + code_end
+        good_code = code_beg + sugg + code_end
+        self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(good_code)
 
 
 class AttributeErrorTest(AbstractTests):
@@ -342,8 +327,7 @@ class AttributeErrorTest(AbstractTests):
     def test_nonetype(self):
         """In-place methods like sort returns None.
         Might also happen if the functions misses a return."""
-        self.code_throws(
-            '[3, 2, 1].sort().append(4)', "")
+        self.code_throws('[3, 2, 1].sort().append(4)', "")
 
     def test_method(self):
         """Should be 'append'."""
@@ -382,15 +366,24 @@ class AttributeErrorTest(AbstractTests):
         self.code_runs('[1, 2, 3].extend([4, 5, 6])')
 
     def test_hidden(self):
-        self.code_throws('attributeerror_hidden()', "")
+        """Accessing wrong string object."""
+        # To be improved
+        code = 'import string\nstring = "a"\nascii = string.ascii_letters'
+        self.code_throws(code, "")
 
     def test_no_sugg(self):
         """No suggestion."""
         self.code_throws('[1, 2, 3].ldkjhfnvdlkjhvgfdhgf', "")
 
     def test_from_module(self):
-        self.code_throws(
-            'attributeerror_from_module()', ". Did you mean 'pi'\?")
+        """Should be math.pi."""
+        code_beg = 'p = math.'
+        typo = 'pie'
+        sugg = 'pi'
+        bad_code = code_beg + typo
+        good_code = code_beg + sugg
+        self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(good_code)
 
     def test_from_class(self):
         """Should be 'this_is_cls_mthd'."""
@@ -513,8 +506,11 @@ class ImportErrorTestsNoModule(ImportErrorTests):
 
     def test_no_module3(self):
         """Should be 'math'."""
+        typo = 'maths'
+        sugg = 'math'
         self.code_throws(
-            'import maths as my_imported_math', ". Did you mean 'math'\?")
+            'import maths as my_imported_math',
+            ". Did you mean '" + sugg + "'\?")
         self.code_runs('import math as my_imported_math')
 
     def test_no_module4(self):
