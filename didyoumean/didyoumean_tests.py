@@ -49,14 +49,6 @@ class FoobarClass():
         pass
 
 
-def attributeerror_removed_xreadlines():
-    """Method xreadlines from dict."""
-    import os
-    with open(os.path.realpath(__file__)) as f:
-        for l in f.xreadlines():
-            pass
-
-
 def some_func(foo):
     """Dummy function for testing purposes."""
     pass
@@ -74,11 +66,18 @@ ALL_VERSIONS = (FIRST_VERSION, LAST_VERSION)
 
 
 def from_version(version):
+    """Create tuple describing a range of versions from a given version."""
     return (version, LAST_VERSION)
 
 
 def up_to_version(version):
+    """Create tuple describing a range of versions up to a given version."""
     return (FIRST_VERSION, version)
+
+
+def format_str(template, *args):
+    """Format multiple string by using first arg as a template."""
+    return [template.format(arg) for arg in args]
 
 
 # Wrappers to exec some code with or without a decorator."""
@@ -146,64 +145,70 @@ class NameErrorTests(AbstractTests):
     error_type = NameError
     error_msg = NAMENOTDEFINED_RE
 
+    def test_local(self):
+        """Should be 'foo'."""
+        code = "foo = 0\n{}"
+        typo, sugg = "foob", "foo"
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(good_code)
+
     def test_1_arg(self):
-        """Should be 'return foo'."""
-        code_beg = "def nameerror_1_arg(foo):\n\treturn "
-        code_end = "\nnameerror_1_arg(1)"
-        typo = "foob"
-        sugg = "foo"
-        bad_code = code_beg + typo + code_end
-        good_code = code_beg + sugg + code_end
+        """Should be 'foo'."""
+        code = "def func(foo):\n\t{0}\nfunc(1)"
+        typo, sugg = "foob", "foo"
+        bad_code, good_code = format_str(code, typo, sugg)
         self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
         self.code_runs(good_code)
 
     def test_n_args(self):
         """Should be 'fool' or 'foot'."""
-        code_beg = "def nameerror_n_args(fool, foot, bar):\n\treturn "
-        code_end = "\nnameerror_n_args(1, 2, 3)"
-        typo = "foob"
-        bad_code = code_beg + typo + code_end
-        self.code_throws(bad_code, ". Did you mean 'foot', 'fool'\?")
-        for sugg in ['foot', 'fool']:
-            good_code = code_beg + sugg + code_end
-            self.code_runs(good_code)
+        code = "def func(fool, foot, bar):\n\t{0}\nfunc(1, 2, 3)"
+        typo, sugg1, sugg2 = "foob", "foot", "fool"
+        bad, good1, good2 = format_str(code, typo, sugg1, sugg2)
+        self.code_throws(bad, ". Did you mean 'foot', 'fool'\?")
+        self.code_runs(good1)
+        self.code_runs(good2)
 
     def test_builtin(self):
         """Should be 'max'."""
-        self.code_throws('m = maxi', ". Did you mean 'max'\?")
-        self.code_runs('m = max')
+        typo, sugg = 'maxi', 'max'
+        self.code_throws(typo, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(sugg)
 
     def test_keyword(self):
-        """Should be 'yield'."""
-        self.code_throws('yieldd', ". Did you mean 'yield'\?")
+        """Should be 'pass'."""
+        typo, sugg = 'passs', 'pass'
+        self.code_throws(typo, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(sugg)
 
     def test_global(self):
         """Should be this_is_a_global_list."""
-        self.code_throws(
-            'a = this_is_a_global_lis',
-            ". Did you mean 'this_is_a_global_list'\?")
-        self.code_runs('a = this_is_a_global_list')
+        typo, sugg = 'this_is_a_global_lis', 'this_is_a_global_list'
+        self.code_throws(typo, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(sugg)
 
     def test_import(self):
         """Should be math.pi."""
-        self.code_throws('p = maths.pi', ". Did you mean 'math'\?")
-        self.code_runs('p = math.pi')
+        code = '{0}.pi'
+        typo, sugg = 'maths', 'math'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(good_code)
 
     def test_import2(self):
         """Should be my_imported_math.pi."""
-        code_beg = 'import math as my_imported_math\np = '
-        code_end = '.pi'
-        typo = 'my_imported_maths'
-        sugg = 'my_imported_math'
-        bad_code = code_beg + typo + code_end
-        good_code = code_beg + sugg + code_end
+        code = 'import math as my_imported_math\n{0}.pi'
+        typo, sugg = 'my_imported_maths', 'my_imported_math'
+        bad_code, good_code = format_str(code, typo, sugg)
         self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
         self.code_runs(good_code)
 
     def test_imported(self):
         """Should be math.pi."""
-        self.code_throws('p = pi', ". Did you mean 'math.pi'\?")
-        self.code_runs('p = math.pi')
+        typo, sugg = 'pi', 'math.pi'
+        self.code_throws(typo, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(sugg)
 
     def test_no_sugg(self):
         """No suggestion."""
@@ -309,12 +314,9 @@ class UnboundLocalErrorTests(AbstractTests):
 
     def test_1(self):
         """Should be foo."""
-        code_beg = 'def unboundlocalerror():\n\tfoo = 1\n\t'
-        code_end = ' +=1\nunboundlocalerror()'
-        typo = "foob"
-        sugg = "foo"
-        bad_code = code_beg + typo + code_end
-        good_code = code_beg + sugg + code_end
+        code = 'def func():\n\tfoo = 1\n\t{0} +=1\nfunc()'
+        typo, sugg = "foob", "foo"
+        bad_code, good_code = format_str(code, typo, sugg)
         self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
         self.code_runs(good_code)
 
@@ -327,19 +329,23 @@ class AttributeErrorTest(AbstractTests):
     def test_nonetype(self):
         """In-place methods like sort returns None.
         Might also happen if the functions misses a return."""
-        self.code_throws('[3, 2, 1].sort().append(4)', "")
+        code = '[].sort().append(4)'
+        self.code_throws(code, "")
 
     def test_method(self):
         """Should be 'append'."""
-        self.code_throws(
-            '[1, 2, 3].appendh(4)', ". Did you mean 'append'\?")
-        self.code_runs('[1, 2, 3].append(4)')
+        code = '[0].{0}(1)'
+        typo, sugg = 'appendh', 'append'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(good_code)
 
     def test_builtin(self):
         """Should be 'max(lst)'."""
-        self.code_throws(
-            '[1, 2, 3].max()', ". Did you mean 'max\\(list\\)'\?")
-        self.code_runs('max([1, 2, 3])')
+        bad_code = '[0].max()'
+        good_code = 'max([1])'
+        self.code_throws(bad_code, ". Did you mean 'max\\(list\\)'\?")
+        self.code_runs(good_code)
 
     def test_builtin2(self):
         """Should be 'next(gen)'."""
@@ -354,16 +360,20 @@ class AttributeErrorTest(AbstractTests):
         self.code_runs(new_code)
 
     def test_wrongmethod(self):
-        """Should be 'lst.append(4)'."""
-        self.code_throws(
-            '[1, 2, 3].add(4)', ". Did you mean 'append'\?")
-        self.code_runs('[1, 2, 3].append(4)')
+        """Should be 'lst.append(1)'."""
+        code = '[0].{0}(1)'
+        typo, sugg = 'add', 'append'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(good_code)
 
     def test_wrongmethod2(self):
         """Should be 'lst.extend([4, 5, 6])'."""
-        self.code_throws(
-            '[1, 2, 3].update([4, 5, 6])', ". Did you mean 'extend'\?")
-        self.code_runs('[1, 2, 3].extend([4, 5, 6])')
+        code = '[0].{0}([4, 5, 6])'
+        typo, sugg = 'update', 'extend'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(good_code)
 
     def test_hidden(self):
         """Accessing wrong string object."""
@@ -377,19 +387,27 @@ class AttributeErrorTest(AbstractTests):
 
     def test_from_module(self):
         """Should be math.pi."""
-        code_beg = 'p = math.'
-        typo = 'pie'
-        sugg = 'pi'
-        bad_code = code_beg + typo
-        good_code = code_beg + sugg
+        code = 'math.{0}'
+        typo, sugg = 'pie', 'pi'
+        bad_code, good_code = format_str(code, typo, sugg)
         self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
         self.code_runs(good_code)
 
     def test_from_class(self):
         """Should be 'this_is_cls_mthd'."""
-        self.code_throws(
-            'FoobarClass().this_is_cls_mth()',
-            ". Did you mean 'this_is_cls_mthd'\?")
+        code = 'FoobarClass().{0}()'
+        typo, sugg = 'this_is_cls_mth', 'this_is_cls_mthd'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(good_code)
+
+    def test_from_class2(self):
+        """Should be 'this_is_cls_mthd'."""
+        code = 'FoobarClass.{0}()'
+        typo, sugg = 'this_is_cls_mth', 'this_is_cls_mthd'
+        bad_code, good_code = format_str(code, typo, sugg)
+        # FIXME: self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(good_code)
 
     def test_removed_has_key(self):
         """Method has_key is removed from dict."""
@@ -402,14 +420,16 @@ class AttributeErrorTest(AbstractTests):
         self.code_runs(new_code)
 
     def test_removed_xreadlines(self):
-        code = 'attributeerror_removed_xreadlines()'
+        """Method xreadlines is removed."""
+        code = "import os\nwith open(os.path.realpath(__file__)) as f:" \
+            "\n\tfor l in f.xreadlines():\n\t\tpass"
         version = (3, 0)
         self.code_runs(code, up_to_version(version))
         self.code_throws(code, "", from_version(version))
 
     def test_removed_function_attributes(self):
         version = (3, 0)
-        func_name = 'some_func'
+        code = 'some_func.{0}'
         attributes = [('func_name', '__name__'),
                       ('func_doc', '__doc__'),
                       ('func_defaults', '__defaults__'),
@@ -418,21 +438,19 @@ class AttributeErrorTest(AbstractTests):
                       ('func_globals', '__globals__'),
                       ('func_code', '__code__')]
         for (old_att, new_att) in attributes:
-            old_code = func_name + '.' + old_att
-            new_code = func_name + '.' + new_att
+            old_code, new_code = format_str(code, old_att, new_att)
             self.code_runs(old_code, up_to_version(version))
             self.code_throws(old_code, "", from_version(version))
             self.code_runs(new_code)
 
     def test_removed_method_attributes(self):
         version = (3, 0)
-        meth_name = 'FoobarClass().some_method'
+        code = 'FoobarClass().some_method.{0}'
         attributes = [('im_func', '__func__'),
                       ('im_self', '__self__'),
                       ('im_class', '__self__.__class__')]
         for (old_att, new_att) in attributes:
-            old_code = meth_name + '.' + old_att
-            new_code = meth_name + '.' + new_att
+            old_code, new_code = format_str(code, old_att, new_att)
             self.code_runs(old_code, up_to_version(version))
             self.code_throws(old_code, "", from_version(version))
             self.code_runs(new_code)
@@ -445,6 +463,7 @@ class TypeErrorTests(AbstractTests):
 
 class TypeErrorMiscTests(TypeErrorTests):
     """Class for misc tests related to TypeError."""
+    # TODO: Add sugg for situation where self/cls is the missing parameter
 
     def test_unhashable(self):
         self.code_throws('dict()[list()] = 1', "")
@@ -473,11 +492,16 @@ class TypeErrorTestsUnexpectedKwArg(TypeErrorTests):
 
     def test_keyword_args(self):
         """Should be 'some_func(1)'."""
-        self.code_throws('some_func(a=1)', "")
+        code = 'some_func(a=1)'
+        self.code_throws(code, "")
 
     def test_keyword_args2(self):
         """Should be 'some_func2(abcdef=1)'."""
-        self.code_throws('some_func2(abcdf=1)', ". Did you mean 'abcdef'\?")
+        code = 'some_func2({0}=1)'
+        typo, sugg = 'abcdf', 'abcdef'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(good_code)
 
 
 class ImportErrorTests(AbstractTests):
@@ -495,30 +519,35 @@ class ImportErrorTestsNoModule(ImportErrorTests):
 
     def test_no_module(self):
         """Should be 'math'."""
-        self.code_throws('import maths', ". Did you mean 'math'\?")
-        self.code_runs('import math')
+        code = 'import {0}'
+        typo, sugg = 'maths', 'math'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(good_code)
 
     def test_no_module2(self):
         """Should be 'math'."""
-        self.code_throws(
-            'from maths import pi', ". Did you mean 'math'\?")
-        self.code_runs('from math import pi')
+        code = 'from {0} import pi'
+        typo, sugg = 'maths', 'math'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(good_code)
 
     def test_no_module3(self):
         """Should be 'math'."""
-        typo = 'maths'
-        sugg = 'math'
-        self.code_throws(
-            'import maths as my_imported_math',
-            ". Did you mean '" + sugg + "'\?")
-        self.code_runs('import math as my_imported_math')
+        code = 'import {0} as my_imported_math'
+        typo, sugg = 'maths', 'math'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(good_code)
 
     def test_no_module4(self):
         """Should be 'math'."""
-        self.code_throws(
-            'from maths import pi as three_something',
-            ". Did you mean 'math'\?")
-        self.code_runs('from math import pi as three_something')
+        code = 'from {0} import pi as three_something'
+        typo, sugg = 'maths', 'math'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(good_code)
 
 
 class ImportErrorTestsCannotImport(ImportErrorTests):
@@ -531,28 +560,35 @@ class ImportErrorTestsCannotImport(ImportErrorTests):
 
     def test_wrong_import(self):
         """Should be 'math'."""
-        self.code_throws(
-            'from itertools import pi',
-            ". Did you mean 'from math import pi'\?")
-        self.code_runs('from math import pi')
+        code = 'from {0} import pi'
+        typo, sugg = 'itertools', 'math'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.code_throws(bad_code, ". Did you mean '" + good_code + "'\?")
+        self.code_runs(good_code)
 
     def test_typo_in_method(self):
         """Should be 'pi'."""
-        self.code_throws(
-            'from math import pie', ". Did you mean 'pi'\?")
-        self.code_runs('from math import pi')
+        code = 'from math import {0}'
+        typo, sugg = 'pie', 'pi'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(good_code)
 
     def test_typo_in_method2(self):
         """Should be 'pi'."""
-        self.code_throws(
-            'from math import e, pie, log', ". Did you mean 'pi'\?")
-        self.code_runs('from math import e, pi, log')
+        code = 'from math import e, {0}, log'
+        typo, sugg = 'pie', 'pi'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(good_code)
 
     def test_typo_in_method3(self):
         """Should be 'pi'."""
-        self.code_throws(
-            'from math import pie as three_something', ". Did you mean 'pi'\?")
-        self.code_runs('from math import pi as three_something')
+        code = 'from math import {0} as three_something'
+        typo, sugg = 'pie', 'pi'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
+        self.code_runs(good_code)
 
 
 class LookupErrorTests(AbstractTests):
@@ -591,27 +627,31 @@ class SyntaxErrorTests(AbstractTests):
         self.code_throws("return 1", "")
 
     def test_print(self):
-        code = 'print "a"'
-        new_code = 'print("a")'
+        code = 'print ""'
+        new_code = 'print("")'
         version = (3, 0)
         self.code_runs(code, up_to_version(version))
         self.code_throws(code, "", from_version(version))
         self.code_runs(new_code)
 
     def test_exec(self):
-        code = 'exec "some_python_code = 1"'
-        new_code = 'exec("some_python_code = 1")'
+        code = 'exec "1"'
+        new_code = 'exec("1")'
         version = (3, 0)
         self.code_runs(code, up_to_version(version))
         self.code_throws(code, "", from_version(version))
         self.code_runs(new_code)
 
     def test_old_comparison(self):
-        code = '1 <> 2'
-        new_code = '1 != 2'
+        code = '1 {0} 2'
+        old, new = '<>', '!='
         version = (3, 0)
-        self.code_runs(code, up_to_version(version))
-        self.code_throws(code, ". Did you mean '!='\?", from_version(version))
+        old_code, new_code = format_str(code, old, new)
+        self.code_runs(old_code, up_to_version(version))
+        self.code_throws(
+            old_code,
+            ". Did you mean '" + new + "'\?",
+            from_version(version))
         self.code_runs(new_code)
 
 
@@ -630,6 +670,13 @@ class ValueErrorTests(AbstractTests):
 
     def test_math_domain(self):
         self.code_throws('lg = math.log(-1)', "")
+
+    def test_zero_len_field_in_format(self):
+        code = '"{}".format(0)'
+        version = (2, 7)
+        self.code_throws(code, "", up_to_version(version))
+        self.code_runs(code, from_version(version))
+
 
 if __name__ == '__main__':
     print(sys.version_info)
