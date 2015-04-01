@@ -147,7 +147,7 @@ class NameErrorTests(AbstractTests):
 
     def test_local(self):
         """Should be 'foo'."""
-        code = "foo = 0\n{}"
+        code = "foo = 0\n{0}"
         typo, sugg = "foob", "foo"
         bad_code, good_code = format_str(code, typo, sugg)
         self.code_throws(bad_code, ". Did you mean '" + sugg + "'\?")
