@@ -309,7 +309,7 @@ class NameErrorTests(AbstractTests):
         """Should import functools first."""
         self.throws(
             'w = functools.wraps', nameerror,
-            ". Did you mean 're.functools', to import functools first\?")
+            ". Did you mean ('re.functools', )?to import functools first\?")
 
     def test_attribute_hidden(self):
         """Should be math.pi but module math is hidden."""
