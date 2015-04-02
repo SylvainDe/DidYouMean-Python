@@ -8,7 +8,7 @@ from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     NEED_MORE_VALUES_RE, UNHASHABLE_RE, MISSING_PARENT_RE, INVALID_LITERAL_RE,\
     NB_ARG_RE, INVALID_SYNTAX_RE
 import unittest2
-import math  # To be removed soon
+import math
 import sys
 import re
 
@@ -201,7 +201,7 @@ class NameErrorTests(AbstractTests):
 
     def test_import(self):
         """Should be math.pi."""
-        code = '{0}.pi'
+        code = 'import math\n{0}.pi'
         typo, sugg = 'maths', 'math'
         bad_code, good_code = format_str(code, typo, sugg)
         self.throws(bad_code, NAMEERROR, "'" + sugg + "'")
@@ -217,9 +217,19 @@ class NameErrorTests(AbstractTests):
 
     def test_imported(self):
         """Should be math.pi."""
+        code = 'import math\n{0}'
         typo, sugg = 'pi', 'math.pi'
-        self.throws(typo, NAMEERROR, "'" + sugg + "'")
-        self.runs(sugg)
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, NAMEERROR, "'" + sugg + "'")
+        self.runs(good_code)
+
+    def test_imported_twice(self):
+        """Should be math.pi."""
+        code = 'import math\nimport math\n{0}'
+        typo, sugg = 'pi', 'math.pi'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, NAMEERROR, "'" + sugg + "'")
+        self.runs(good_code)
 
     def test_no_sugg(self):
         """No suggestion."""
@@ -297,25 +307,30 @@ class NameErrorTests(AbstractTests):
 
     def test_attribute_hidden(self):
         """Should be math.pi but module math is hidden."""
+        math.pi  # just a way to say that math module is needed in globals
         code = 'math = ""\np = pi'
         self.throws(code, NAMEERROR, "'math.pi' (hidden)")
 
     def test_self(self):
+        """"Should be self.babar."""
         self.throws(
             'FoobarClass().nameerror_self()',
             NAMEERROR, ["'self.babar'"])
 
     def test_self2(self):
+        """Should be self.this_is_cls_mthd."""
         self.throws(
             'FoobarClass().nameerror_self2()', NAMEERROR,
             ["'FoobarClass.this_is_cls_mthd'", "'self.this_is_cls_mthd'"])
 
     def test_cls(self):
+        """Should be cls.this_is_cls_mthd."""
         self.throws(
             'FoobarClass().nameerror_cls()', NAMEERROR,
             ["'FoobarClass.this_is_cls_mthd'", "'cls.this_is_cls_mthd'"])
 
     def test_unmatched_msg(self):
+        """Test that arbitrary strings are supported."""
         self.throws(
             'raise NameError("unmatched NAMEERROR")',
             UNKNOWN_NAMEERROR)
@@ -333,6 +348,7 @@ class UnboundLocalErrorTests(AbstractTests):
         self.runs(good_code)
 
     def test_unmatched_msg(self):
+        """Test that arbitrary strings are supported."""
         self.throws(
             'raise UnboundLocalError("unmatched UNBOUNDLOCAL")',
             UNKNOWN_UNBOUNDLOCAL)
@@ -401,7 +417,7 @@ class AttributeErrorTest(AbstractTests):
 
     def test_from_module(self):
         """Should be math.pi."""
-        code = 'math.{0}'
+        code = 'import math\nmath.{0}'
         typo, sugg = 'pie', 'pi'
         bad_code, good_code = format_str(code, typo, sugg)
         self.throws(bad_code, ATTRIBUTEERROR, "'" + sugg + "'")
@@ -448,6 +464,7 @@ class AttributeErrorTest(AbstractTests):
         self.throws(code, ATTRIBUTEERROR, [], from_version(version))
 
     def test_removed_function_attributes(self):
+        """Some functions attributes are removed."""
         version = (3, 0)
         code = 'some_func.{0}'
         attributes = [('func_name', '__name__'),
@@ -464,6 +481,8 @@ class AttributeErrorTest(AbstractTests):
             self.runs(new_code)
 
     def test_removed_method_attributes(self):
+        """Some methods attributes are removed."""
+        version = (3, 0)
         version = (3, 0)
         code = 'FoobarClass().some_method.{0}'
         attributes = [('im_func', '__func__'),
@@ -476,12 +495,14 @@ class AttributeErrorTest(AbstractTests):
             self.runs(new_code)
 
     def test_unmatched_msg(self):
+        """Test that arbitrary strings are supported."""
         self.throws(
             'raise AttributeError("unmatched ATTRIBUTEERROR")',
             UNKNOWN_ATTRIBUTEERROR)
 
     # TODO: Add sugg for situation where self/cls is the missing parameter
     def test_unhashable(self):
+        """Test that other errors do not crash."""
         self.throws('dict()[list()] = 1', UNHASHABLE)
 
     def test_not_sub(self):
@@ -582,6 +603,7 @@ class ImportErrorTests(AbstractTests):
         self.runs(good_code)
 
     def test_unmatched_msg(self):
+        """Test that arbitrary strings are supported."""
         self.throws(
             'raise ImportError("unmatched IMPORTERROR")',
             UNKNOWN_IMPORTERROR)
@@ -658,7 +680,8 @@ class ValueErrorTests(AbstractTests):
         self.throws('int("toto")', INVALIDLITERAL)
 
     def test_math_domain(self):
-        self.throws('lg = math.log(-1)', MATHDOMAIN)
+        code = 'import math\nlg = math.log(-1)'
+        self.throws(code, MATHDOMAIN)
 
     def test_zero_len_field_in_format(self):
         code = '"{}".format(0)'

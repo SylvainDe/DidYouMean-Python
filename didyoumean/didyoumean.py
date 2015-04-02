@@ -127,6 +127,7 @@ def suggest_name_as_attribute(name, objdict):
         for i, obj in enumerate(objs):
             if hasattr(obj, name):
                 yield quote(nameobj + '.' + name) + (' (hidden)' if i else '')
+                break
 
 
 def suggest_name_as_standard_module(name):
