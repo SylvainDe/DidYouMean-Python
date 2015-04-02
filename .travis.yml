@@ -6,8 +6,8 @@ python:
   - "3.3"
   - "3.4"
   - "nightly"
-  - "pypy"
-  - "pypy3"
+# - "pypy"
+# - "pypy3"
 
 install:
   - pip install pep8

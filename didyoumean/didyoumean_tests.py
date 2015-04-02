@@ -6,7 +6,7 @@ from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     NOMODULE_RE, CANNOTIMPORT_RE, INDEXOUTOFRANGE_RE, ZERO_LEN_FIELD_RE,\
     MATH_DOMAIN_ERROR_RE, TOO_MANY_VALUES_UNPACK_RE, OUTSIDE_FUNCTION_RE,\
     NEED_MORE_VALUES_RE, UNHASHABLE_RE, MISSING_PARENT_RE, INVALID_LITERAL_RE,\
-    NB_ARG_RE, INVALID_SYNTAX_RE
+    NB_ARG_RE, INVALID_SYNTAX_RE, EXPECTED_LENGTH_RE, INVALID_COMP_RE
 import unittest2
 import math
 import sys
@@ -151,6 +151,7 @@ UNKNOWN_ATTRIBUTEERROR = (AttributeError, "^.*$")
 INVALIDSYNTAX = (SyntaxError, INVALID_SYNTAX_RE)
 OUTSIDEFUNC = (SyntaxError, OUTSIDE_FUNCTION_RE)
 MISSINGPARENT = (SyntaxError, MISSING_PARENT_RE)
+INVALIDCOMP = (SyntaxError, INVALID_COMP_RE)
 
 
 class NameErrorTests(AbstractTests):
@@ -800,14 +801,20 @@ class RegexTests(unittest2.TestCase):
     def test_unhashable_type(self):
         """ Test UNHASHABLE_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5
-        s = "unhashable type: 'list'"
-        self.regex_matches(s, UNHASHABLE_RE, ('list',))
+        s1 = "unhashable type: 'list'"
+        # PyPy/PyPy3
+        s2 = "'list' objects are unhashable"
+        self.regex_matches(s1, UNHASHABLE_RE, ('list',))
+        self.regex_matches(s2, UNHASHABLE_RE, ('list',))
 
     def test_outside_function(self):
         """ Test OUTSIDE_FUNCTION_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5
-        s = "'return' outside function"
-        self.regex_matches(s, OUTSIDE_FUNCTION_RE, ('return',))
+        s1 = "'return' outside function"
+        # PyPy/PyPy3
+        s2 = "return outside function"
+        self.regex_matches(s1, OUTSIDE_FUNCTION_RE, ('return',))
+        self.regex_matches(s2, OUTSIDE_FUNCTION_RE, ('return',))
 
     def test_nb_positional_argument(self):
         """ Test NB_ARG_RE ."""
@@ -845,6 +852,18 @@ class RegexTests(unittest2.TestCase):
         # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s = "invalid syntax"
         self.regex_matches(s, INVALID_SYNTAX_RE, ())
+
+    def test_invalid_comp(self):
+        """ Test INVALID_COMP_RE ."""
+        # PyPy3
+        s = "invalid comparison"
+        self.regex_matches(s, INVALID_COMP_RE, ())
+
+    def test_expected_length(self):
+        """ Test EXPECTED_LENGTH_RE ."""
+        # PyPy
+        s = "expected length 3, got 2"
+        self.regex_matches(s, EXPECTED_LENGTH_RE, ('3', '2'))
 
 
 class GetSuggStringTests(unittest2.TestCase):
