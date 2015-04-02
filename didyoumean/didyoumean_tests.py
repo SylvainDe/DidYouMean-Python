@@ -98,7 +98,8 @@ class AbstractTests(unittest2.TestCase):
         if version_in_range(version_range):
             exec(code)
 
-    def throws(self, code, error_info, sugg=None, version_range=ALL_VERSIONS):
+    def throws(self, code, error_info,
+               sugg=None, version_range=ALL_VERSIONS, check_re=True):
         """Helper function to run code and check it throws."""
         if version_in_range(version_range):
             error_type, error_msg = error_info
@@ -108,7 +109,8 @@ class AbstractTests(unittest2.TestCase):
             except:
                 type_caught, value, traceback = sys.exc_info()
                 self.assertTrue(issubclass(error_type, type_caught))
-                self.assertRegexpMatches(''.join(value.args[0]), error_msg)
+                if check_re:
+                    self.assertRegexpMatches(''.join(value.args[0]), error_msg)
                 if sugg is None:
                     sugg = []
                 if not isinstance(sugg, list):
@@ -436,12 +438,8 @@ class AttributeErrorTest(AbstractTests):
         """Should be 'this_is_cls_mthd'."""
         code = 'FoobarClass.{0}()'
         typo, sugg = 'this_is_cls_mth', 'this_is_cls_mthd'
-        _, good_code = format_str(code, typo, sugg)
-        # FIXME
-        # self.throws(
-        #     bad_code,
-        #     ATTRIBUTEERROR,
-        #     ". Did you mean '" + sugg + "'\?")
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, ATTRIBUTEERROR, [], check_re=False)  # FIXME
         self.runs(good_code)
 
     def test_removed_has_key(self):
