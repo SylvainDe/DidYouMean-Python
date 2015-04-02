@@ -623,7 +623,7 @@ class SyntaxErrorTests(AbstractTests):
         version2 = (3, 4)
         self.runs(code, up_to_version(version))
         self.throws(code, INVALIDSYNTAX, [], (version, version2))
-        self.throws(code, MISSINGPARENT, [], from_version(version2))
+        self.throws(code, INVALIDSYNTAX, [], from_version(version2))
         self.runs(new_code)
 
     def test_exec(self):
@@ -632,7 +632,7 @@ class SyntaxErrorTests(AbstractTests):
         version2 = (3, 4)
         self.runs(code, up_to_version(version))
         self.throws(code, INVALIDSYNTAX, [], (version, version2))
-        self.throws(code, MISSINGPARENT, [], from_version(version2))
+        self.throws(code, INVALIDSYNTAX, [], from_version(version2))
         self.runs(new_code)
 
     def test_old_comparison(self):
