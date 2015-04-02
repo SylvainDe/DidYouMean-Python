@@ -701,16 +701,16 @@ class RegexTests(unittest2.TestCase):
         """Check that text matches regexp giving groups given values."""
         self.assertRegexpMatches(text, regexp)   # does pretty printing
         m = re.match(regexp, text)
-        assert(m)
-        assert(groups == m.groups())
+        self.assertTrue(m)
+        self.assertEqual(groups, m.groups())
 
     def test_unbound_assignment(self):
-        # Python 2.6/2.7/3.2/3.3/3.4
+        # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s = "local variable 'some_var' referenced before assignment"
         self.regexMatches(s, UNBOUNDERROR_RE, ('some_var',))
 
     def test_name_not_defined(self):
-        # Python 2.6/2.7/3.2/3.3/3.4
+        # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s1 = "name 'some_name' is not defined"
         # Python 2.6/2.7/3.2/3.3
         s2 = "global name 'some_name' is not defined"
@@ -719,19 +719,23 @@ class RegexTests(unittest2.TestCase):
         self.regexMatches(s2, NAMENOTDEFINED_RE, groups)
 
     def test_attribute_error(self):
-        # Python 2.6/2.7/3.2/3.3/3.4
+        # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s1 = "'some.class' object has no attribute 'attri'"
         g1 = ('some.class', 'attri')
         # Python 2.6/2.7
         s2 = "SomeClass instance has no attribute 'attri'"
         g2 = ('SomeClass', 'attri')
+        # Python 3.5
+        s3 = "module 'some_module' has no attribute 'attri'"
+        g3 = ('some_module', 'attri')
         self.regexMatches(s1, ATTRIBUTEERROR_RE, g1)
         self.regexMatches(s2, ATTRIBUTEERROR_RE, g2)
+        self.regexMatches(s3, ATTRIBUTEERROR_RE, g3)
 
     def test_cannot_import(self):
         # Python 2.6/2.7/3.2/3.3
         s1 = "cannot import name pie"
-        # Python 3.4
+        # Python 3.4/3.5
         s2 = "cannot import name 'pie'"
         groups = ('pie',)
         self.regexMatches(s1, CANNOTIMPORT_RE, groups)
@@ -740,14 +744,14 @@ class RegexTests(unittest2.TestCase):
     def test_no_module_named(self):
         # Python 2.6/2.7/3.2
         s1 = "No module named fake_module"
-        # Python 3.3/3.4
+        # Python 3.3/3.4/3.5
         s2 = "No module named 'fake_module'"
         groups = ('fake_module', )
         self.regexMatches(s1, NOMODULE_RE, groups)
         self.regexMatches(s2, NOMODULE_RE, groups)
 
     def test_index_out_of_range(self):
-        # Python 2.6/2.7/3.2/3.3/3.4
+        # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s = "list index out of range"
         self.regexMatches(s, INDEXOUTOFRANGE_RE, ())
 
@@ -756,7 +760,7 @@ class RegexTests(unittest2.TestCase):
         s1 = "'function' object is unsubscriptable"
         # Python 2.7
         s2 = "'function' object has no attribute '__getitem__'"
-        # Python 3.2/3.3/3.4
+        # Python 3.2/3.3/3.4/3.5
         s3 = "'function' object is not subscriptable"
         groups = ('function',)
         self.regexMatches(s1, UNSUBSCRIBTABLE_RE, groups)
@@ -764,7 +768,7 @@ class RegexTests(unittest2.TestCase):
         self.regexMatches(s3, UNSUBSCRIBTABLE_RE, groups)
 
     def test_unexpected_kw_arg(self):
-        # Python 2.6/2.7/3.2/3.3/3.4
+        # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s = "some_func() got an unexpected keyword argument 'a'"
         self.regexMatches(s, UNEXPECTED_KEYWORDARG_RE, ('some_func', 'a'))
 
@@ -774,25 +778,25 @@ class RegexTests(unittest2.TestCase):
         self.regexMatches(s, ZERO_LEN_FIELD_RE, ())
 
     def test_math_domain_error(self):
-        # Python 2.6/2.7/3.2/3.3/3.4
+        # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s = "math domain error"
         self.regexMatches(s, MATH_DOMAIN_ERROR_RE, ())
 
     def test_too_many_values(self):
         # Python 2.6/2.7
         s1 = "too many values to unpack"
-        # Python 3.2/3.3/3.4
+        # Python 3.2/3.3/3.4/3.5
         s2 = "too many values to unpack (expected 3)"
         self.regexMatches(s1, TOO_MANY_VALUES_UNPACK_RE, ())
         self.regexMatches(s2, TOO_MANY_VALUES_UNPACK_RE, ())
 
     def test_unhashable_type(self):
-        # Python 2.6/2.7/3.2/3.3/3.4
+        # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s = "unhashable type: 'list'"
         self.regexMatches(s, UNHASHABLE_RE, ('list',))
 
     def test_outside_function(self):
-        # Python 2.6/2.7/3.2/3.3/3.4
+        # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s = "'return' outside function"
         self.regexMatches(s, OUTSIDE_FUNCTION_RE, ('return',))
 
@@ -801,7 +805,7 @@ class RegexTests(unittest2.TestCase):
         s1 = "some_func() takes exactly 1 argument (2 given)"
         # Python 3.2
         s2 = "some_func() takes exactly 1 positional argument (2 given)"
-        # Python 3.3/3.4
+        # Python 3.3/3.4/3.5
         s3 = "some_func() takes 1 positional argument but 2 were given"
         groups = ('some_func',)
         self.regexMatches(s1, NB_ARG_RE, groups)
@@ -809,17 +813,17 @@ class RegexTests(unittest2.TestCase):
         self.regexMatches(s3, NB_ARG_RE, groups)
 
     def test_need_more_values_to_unpack(self):
-        # Python 2.6/2.7/3.2/3.3/3.4
+        # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s = "need more than 2 values to unpack"
         self.regexMatches(s, NEED_MORE_VALUES_RE, ())
 
     def test_missing_parentheses(self):
-        # Python 3.4
+        # Python 3.4/3.5
         s = "Missing parentheses in call to 'exec'"
         self.regexMatches(s, MISSING_PARENT_RE, ('exec',))
 
     def test_invalid_literal(self):
-        # Python 2.6/2.7/3.2/3.3/3.4
+        # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s = "invalid literal for int() with base 10: 'toto'"
         self.regexMatches(s, INVALID_LITERAL_RE, ('int', 'toto'))
 

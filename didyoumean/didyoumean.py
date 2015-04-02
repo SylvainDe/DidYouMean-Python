@@ -103,9 +103,10 @@ def get_name_error_sugg(type_, value, frame):
     error_re = UNBOUNDERROR_RE if issubclass(type_, UnboundLocalError) \
         else NAMENOTDEFINED_RE
     match = re.match(error_re, error_msg)
-    assert match, "No match for %s" % error_msg
-    name, = match.groups()
-    return get_name_suggestions(name, frame)
+    if match:
+        name, = match.groups()
+        return get_name_suggestions(name, frame)
+    print("Oops, %s did not match", error_msg)
 
 
 def get_name_suggestions(name, frame):
@@ -153,9 +154,10 @@ def get_attribute_error_sugg(type_, value, frame):
     assert len(value.args) == 1
     error_msg, = value.args
     match = re.match(ATTRIBUTEERROR_RE, error_msg)
-    assert match, "No match for %s" % error_msg
-    type_str, attr = match.groups()
-    return get_attribute_suggestions(type_str, attr, frame)
+    if match:
+        type_str, attr = match.groups()
+        return get_attribute_suggestions(type_str, attr, frame)
+    print("Oops, %s did not match", error_msg)
 
 
 def get_attribute_suggestions(type_str, attribute, frame):
@@ -219,9 +221,10 @@ def get_import_error_sugg(type_, value, frame):
         return get_module_name_suggestion(module_str)
     else:
         match = re.match(CANNOTIMPORT_RE, error_msg)
-        assert match, "No match for %s" % error_msg
-        imported_name, = match.groups()
-        return get_imported_name_suggestion(imported_name, frame)
+        if match:
+            imported_name, = match.groups()
+            return get_imported_name_suggestion(imported_name, frame)
+    print("Oops, %s did not match", error_msg)
 
 
 def get_module_name_suggestion(module_str):
