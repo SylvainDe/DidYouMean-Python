@@ -701,7 +701,7 @@ class RegexTests(unittest2.TestCase):
 
     def test_unbound_assignment(self):
         """ Test UNBOUNDERROR_RE ."""
-        # Python 2.6/2.7/3.2/3.3/3.4/3.5
+        # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy
         s = "local variable 'some_var' referenced before assignment"
         self.regex_matches(s, UNBOUNDERROR_RE, ('some_var',))
 
@@ -709,7 +709,7 @@ class RegexTests(unittest2.TestCase):
         """ Test NAMENOTDEFINED_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s1 = "name 'some_name' is not defined"
-        # Python 2.6/2.7/3.2/3.3
+        # Python 2.6/2.7/3.2/3.3/PyPy
         s2 = "global name 'some_name' is not defined"
         groups = ('some_name',)
         self.regex_matches(s1, NAMENOTDEFINED_RE, groups)
@@ -717,24 +717,30 @@ class RegexTests(unittest2.TestCase):
 
     def test_attribute_error(self):
         """ Test ATTRIBUTEERROR_RE ."""
-        # Python 2.6/2.7/3.2/3.3/3.4/3.5
+        # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy
         s1 = "'some.class' object has no attribute 'attri'"
         g1 = ('some.class', 'attri')
-        # Python 2.6/2.7
+        # Python 2.6/2.7/PyPy
         s2 = "SomeClass instance has no attribute 'attri'"
         g2 = ('SomeClass', 'attri')
         # Python 3.5
         s3 = "module 'some_module' has no attribute 'attri'"
         g3 = ('some_module', 'attri')
+        # Python 2.6/2.7
+        s4 = "class SomeClass has no attribute 'attri'"
+        # Python 3.2/3.3/3.4/3.5
+        s5 = "type object 'SomeClass' has no attribute 'attri'"
         self.regex_matches(s1, ATTRIBUTEERROR_RE, g1)
         self.regex_matches(s2, ATTRIBUTEERROR_RE, g2)
         self.regex_matches(s3, ATTRIBUTEERROR_RE, g3)
+        # FIXME self.regex_matches(s4, ATTRIBUTEERROR_RE, g2)
+        # FIXME self.regex_matches(s5, ATTRIBUTEERROR_RE, g2)
 
     def test_cannot_import(self):
         """ Test CANNOTIMPORT_RE ."""
         # Python 2.6/2.7/3.2/3.3
         s1 = "cannot import name pie"
-        # Python 3.4/3.5
+        # Python 3.4/3.5/PyPy
         s2 = "cannot import name 'pie'"
         groups = ('pie',)
         self.regex_matches(s1, CANNOTIMPORT_RE, groups)
@@ -742,7 +748,7 @@ class RegexTests(unittest2.TestCase):
 
     def test_no_module_named(self):
         """ Test NOMODULE_RE ."""
-        # Python 2.6/2.7/3.2
+        # Python 2.6/2.7/3.2/PyPy
         s1 = "No module named fake_module"
         # Python 3.3/3.4/3.5
         s2 = "No module named 'fake_module'"
@@ -752,7 +758,7 @@ class RegexTests(unittest2.TestCase):
 
     def test_index_out_of_range(self):
         """ Test INDEXOUTOFRANGE_RE ."""
-        # Python 2.6/2.7/3.2/3.3/3.4/3.5
+        # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy
         s = "list index out of range"
         self.regex_matches(s, INDEXOUTOFRANGE_RE, ())
 
@@ -762,7 +768,7 @@ class RegexTests(unittest2.TestCase):
         s1 = "'function' object is unsubscriptable"
         # Python 2.7
         s2 = "'function' object has no attribute '__getitem__'"
-        # Python 3.2/3.3/3.4/3.5
+        # Python 3.2/3.3/3.4/3.5/PyPy
         s3 = "'function' object is not subscriptable"
         groups = ('function',)
         self.regex_matches(s1, UNSUBSCRIBTABLE_RE, groups)
@@ -771,7 +777,7 @@ class RegexTests(unittest2.TestCase):
 
     def test_unexpected_kw_arg(self):
         """ Test UNEXPECTED_KEYWORDARG_RE ."""
-        # Python 2.6/2.7/3.2/3.3/3.4/3.5
+        # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy
         s = "some_func() got an unexpected keyword argument 'a'"
         self.regex_matches(s, UNEXPECTED_KEYWORDARG_RE, ('some_func', 'a'))
 
@@ -783,7 +789,7 @@ class RegexTests(unittest2.TestCase):
 
     def test_math_domain_error(self):
         """ Test MATH_DOMAIN_ERROR_RE ."""
-        # Python 2.6/2.7/3.2/3.3/3.4/3.5
+        # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy
         s = "math domain error"
         self.regex_matches(s, MATH_DOMAIN_ERROR_RE, ())
 
@@ -807,7 +813,7 @@ class RegexTests(unittest2.TestCase):
 
     def test_outside_function(self):
         """ Test OUTSIDE_FUNCTION_RE ."""
-        # Python 2.6/2.7/3.2/3.3/3.4/3.5
+        # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy
         s1 = "'return' outside function"
         # PyPy/PyPy3
         s2 = "return outside function"
@@ -818,7 +824,7 @@ class RegexTests(unittest2.TestCase):
         """ Test NB_ARG_RE ."""
         # Python 2.6/2.7
         s1 = "some_func() takes exactly 1 argument (2 given)"
-        # Python 3.2
+        # Python 3.2/PyPy
         s2 = "some_func() takes exactly 1 positional argument (2 given)"
         # Python 3.3/3.4/3.5
         s3 = "some_func() takes 1 positional argument but 2 were given"
