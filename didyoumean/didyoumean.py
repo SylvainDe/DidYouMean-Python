@@ -89,8 +89,8 @@ def debug_traceback(traceback):
 def print_error_info(type_, value, _):
     """Print error information."""
     assert issubclass(type_, Exception)
-    value = value
-    # print(type_, value)
+    # value = value
+    print(type_, value)
     return []
 
 
