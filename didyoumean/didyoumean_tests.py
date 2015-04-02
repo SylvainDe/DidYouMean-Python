@@ -1,14 +1,14 @@
 # -*- coding: utf-8
 """Unit tests for code in didyoumean.py."""
-from didyoumean_decorator import didyoumean
+from didyoumean import get_suggestions_for_exception, get_suggestion_string
 from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     ATTRIBUTEERROR_RE, UNSUBSCRIBTABLE_RE, UNEXPECTED_KEYWORDARG_RE,\
     NOMODULE_RE, CANNOTIMPORT_RE, INDEXOUTOFRANGE_RE, ZERO_LEN_FIELD_RE,\
     MATH_DOMAIN_ERROR_RE, TOO_MANY_VALUES_UNPACK_RE, OUTSIDE_FUNCTION_RE,\
     NEED_MORE_VALUES_RE, UNHASHABLE_RE, MISSING_PARENT_RE, INVALID_LITERAL_RE,\
-    NB_ARG_RE
+    NB_ARG_RE, INVALID_SYNTAX_RE
 import unittest2
-import math
+import math  # To be removed soon
 import sys
 import re
 
@@ -29,7 +29,7 @@ class FoobarClass():
 
     def __init__(self):
         """Constructor."""
-        self.bar = 2
+        self.babar = 2
 
     @classmethod
     def this_is_cls_mthd(cls):
@@ -37,8 +37,8 @@ class FoobarClass():
         return 5
 
     def nameerror_self(self):
-        """Should be self.bar."""
-        return bar
+        """Should be self.babar."""
+        return babar
 
     def nameerror_self2(self):
         """Should be self.this_is_cls_mthd (or FoobarClass)."""
@@ -53,14 +53,14 @@ class FoobarClass():
         pass
 
 
-def some_func(foo):
+def some_func(babar):
     """Dummy function for testing purposes."""
-    pass
+    return babar
 
 
 def some_func2(abcdef=None):
     """Dummy function for testing purposes."""
-    pass
+    return abcdef
 
 
 # Logic to be able to have different tests on various version of Python
@@ -84,88 +84,73 @@ def format_str(template, *args):
     return [template.format(arg) for arg in args]
 
 
-# Wrappers to exec some code with or without a decorator."""
-def exec_wrapper(code):
-    """Dirty function to exec some code."""
-    exec(code)
-
-
-@didyoumean
-def exec_wrapper_deco(code):
-    """Dirty function to exec some code with a didyoumean decorator."""
-    exec(code)
+def version_in_range(version_range):
+    beg, end = version_range
+    return beg <= sys.version_info < end
 
 
 # Tests
 class AbstractTests(unittest2.TestCase):
-    """Generic class for unit tests."""
+    """Generic class to test get_suggestions_for_exception."""
 
     def runs(self, code, version_range=ALL_VERSIONS):
         """Helper function to run code and check it works."""
-        beg, end = version_range
-        if beg <= sys.version_info < end:
-            exec_wrapper(code)
-            exec_wrapper_deco(code)
+        if version_in_range(version_range):
+            exec(code)
 
-    def throws(self, code, error_info, sugg, version_range=ALL_VERSIONS):
+    def throws(self, code, error_info, sugg=None, version_range=ALL_VERSIONS):
         """Helper function to run code and check it throws."""
-        beg, end = version_range
-        if beg <= sys.version_info < end:
+        if version_in_range(version_range):
             error_type, error_msg = error_info
-            trunc = error_msg[:-1] if error_msg.endswith('$') else error_msg
-            error_msg_with_sugg = trunc + sugg + "$"
-            self.my_assert_raises_rexp(
-                error_type,
-                error_msg,
-                exec_wrapper,
-                code)
-            self.my_assert_raises_rexp(
-                error_type,
-                error_msg_with_sugg,
-                exec_wrapper_deco,
-                code)
-
-    def my_assert_raises_rexp(self, type_arg, message_re, func, *args, **kwds):
-        """Substitute for TestCase.assertRaisesRegex
-        because it is sometimes missing."""
-        try:
-            func(*args, **kwds)
-        except:
-            type_caught, value, traceback = sys.exc_info()
-            self.assertTrue(issubclass(type_arg, type_caught))
-            self.assertRegexpMatches(''.join(value.args[0]), message_re)
-            return
-        self.assertTrue(False)
+            try:
+                exec(code)
+                self.assertTrue(False)
+            except:
+                type_caught, value, traceback = sys.exc_info()
+                self.assertTrue(issubclass(error_type, type_caught))
+                self.assertRegexpMatches(''.join(value.args[0]), error_msg)
+                if sugg is None:
+                    sugg = []
+                if not isinstance(sugg, list):
+                    sugg = [sugg]
+                suggestions = sorted(
+                    get_suggestions_for_exception(
+                        type_caught, value, traceback))
+                self.assertEqual(suggestions, sugg)
 
 
 # NameError
-nameerror = (NameError, NAMENOTDEFINED_RE)
+NAMEERROR = (NameError, NAMENOTDEFINED_RE)
+UNKNOWN_NAMEERROR = (NameError, "^.*$")
 # UnboundLocalError
-unbounderror = (UnboundLocalError, UNBOUNDERROR_RE)
+UNBOUNDLOCAL = (UnboundLocalError, UNBOUNDERROR_RE)
+UNKNOWN_UNBOUNDLOCAL = (UnboundLocalError, "^.*$")
 # TypeError
-nbargerror = (TypeError, NB_ARG_RE)
-unhashableerror = (TypeError, UNHASHABLE_RE)
-notsubscriberror = (TypeError, UNSUBSCRIBTABLE_RE)
-unexpectedkwerror = (TypeError, UNEXPECTED_KEYWORDARG_RE)
+NBARGERROR = (TypeError, NB_ARG_RE)
+UNHASHABLE = (TypeError, UNHASHABLE_RE)
+UNSUBSCRIBTABLE = (TypeError, UNSUBSCRIBTABLE_RE)
+UNEXPECTEDKWARG = (TypeError, UNEXPECTED_KEYWORDARG_RE)
 # ImportError
-nomoduleerror = (ImportError, NOMODULE_RE)
-cannotimport = (ImportError, CANNOTIMPORT_RE)
+NOMODULE = (ImportError, NOMODULE_RE)
+CANNOTIMPORT = (ImportError, CANNOTIMPORT_RE)
+UNKNOWN_IMPORTERROR = (ImportError, "^.*$")
 # KeyError
-keyerror = (KeyError, "")
+KEYERROR = (KeyError, "^.*$")
 # IndexError
-outofrangeerror = (IndexError, INDEXOUTOFRANGE_RE)
+OUTOFRANGE = (IndexError, INDEXOUTOFRANGE_RE)
 # ValueError
-toomanyvalueserror = (ValueError, TOO_MANY_VALUES_UNPACK_RE)
-needmorevalues = (ValueError, NEED_MORE_VALUES_RE)
-mathdomainerror = (ValueError, MATH_DOMAIN_ERROR_RE)
-zerolenerror = (ValueError, ZERO_LEN_FIELD_RE)
-invalidliteral = (ValueError, INVALID_LITERAL_RE)
+TOOMANYVALUES = (ValueError, TOO_MANY_VALUES_UNPACK_RE)
+NEEDMOREVALUES = (ValueError, NEED_MORE_VALUES_RE)
+MATHDOMAIN = (ValueError, MATH_DOMAIN_ERROR_RE)
+ZEROLENERROR = (ValueError, ZERO_LEN_FIELD_RE)
+INVALIDLITERAL = (ValueError, INVALID_LITERAL_RE)
 # AttributeError
-attributeerror = (AttributeError, ATTRIBUTEERROR_RE)
+ATTRIBUTEERROR = (AttributeError, ATTRIBUTEERROR_RE)
+UNKNOWN_ATTRIBUTEERROR = (AttributeError, "^.*$")
 # SyntaxError
-syntaxerror = (SyntaxError, "")  # "^invalid syntax$"
-outsidefunctionerror = (SyntaxError, OUTSIDE_FUNCTION_RE)
-missingparent = (SyntaxError, MISSING_PARENT_RE)
+INVALIDSYNTAX = (SyntaxError, INVALID_SYNTAX_RE)
+OUTSIDEFUNC = (SyntaxError, OUTSIDE_FUNCTION_RE)
+MISSINGPARENT = (SyntaxError, MISSING_PARENT_RE)
 
 
 class NameErrorTests(AbstractTests):
@@ -176,7 +161,7 @@ class NameErrorTests(AbstractTests):
         code = "foo = 0\n{0}"
         typo, sugg = "foob", "foo"
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, nameerror, ". Did you mean '" + sugg + "'\?")
+        self.throws(bad_code, NAMEERROR, "'" + sugg + "'")
         self.runs(good_code)
 
     def test_1_arg(self):
@@ -184,7 +169,7 @@ class NameErrorTests(AbstractTests):
         code = "def func(foo):\n\t{0}\nfunc(1)"
         typo, sugg = "foob", "foo"
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, nameerror, ". Did you mean '" + sugg + "'\?")
+        self.throws(bad_code, NAMEERROR, "'" + sugg + "'")
         self.runs(good_code)
 
     def test_n_args(self):
@@ -192,26 +177,26 @@ class NameErrorTests(AbstractTests):
         code = "def func(fool, foot, bar):\n\t{0}\nfunc(1, 2, 3)"
         typo, sugg1, sugg2 = "foob", "foot", "fool"
         bad, good1, good2 = format_str(code, typo, sugg1, sugg2)
-        self.throws(bad, nameerror, ". Did you mean 'foot', 'fool'\?")
+        self.throws(bad, NAMEERROR, ["'fool'", "'foot'"])
         self.runs(good1)
         self.runs(good2)
 
     def test_builtin(self):
         """Should be 'max'."""
         typo, sugg = 'maxi', 'max'
-        self.throws(typo, nameerror, ". Did you mean '" + sugg + "'\?")
+        self.throws(typo, NAMEERROR, "'" + sugg + "'")
         self.runs(sugg)
 
     def test_keyword(self):
         """Should be 'pass'."""
         typo, sugg = 'passs', 'pass'
-        self.throws(typo, nameerror, ". Did you mean '" + sugg + "'\?")
+        self.throws(typo, NAMEERROR, "'" + sugg + "'")
         self.runs(sugg)
 
     def test_global(self):
         """Should be this_is_a_global_list."""
         typo, sugg = 'this_is_a_global_lis', 'this_is_a_global_list'
-        self.throws(typo, nameerror, ". Did you mean '" + sugg + "'\?")
+        self.throws(typo, NAMEERROR, "'" + sugg + "'")
         self.runs(sugg)
 
     def test_import(self):
@@ -219,7 +204,7 @@ class NameErrorTests(AbstractTests):
         code = '{0}.pi'
         typo, sugg = 'maths', 'math'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, nameerror, ". Did you mean '" + sugg + "'\?")
+        self.throws(bad_code, NAMEERROR, "'" + sugg + "'")
         self.runs(good_code)
 
     def test_import2(self):
@@ -227,39 +212,39 @@ class NameErrorTests(AbstractTests):
         code = 'import math as my_imported_math\n{0}.pi'
         typo, sugg = 'my_imported_maths', 'my_imported_math'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, nameerror, ". Did you mean '" + sugg + "'\?")
+        self.throws(bad_code, NAMEERROR, "'" + sugg + "'")
         self.runs(good_code)
 
     def test_imported(self):
         """Should be math.pi."""
         typo, sugg = 'pi', 'math.pi'
-        self.throws(typo, nameerror, ". Did you mean '" + sugg + "'\?")
+        self.throws(typo, NAMEERROR, "'" + sugg + "'")
         self.runs(sugg)
 
     def test_no_sugg(self):
         """No suggestion."""
-        self.throws('a = ldkjhfnvdlkjhvgfdhgf', nameerror, "")
+        self.throws('a = ldkjhfnvdlkjhvgfdhgf', NAMEERROR)
 
     def test_removed_cmp(self):
         """Builtin cmp is removed."""
         code = 'cmp(1, 2)'
         version = (3, 0, 1)
         self.runs(code, up_to_version(version))
-        self.throws(code, nameerror, "", from_version(version))
+        self.throws(code, NAMEERROR, [], from_version(version))
 
     def test_removed_reduce(self):
         """Builtin reduce is removed - moved to functools."""
         code = 'reduce(lambda x, y: x + y, [1, 2, 3, 4, 5])'
         version = (3, 0)
         self.runs(code, up_to_version(version))
-        self.throws(code, nameerror, "", from_version(version))
+        self.throws(code, NAMEERROR, [], from_version(version))
 
     def test_removed_apply(self):
         """Builtin apply is removed."""
         code = 'apply(sum, [[1, 2, 3]])'
         version = (3, 0)
         self.runs(code, up_to_version(version))
-        self.throws(code, nameerror, "", from_version(version))
+        self.throws(code, NAMEERROR, [], from_version(version))
 
     def test_removed_reload(self):
         """Builtin reload is removed
@@ -267,7 +252,7 @@ class NameErrorTests(AbstractTests):
         code = 'reload(math)'
         version = (3, 0)
         self.runs(code, up_to_version(version))
-        self.throws(code, nameerror, "", from_version(version))
+        self.throws(code, NAMEERROR, [], from_version(version))
 
     def test_removed_intern(self):
         """Builtin intern is removed - moved to sys."""
@@ -276,8 +261,8 @@ class NameErrorTests(AbstractTests):
         version = (3, 0)
         self.runs(code, up_to_version(version))
         self.throws(
-            code, nameerror,
-            ". Did you mean 'sys.intern', 'iter'\?",
+            code, NAMEERROR,
+            ["'iter'", "'sys.intern'"],
             from_version(version))
         self.runs(new_code, from_version(version))
 
@@ -286,53 +271,54 @@ class NameErrorTests(AbstractTests):
         code = 'execfile("some_filename")'
         version = (3, 0)
         # self.runs(code, up_to_version(version))
-        self.throws(code, nameerror, "", from_version(version))
+        self.throws(code, NAMEERROR, [], from_version(version))
 
     def test_removed_raw_input(self):
         """Builtin raw_input is removed - use input() instead."""
         code = 'i = raw_input("Prompt:")'
         version = (3, 0)
         # self.runs(code, up_to_version(version))
-        self.throws(
-            code, nameerror,
-            ". Did you mean 'input'\?",
-            from_version(version))
+        self.throws(code, NAMEERROR, "'input'", from_version(version))
 
     def test_removed_buffer(self):
         """Builtin buffer is removed - use memoryview instead."""
         code = 'buffer("abc")'
         version = (3, 0)
         self.runs(code, up_to_version(version))
-        self.throws(code, nameerror, "", from_version(version))
+        self.throws(code, NAMEERROR, [], from_version(version))
 
     def test_import_sugg(self):
         """Should import functools first."""
-        self.throws(
-            'w = functools.wraps', nameerror,
-            ". Did you mean ('re.functools', )?to import functools first\?")
+        sugg = ['to import functools first']
+        # re.functools is sometimes suggested :-/
+        if version_in_range(((3, 2), (3, 4))):
+            sugg.insert(0, "'re.functools'")
+        self.throws('w = functools.wraps', NAMEERROR, sugg)
 
     def test_attribute_hidden(self):
         """Should be math.pi but module math is hidden."""
         code = 'math = ""\np = pi'
-        self.throws(code, nameerror, ". Did you mean 'math.pi' \(hidden\)\?")
+        self.throws(code, NAMEERROR, "'math.pi' (hidden)")
 
     def test_self(self):
         self.throws(
             'FoobarClass().nameerror_self()',
-            nameerror,
-            ". Did you mean 'self.bar'\?")
+            NAMEERROR, ["'self.babar'"])
 
     def test_self2(self):
-        sugg = "'[^ ]*.this_is_cls_mthd'"
         self.throws(
-            'FoobarClass().nameerror_self2()', nameerror,
-            (". Did you mean " + sugg + ", " + sugg + "\?"))
+            'FoobarClass().nameerror_self2()', NAMEERROR,
+            ["'FoobarClass.this_is_cls_mthd'", "'self.this_is_cls_mthd'"])
 
     def test_cls(self):
-        sugg = "'[^ ]*.this_is_cls_mthd'"
         self.throws(
-            'FoobarClass().nameerror_cls()', nameerror,
-            (". Did you mean " + sugg + ", " + sugg + "\?"))
+            'FoobarClass().nameerror_cls()', NAMEERROR,
+            ["'FoobarClass.this_is_cls_mthd'", "'cls.this_is_cls_mthd'"])
+
+    def test_unmatched_msg(self):
+        self.throws(
+            'raise NameError("unmatched NAMEERROR")',
+            UNKNOWN_NAMEERROR)
 
 
 class UnboundLocalErrorTests(AbstractTests):
@@ -343,8 +329,13 @@ class UnboundLocalErrorTests(AbstractTests):
         code = 'def func():\n\tfoo = 1\n\t{0} +=1\nfunc()'
         typo, sugg = "foob", "foo"
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, unbounderror, ". Did you mean '" + sugg + "'\?")
+        self.throws(bad_code, UNBOUNDLOCAL, "'" + sugg + "'")
         self.runs(good_code)
+
+    def test_unmatched_msg(self):
+        self.throws(
+            'raise UnboundLocalError("unmatched UNBOUNDLOCAL")',
+            UNKNOWN_UNBOUNDLOCAL)
 
 
 class AttributeErrorTest(AbstractTests):
@@ -354,27 +345,20 @@ class AttributeErrorTest(AbstractTests):
         """In-place methods like sort returns None.
         Might also happen if the functions misses a return."""
         code = '[].sort().append(4)'
-        self.throws(code, attributeerror, "")
+        self.throws(code, ATTRIBUTEERROR)
 
     def test_method(self):
         """Should be 'append'."""
         code = '[0].{0}(1)'
         typo, sugg = 'appendh', 'append'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(
-            bad_code,
-            attributeerror,
-            ". Did you mean '" + sugg + "'\?")
+        self.throws(bad_code, ATTRIBUTEERROR, "'" + sugg + "'")
         self.runs(good_code)
 
     def test_builtin(self):
         """Should be 'max(lst)'."""
-        bad_code = '[0].max()'
-        good_code = 'max([1])'
-        self.throws(
-            bad_code,
-            attributeerror,
-            ". Did you mean 'max\\(list\\)'\?")
+        bad_code, good_code = '[0].max()', 'max([0])'
+        self.throws(bad_code, ATTRIBUTEERROR, "'max(list)'")
         self.runs(good_code)
 
     def test_builtin2(self):
@@ -384,8 +368,8 @@ class AttributeErrorTest(AbstractTests):
         version = (3, 0)
         self.runs(code, up_to_version(version))
         self.throws(
-            code, attributeerror,
-            ". Did you mean 'next\\(generator\\)'\?",
+            code, ATTRIBUTEERROR,
+            "'next(generator)'",
             from_version(version))
         self.runs(new_code)
 
@@ -394,10 +378,7 @@ class AttributeErrorTest(AbstractTests):
         code = '[0].{0}(1)'
         typo, sugg = 'add', 'append'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(
-            bad_code,
-            attributeerror,
-            ". Did you mean '" + sugg + "'\?")
+        self.throws(bad_code, ATTRIBUTEERROR, "'" + sugg + "'")
         self.runs(good_code)
 
     def test_wrongmethod2(self):
@@ -405,31 +386,25 @@ class AttributeErrorTest(AbstractTests):
         code = '[0].{0}([4, 5, 6])'
         typo, sugg = 'update', 'extend'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(
-            bad_code,
-            attributeerror,
-            ". Did you mean '" + sugg + "'\?")
+        self.throws(bad_code, ATTRIBUTEERROR, "'" + sugg + "'")
         self.runs(good_code)
 
     def test_hidden(self):
         """Accessing wrong string object."""
         # To be improved
         code = 'import string\nstring = "a"\nascii = string.ascii_letters'
-        self.throws(code, attributeerror, "")
+        self.throws(code, ATTRIBUTEERROR)
 
     def test_no_sugg(self):
         """No suggestion."""
-        self.throws('[1, 2, 3].ldkjhfnvdlkjhvgfdhgf', attributeerror, "")
+        self.throws('[1, 2, 3].ldkjhfnvdlkjhvgfdhgf', ATTRIBUTEERROR)
 
     def test_from_module(self):
         """Should be math.pi."""
         code = 'math.{0}'
         typo, sugg = 'pie', 'pi'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(
-            bad_code,
-            attributeerror,
-            ". Did you mean '" + sugg + "'\?")
+        self.throws(bad_code, ATTRIBUTEERROR, "'" + sugg + "'")
         self.runs(good_code)
 
     def test_from_class(self):
@@ -437,21 +412,18 @@ class AttributeErrorTest(AbstractTests):
         code = 'FoobarClass().{0}()'
         typo, sugg = 'this_is_cls_mth', 'this_is_cls_mthd'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(
-            bad_code,
-            attributeerror,
-            ". Did you mean '" + sugg + "'\?")
+        self.throws(bad_code, ATTRIBUTEERROR, "'" + sugg + "'")
         self.runs(good_code)
 
     def test_from_class2(self):
         """Should be 'this_is_cls_mthd'."""
         code = 'FoobarClass.{0}()'
         typo, sugg = 'this_is_cls_mth', 'this_is_cls_mthd'
-        bad_code, good_code = format_str(code, typo, sugg)
+        _, good_code = format_str(code, typo, sugg)
         # FIXME
         # self.throws(
         #     bad_code,
-        #     attributeerror,
+        #     ATTRIBUTEERROR,
         #     ". Did you mean '" + sugg + "'\?")
         self.runs(good_code)
 
@@ -463,8 +435,8 @@ class AttributeErrorTest(AbstractTests):
         self.runs(code, up_to_version(version))
         self.throws(
             code,
-            attributeerror,
-            ". Did you mean 'key in dict'\?", from_version(version))
+            ATTRIBUTEERROR,
+            "'key in dict'", from_version(version))
         self.runs(new_code)
 
     def test_removed_xreadlines(self):
@@ -473,7 +445,7 @@ class AttributeErrorTest(AbstractTests):
             "\n\tfor l in f.xreadlines():\n\t\tpass"
         version = (3, 0)
         self.runs(code, up_to_version(version))
-        self.throws(code, attributeerror, "", from_version(version))
+        self.throws(code, ATTRIBUTEERROR, [], from_version(version))
 
     def test_removed_function_attributes(self):
         version = (3, 0)
@@ -488,7 +460,7 @@ class AttributeErrorTest(AbstractTests):
         for (old_att, new_att) in attributes:
             old_code, new_code = format_str(code, old_att, new_att)
             self.runs(old_code, up_to_version(version))
-            self.throws(old_code, attributeerror, "", from_version(version))
+            self.throws(old_code, ATTRIBUTEERROR, [], from_version(version))
             self.runs(new_code)
 
     def test_removed_method_attributes(self):
@@ -500,38 +472,37 @@ class AttributeErrorTest(AbstractTests):
         for (old_att, new_att) in attributes:
             old_code, new_code = format_str(code, old_att, new_att)
             self.runs(old_code, up_to_version(version))
-            self.throws(old_code, attributeerror, "", from_version(version))
+            self.throws(old_code, ATTRIBUTEERROR, [], from_version(version))
             self.runs(new_code)
+
+    def test_unmatched_msg(self):
+        self.throws(
+            'raise AttributeError("unmatched ATTRIBUTEERROR")',
+            UNKNOWN_ATTRIBUTEERROR)
 
     # TODO: Add sugg for situation where self/cls is the missing parameter
     def test_unhashable(self):
-        self.throws('dict()[list()] = 1', unhashableerror, "")
+        self.throws('dict()[list()] = 1', UNHASHABLE)
 
     def test_not_sub(self):
         """Should be 'some_func(2)'."""
-        self.throws(
-            'some_func[2]',
-            notsubscriberror,
-            ". Did you mean 'function\\(value\\)'\?")
+        self.throws('some_func[2]', UNSUBSCRIBTABLE, "'function(value)'")
 
     def test_nb_args(self):
         """Should be 'some_func(1)'."""
-        self.throws('some_func(1, 2)', nbargerror, "")
+        self.throws('some_func(1, 2)', NBARGERROR)
 
     def test_keyword_args(self):
         """Should be 'some_func(1)'."""
         code = 'some_func(a=1)'
-        self.throws(code, unexpectedkwerror, "")
+        self.throws(code, UNEXPECTEDKWARG)
 
     def test_keyword_args2(self):
         """Should be 'some_func2(abcdef=1)'."""
         code = 'some_func2({0}=1)'
         typo, sugg = 'abcdf', 'abcdef'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(
-            bad_code,
-            unexpectedkwerror,
-            ". Did you mean '" + sugg + "'\?")
+        self.throws(bad_code, UNEXPECTEDKWARG, "'" + sugg + "'")
         self.runs(good_code)
 
 
@@ -540,14 +511,14 @@ class ImportErrorTests(AbstractTests):
 
     def test_no_module_no_sugg(self):
         """No suggestion."""
-        self.throws('import fqslkdfjslkqdjfqsd', nomoduleerror, "")
+        self.throws('import fqslkdfjslkqdjfqsd', NOMODULE)
 
     def test_no_module(self):
         """Should be 'math'."""
         code = 'import {0}'
         typo, sugg = 'maths', 'math'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, nomoduleerror, ". Did you mean '" + sugg + "'\?")
+        self.throws(bad_code, NOMODULE, "'" + sugg + "'")
         self.runs(good_code)
 
     def test_no_module2(self):
@@ -555,7 +526,7 @@ class ImportErrorTests(AbstractTests):
         code = 'from {0} import pi'
         typo, sugg = 'maths', 'math'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, nomoduleerror, ". Did you mean '" + sugg + "'\?")
+        self.throws(bad_code, NOMODULE, "'" + sugg + "'")
         self.runs(good_code)
 
     def test_no_module3(self):
@@ -563,7 +534,7 @@ class ImportErrorTests(AbstractTests):
         code = 'import {0} as my_imported_math'
         typo, sugg = 'maths', 'math'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, nomoduleerror, ". Did you mean '" + sugg + "'\?")
+        self.throws(bad_code, NOMODULE, "'" + sugg + "'")
         self.runs(good_code)
 
     def test_no_module4(self):
@@ -571,22 +542,19 @@ class ImportErrorTests(AbstractTests):
         code = 'from {0} import pi as three_something'
         typo, sugg = 'maths', 'math'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, nomoduleerror, ". Did you mean '" + sugg + "'\?")
+        self.throws(bad_code, NOMODULE, "'" + sugg + "'")
         self.runs(good_code)
 
     def test_no_name_no_sugg(self):
         """No suggestion."""
-        self.throws('from math import fsfsdfdjlkf', cannotimport, "")
+        self.throws('from math import fsfsdfdjlkf', CANNOTIMPORT)
 
     def test_wrong_import(self):
         """Should be 'math'."""
         code = 'from {0} import pi'
         typo, sugg = 'itertools', 'math'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(
-            bad_code,
-            cannotimport,
-            ". Did you mean '" + good_code + "'\?")
+        self.throws(bad_code, CANNOTIMPORT, "'" + good_code + "'")
         self.runs(good_code)
 
     def test_typo_in_method(self):
@@ -594,7 +562,7 @@ class ImportErrorTests(AbstractTests):
         code = 'from math import {0}'
         typo, sugg = 'pie', 'pi'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, cannotimport, ". Did you mean '" + sugg + "'\?")
+        self.throws(bad_code, CANNOTIMPORT, "'" + sugg + "'")
         self.runs(good_code)
 
     def test_typo_in_method2(self):
@@ -602,7 +570,7 @@ class ImportErrorTests(AbstractTests):
         code = 'from math import e, {0}, log'
         typo, sugg = 'pie', 'pi'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, cannotimport, ". Did you mean '" + sugg + "'\?")
+        self.throws(bad_code, CANNOTIMPORT, "'" + sugg + "'")
         self.runs(good_code)
 
     def test_typo_in_method3(self):
@@ -610,8 +578,13 @@ class ImportErrorTests(AbstractTests):
         code = 'from math import {0} as three_something'
         typo, sugg = 'pie', 'pi'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, cannotimport, ". Did you mean '" + sugg + "'\?")
+        self.throws(bad_code, CANNOTIMPORT, "'" + sugg + "'")
         self.runs(good_code)
+
+    def test_unmatched_msg(self):
+        self.throws(
+            'raise ImportError("unmatched IMPORTERROR")',
+            UNKNOWN_IMPORTERROR)
 
 
 class LookupErrorTests(AbstractTests):
@@ -623,7 +596,7 @@ class KeyErrorTests(LookupErrorTests):
 
     def test_no_sugg(self):
         """No suggestion."""
-        self.throws('dict()["ffdsqmjklfqsd"]', keyerror, "")
+        self.throws('dict()["ffdsqmjklfqsd"]', KEYERROR)
 
 
 class IndexErrorTests(LookupErrorTests):
@@ -631,7 +604,7 @@ class IndexErrorTests(LookupErrorTests):
 
     def test_no_sugg(self):
         """No suggestion."""
-        self.throws('list()[2]', outofrangeerror, "")
+        self.throws('list()[2]', OUTOFRANGE)
 
 
 class SyntaxErrorTests(AbstractTests):
@@ -641,21 +614,25 @@ class SyntaxErrorTests(AbstractTests):
         self.runs("1 + 2 == 2")
 
     def test_yield_return_out_of_func(self):
-        self.throws("yield 1", outsidefunctionerror, "")
-        self.throws("return 1", outsidefunctionerror, "")
+        self.throws("yield 1", OUTSIDEFUNC)
+        self.throws("return 1", OUTSIDEFUNC)
 
     def test_print(self):
         code, new_code = 'print ""', 'print("")'
         version = (3, 0)
+        version2 = (3, 4)
         self.runs(code, up_to_version(version))
-        self.throws(code, syntaxerror, "", from_version(version))
+        self.throws(code, INVALIDSYNTAX, [], (version, version2))
+        self.throws(code, MISSINGPARENT, [], from_version(version2))
         self.runs(new_code)
 
     def test_exec(self):
         code, new_code = 'exec "1"', 'exec("1")'
         version = (3, 0)
+        version2 = (3, 4)
         self.runs(code, up_to_version(version))
-        self.throws(code, syntaxerror, "", from_version(version))
+        self.throws(code, INVALIDSYNTAX, [], (version, version2))
+        self.throws(code, MISSINGPARENT, [], from_version(version2))
         self.runs(new_code)
 
     def test_old_comparison(self):
@@ -664,11 +641,7 @@ class SyntaxErrorTests(AbstractTests):
         version = (3, 0)
         old_code, new_code = format_str(code, old, new)
         self.runs(old_code, up_to_version(version))
-        self.throws(
-            old_code,
-            syntaxerror,
-            ". Did you mean '" + new + "'\?",
-            from_version(version))
+        self.throws(old_code, INVALIDSYNTAX, "'!='", from_version(version))
         self.runs(new_code)
 
 
@@ -676,28 +649,28 @@ class ValueErrorTests(AbstractTests):
     """Class for tests related to ValueError."""
 
     def test_too_many_values(self):
-        self.throws('a, b, c = [1, 2, 3, 4]', toomanyvalueserror, "")
+        self.throws('a, b, c = [1, 2, 3, 4]', TOOMANYVALUES)
 
     def test_not_enough_values(self):
-        self.throws('a, b, c = [1, 2]', needmorevalues, "")
+        self.throws('a, b, c = [1, 2]', NEEDMOREVALUES)
 
     def test_conversion_fails(self):
-        self.throws('int("toto")', invalidliteral, "")
+        self.throws('int("toto")', INVALIDLITERAL)
 
     def test_math_domain(self):
-        self.throws('lg = math.log(-1)', mathdomainerror, "")
+        self.throws('lg = math.log(-1)', MATHDOMAIN)
 
     def test_zero_len_field_in_format(self):
         code = '"{}".format(0)'
         version = (2, 7)
-        self.throws(code, zerolenerror, "", up_to_version(version))
+        self.throws(code, ZEROLENERROR, [], up_to_version(version))
         self.runs(code, from_version(version))
 
 
 class RegexTests(unittest2.TestCase):
-    """Tests to check that eror messages match the regexps."""
+    """Tests to check that error messages match the regexps."""
 
-    def regexMatches(self, text, regexp, groups=None):
+    def regex_matches(self, text, regexp, groups=None):
         """Check that text matches regexp giving groups given values."""
         self.assertRegexpMatches(text, regexp)   # does pretty printing
         m = re.match(regexp, text)
@@ -705,20 +678,23 @@ class RegexTests(unittest2.TestCase):
         self.assertEqual(groups, m.groups())
 
     def test_unbound_assignment(self):
+        """ Test UNBOUNDERROR_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s = "local variable 'some_var' referenced before assignment"
-        self.regexMatches(s, UNBOUNDERROR_RE, ('some_var',))
+        self.regex_matches(s, UNBOUNDERROR_RE, ('some_var',))
 
     def test_name_not_defined(self):
+        """ Test NAMENOTDEFINED_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s1 = "name 'some_name' is not defined"
         # Python 2.6/2.7/3.2/3.3
         s2 = "global name 'some_name' is not defined"
         groups = ('some_name',)
-        self.regexMatches(s1, NAMENOTDEFINED_RE, groups)
-        self.regexMatches(s2, NAMENOTDEFINED_RE, groups)
+        self.regex_matches(s1, NAMENOTDEFINED_RE, groups)
+        self.regex_matches(s2, NAMENOTDEFINED_RE, groups)
 
     def test_attribute_error(self):
+        """ Test ATTRIBUTEERROR_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s1 = "'some.class' object has no attribute 'attri'"
         g1 = ('some.class', 'attri')
@@ -728,34 +704,38 @@ class RegexTests(unittest2.TestCase):
         # Python 3.5
         s3 = "module 'some_module' has no attribute 'attri'"
         g3 = ('some_module', 'attri')
-        self.regexMatches(s1, ATTRIBUTEERROR_RE, g1)
-        self.regexMatches(s2, ATTRIBUTEERROR_RE, g2)
-        self.regexMatches(s3, ATTRIBUTEERROR_RE, g3)
+        self.regex_matches(s1, ATTRIBUTEERROR_RE, g1)
+        self.regex_matches(s2, ATTRIBUTEERROR_RE, g2)
+        self.regex_matches(s3, ATTRIBUTEERROR_RE, g3)
 
     def test_cannot_import(self):
+        """ Test CANNOTIMPORT_RE ."""
         # Python 2.6/2.7/3.2/3.3
         s1 = "cannot import name pie"
         # Python 3.4/3.5
         s2 = "cannot import name 'pie'"
         groups = ('pie',)
-        self.regexMatches(s1, CANNOTIMPORT_RE, groups)
-        self.regexMatches(s2, CANNOTIMPORT_RE, groups)
+        self.regex_matches(s1, CANNOTIMPORT_RE, groups)
+        self.regex_matches(s2, CANNOTIMPORT_RE, groups)
 
     def test_no_module_named(self):
+        """ Test NOMODULE_RE ."""
         # Python 2.6/2.7/3.2
         s1 = "No module named fake_module"
         # Python 3.3/3.4/3.5
         s2 = "No module named 'fake_module'"
         groups = ('fake_module', )
-        self.regexMatches(s1, NOMODULE_RE, groups)
-        self.regexMatches(s2, NOMODULE_RE, groups)
+        self.regex_matches(s1, NOMODULE_RE, groups)
+        self.regex_matches(s2, NOMODULE_RE, groups)
 
     def test_index_out_of_range(self):
+        """ Test INDEXOUTOFRANGE_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s = "list index out of range"
-        self.regexMatches(s, INDEXOUTOFRANGE_RE, ())
+        self.regex_matches(s, INDEXOUTOFRANGE_RE, ())
 
     def test_unsubscriptable(self):
+        """ Test UNSUBSCRIBTABLE_RE ."""
         # Python 2.6
         s1 = "'function' object is unsubscriptable"
         # Python 2.7
@@ -763,44 +743,51 @@ class RegexTests(unittest2.TestCase):
         # Python 3.2/3.3/3.4/3.5
         s3 = "'function' object is not subscriptable"
         groups = ('function',)
-        self.regexMatches(s1, UNSUBSCRIBTABLE_RE, groups)
-        self.regexMatches(s2, UNSUBSCRIBTABLE_RE, groups)
-        self.regexMatches(s3, UNSUBSCRIBTABLE_RE, groups)
+        self.regex_matches(s1, UNSUBSCRIBTABLE_RE, groups)
+        self.regex_matches(s2, UNSUBSCRIBTABLE_RE, groups)
+        self.regex_matches(s3, UNSUBSCRIBTABLE_RE, groups)
 
     def test_unexpected_kw_arg(self):
+        """ Test UNEXPECTED_KEYWORDARG_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s = "some_func() got an unexpected keyword argument 'a'"
-        self.regexMatches(s, UNEXPECTED_KEYWORDARG_RE, ('some_func', 'a'))
+        self.regex_matches(s, UNEXPECTED_KEYWORDARG_RE, ('some_func', 'a'))
 
     def test_zero_length_field(self):
+        """ Test ZERO_LEN_FIELD_RE ."""
         # Python 2.6
         s = "zero length field name in format"
-        self.regexMatches(s, ZERO_LEN_FIELD_RE, ())
+        self.regex_matches(s, ZERO_LEN_FIELD_RE, ())
 
     def test_math_domain_error(self):
+        """ Test MATH_DOMAIN_ERROR_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s = "math domain error"
-        self.regexMatches(s, MATH_DOMAIN_ERROR_RE, ())
+        self.regex_matches(s, MATH_DOMAIN_ERROR_RE, ())
 
     def test_too_many_values(self):
+        """ Test TOO_MANY_VALUES_UNPACK_RE ."""
         # Python 2.6/2.7
         s1 = "too many values to unpack"
         # Python 3.2/3.3/3.4/3.5
         s2 = "too many values to unpack (expected 3)"
-        self.regexMatches(s1, TOO_MANY_VALUES_UNPACK_RE, ())
-        self.regexMatches(s2, TOO_MANY_VALUES_UNPACK_RE, ())
+        self.regex_matches(s1, TOO_MANY_VALUES_UNPACK_RE, ())
+        self.regex_matches(s2, TOO_MANY_VALUES_UNPACK_RE, ())
 
     def test_unhashable_type(self):
+        """ Test UNHASHABLE_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s = "unhashable type: 'list'"
-        self.regexMatches(s, UNHASHABLE_RE, ('list',))
+        self.regex_matches(s, UNHASHABLE_RE, ('list',))
 
     def test_outside_function(self):
+        """ Test OUTSIDE_FUNCTION_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s = "'return' outside function"
-        self.regexMatches(s, OUTSIDE_FUNCTION_RE, ('return',))
+        self.regex_matches(s, OUTSIDE_FUNCTION_RE, ('return',))
 
     def test_nb_positional_argument(self):
+        """ Test NB_ARG_RE ."""
         # Python 2.6/2.7
         s1 = "some_func() takes exactly 1 argument (2 given)"
         # Python 3.2
@@ -808,24 +795,57 @@ class RegexTests(unittest2.TestCase):
         # Python 3.3/3.4/3.5
         s3 = "some_func() takes 1 positional argument but 2 were given"
         groups = ('some_func',)
-        self.regexMatches(s1, NB_ARG_RE, groups)
-        self.regexMatches(s2, NB_ARG_RE, groups)
-        self.regexMatches(s3, NB_ARG_RE, groups)
+        self.regex_matches(s1, NB_ARG_RE, groups)
+        self.regex_matches(s2, NB_ARG_RE, groups)
+        self.regex_matches(s3, NB_ARG_RE, groups)
 
     def test_need_more_values_to_unpack(self):
+        """ Test NEED_MORE_VALUES_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s = "need more than 2 values to unpack"
-        self.regexMatches(s, NEED_MORE_VALUES_RE, ())
+        self.regex_matches(s, NEED_MORE_VALUES_RE, ())
 
     def test_missing_parentheses(self):
+        """ Test MISSING_PARENT_RE ."""
         # Python 3.4/3.5
         s = "Missing parentheses in call to 'exec'"
-        self.regexMatches(s, MISSING_PARENT_RE, ('exec',))
+        self.regex_matches(s, MISSING_PARENT_RE, ('exec',))
 
     def test_invalid_literal(self):
+        """ Test INVALID_LITERAL_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5
         s = "invalid literal for int() with base 10: 'toto'"
-        self.regexMatches(s, INVALID_LITERAL_RE, ('int', 'toto'))
+        self.regex_matches(s, INVALID_LITERAL_RE, ('int', 'toto'))
+
+    def test_invalid_syntax(self):
+        """ Test INVALID_SYNTAX_RE ."""
+        # Python 2.6/2.7/3.2/3.3/3.4/3.5
+        s = "invalid syntax"
+        self.regex_matches(s, INVALID_SYNTAX_RE, ())
+
+
+class GetSuggStringTests(unittest2.TestCase):
+    """ Tests about get_suggestion_string. """
+
+    def test_no_sugg(self):
+        """ Empty list of suggestions. """
+        self.assertEqual(get_suggestion_string(()), "")
+
+    def test_one_sugg(self):
+        """ Single suggestion. """
+        self.assertEqual(get_suggestion_string(()), "")
+        self.assertEqual(get_suggestion_string(('0',)), ". Did you mean 0?")
+
+    def test_same_sugg(self):
+        """ Identical suggestion. """
+        self.assertEqual(
+            get_suggestion_string(('0', '0')), ". Did you mean 0, 0?")
+
+    def test_multiple_suggs(self):
+        """ Multiple suggestions. """
+        self.assertEqual(
+            get_suggestion_string(('0', '1')), ". Did you mean 0, 1?")
+
 
 if __name__ == '__main__':
     print(sys.version_info)

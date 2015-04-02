@@ -29,8 +29,8 @@ def quote(string):
 def get_close_matches(word, possibilities):
     """Wrapper around difflib.get_close_matches() to be able to
     change default values or implementation details easily."""
-    for s in difflib.get_close_matches(word, possibilities, 3, 0.7):
-        yield quote(s)
+    for string in difflib.get_close_matches(word, possibilities, 3, 0.7):
+        yield quote(string)
 
 
 def get_suggestion_string(sugg):
@@ -89,9 +89,9 @@ def debug_traceback(traceback):
 def print_error_info(type_, value, _):
     """Print error information."""
     assert issubclass(type_, Exception)
-    print(type_, value)
-    return
-    yield
+    value = value
+    # print(type_, value)
+    return []
 
 
 # Functions related to NameError
@@ -106,7 +106,8 @@ def get_name_error_sugg(type_, value, frame):
     if match:
         name, = match.groups()
         return get_name_suggestions(name, frame)
-    print("Oops, %s did not match", error_msg)
+    print("Oops, '%s' did not match" % error_msg)
+    return []
 
 
 def get_name_suggestions(name, frame):
@@ -157,7 +158,8 @@ def get_attribute_error_sugg(type_, value, frame):
     if match:
         type_str, attr = match.groups()
         return get_attribute_suggestions(type_str, attr, frame)
-    print("Oops, %s did not match", error_msg)
+    print("Oops, '%s' did not match" % error_msg)
+    return []
 
 
 def get_attribute_suggestions(type_str, attribute, frame):
@@ -190,6 +192,7 @@ def suggest_attribute_as_builtin(attribute, type_str, frame):
 
 
 def suggest_attribute_as_removed(attribute, type_str, attributes):
+    """Suggest that attribute is removed (and give an alternative)."""
     if attribute == 'has_key' and '__contains__' in attributes:
         yield quote('key in ' + type_str)
 
@@ -224,7 +227,8 @@ def get_import_error_sugg(type_, value, frame):
         if match:
             imported_name, = match.groups()
             return get_imported_name_suggestion(imported_name, frame)
-    print("Oops, %s did not match", error_msg)
+    print("Oops, '%s' did not match" % error_msg)
+    return []
 
 
 def get_module_name_suggestion(module_str):
@@ -275,8 +279,8 @@ def get_type_error_sugg(type_, value, frame):
             objs = get_objects_in_frame(frame)
             func = objs[func_name][0]
             args = inspect.getargspec(func).args
-            for m in get_close_matches(kw_arg, args):
-                yield m
+            for match in get_close_matches(kw_arg, args):
+                yield match
 
 
 # Functions related to SyntaxError
@@ -296,6 +300,7 @@ def get_value_error_sugg(type_, value, _):
     assert issubclass(type_, ValueError)
     assert len(value.args) == 1
     error_msg, = value.args
+    error_msg = error_msg
     return []
 
 
@@ -305,6 +310,7 @@ def get_index_error_sugg(type_, value, _):
     assert issubclass(type_, IndexError)
     assert len(value.args) == 1
     error_msg, = value.args
+    error_msg = error_msg
     return []
 
 
@@ -314,11 +320,13 @@ def get_key_error_sugg(type_, value, _):
     assert issubclass(type_, KeyError)
     assert len(value.args) == 1
     error_msg, = value.args
+    error_msg = error_msg
     return []
 
 
-def get_suggestions_for_exception(type_, value, frame):
+def get_suggestions_for_exception(type_, value, traceback):
     """Get suggestions for an exception."""
+    frame = get_last_frame(traceback)
     error_types = {
         Exception: print_error_info,
         NameError: get_name_error_sugg,
@@ -361,4 +369,4 @@ def add_suggestions_to_exception(type_, value, traceback):
             get_suggestions_for_exception(
                 type_,
                 value,
-                get_last_frame(traceback))))
+                traceback)))
