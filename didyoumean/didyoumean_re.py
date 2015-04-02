@@ -3,8 +3,8 @@
 
 UNBOUNDERROR_RE = r"^local variable '(\w+)' referenced before assignment$"
 NAMENOTDEFINED_RE = r"^(?:global )?name '(\w+)' is not defined$"
-ATTRIBUTEERROR_RE = r"^(?:module )?'?([\w\.]+)'? (?:object |instance )?" \
-    r"has no attribute '(\w+)'$"
+ATTRIBUTEERROR_RE = r"^(?:module |class |type object )?'?([\w\.]+)'? " \
+    r"(?:object |instance )?has no attribute '(\w+)'$"
 UNSUBSCRIBTABLE_RE = r"^'(\w+)' object " \
     r"(?:is (?:not |un)subscriptable|has no attribute '__getitem__')$"
 UNEXPECTED_KEYWORDARG_RE = r"^(\w+)\(\) " \

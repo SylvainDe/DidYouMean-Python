@@ -99,7 +99,7 @@ class AbstractTests(unittest2.TestCase):
             exec(code)
 
     def throws(self, code, error_info,
-               sugg=None, version_range=ALL_VERSIONS, check_re=True):
+               sugg=None, version_range=ALL_VERSIONS):
         """Helper function to run code and check it throws."""
         if version_in_range(version_range):
             error_type, error_msg = error_info
@@ -109,8 +109,7 @@ class AbstractTests(unittest2.TestCase):
             except:
                 type_caught, value, traceback = sys.exc_info()
                 self.assertTrue(issubclass(error_type, type_caught))
-                if check_re:
-                    self.assertRegexpMatches(''.join(value.args[0]), error_msg)
+                self.assertRegexpMatches(''.join(value.args[0]), error_msg)
                 if sugg is None:
                     sugg = []
                 if not isinstance(sugg, list):
@@ -439,7 +438,7 @@ class AttributeErrorTest(AbstractTests):
         code = 'FoobarClass.{0}()'
         typo, sugg = 'this_is_cls_mth', 'this_is_cls_mthd'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, ATTRIBUTEERROR, [], check_re=False)  # FIXME
+        self.throws(bad_code, ATTRIBUTEERROR, "'" + sugg + "'")
         self.runs(good_code)
 
     def test_removed_has_key(self):
@@ -733,8 +732,8 @@ class RegexTests(unittest2.TestCase):
         self.regex_matches(s1, ATTRIBUTEERROR_RE, g1)
         self.regex_matches(s2, ATTRIBUTEERROR_RE, g2)
         self.regex_matches(s3, ATTRIBUTEERROR_RE, g3)
-        # FIXME self.regex_matches(s4, ATTRIBUTEERROR_RE, g2)
-        # FIXME self.regex_matches(s5, ATTRIBUTEERROR_RE, g2)
+        self.regex_matches(s4, ATTRIBUTEERROR_RE, g2)
+        self.regex_matches(s5, ATTRIBUTEERROR_RE, g2)
 
     def test_cannot_import(self):
         """ Test CANNOTIMPORT_RE ."""
