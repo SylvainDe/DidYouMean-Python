@@ -7,6 +7,7 @@ from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     MATH_DOMAIN_ERROR_RE, TOO_MANY_VALUES_UNPACK_RE, OUTSIDE_FUNCTION_RE,\
     NEED_MORE_VALUES_RE, UNHASHABLE_RE, MISSING_PARENT_RE, INVALID_LITERAL_RE,\
     NB_ARG_RE, INVALID_SYNTAX_RE, EXPECTED_LENGTH_RE, INVALID_COMP_RE
+from didyoumean_decorator import didyoumean
 import unittest2
 import math
 import sys
@@ -94,32 +95,41 @@ def version_in_range(version_range):
 class AbstractTests(unittest2.TestCase):
     """Generic class to test get_suggestions_for_exception."""
 
-    def runs(self, code, version_range=ALL_VERSIONS):
+    def no_exception(self, code):
         """Helper function to run code and check it works."""
-        if version_in_range(version_range):
+        exec(code)
+
+    def get_exception(self, code):
+        """Helper function to run code and get what it throws."""
+        try:
             exec(code)
+            self.assertTrue(False)
+        except:
+            return sys.exc_info()
+
+    def runs(self, code, version_range=ALL_VERSIONS):
+        """Helper function to run code."""
+        if version_in_range(version_range):
+            self.no_exception(code)
 
     def throws(self, code, error_info,
                sugg=None, version_range=ALL_VERSIONS):
-        """Helper function to run code and check it throws."""
+        """Helper function to run code and check what it throws
+        that what we have expected suggestions."""
         if version_in_range(version_range):
             error_type, error_msg = error_info
-            try:
-                exec(code)
-                self.assertTrue(False)
-            except:
-                type_caught, value, traceback = sys.exc_info()
-                self.assertTrue(issubclass(error_type, type_caught))
-                if error_msg is not None:
-                    self.assertRegexpMatches(''.join(value.args[0]), error_msg)
-                if sugg is None:
-                    sugg = []
-                if not isinstance(sugg, list):
-                    sugg = [sugg]
-                suggestions = sorted(
-                    get_suggestions_for_exception(
-                        type_caught, value, traceback))
-                self.assertEqual(suggestions, sugg)
+            type_caught, value, traceback = self.get_exception(code)
+            self.assertTrue(issubclass(error_type, type_caught))
+            if error_msg is not None:
+                self.assertRegexpMatches(''.join(value.args[0]), error_msg)
+            if sugg is None:
+                sugg = []
+            if not isinstance(sugg, list):
+                sugg = [sugg]
+            suggestions = sorted(
+                get_suggestions_for_exception(
+                    type_caught, value, traceback))
+            self.assertEqual(suggestions, sugg)
 
 
 # NameError
@@ -909,6 +919,52 @@ class GetSuggStringTests(unittest2.TestCase):
         self.assertEqual(
             get_suggestion_string(('0', '1')), ". Did you mean 0, 1?")
 
+
+class DecoratorTest(AbstractTests):
+    """ Tests about the didyoumean decorator. """
+
+    def func_1(self, babar):
+        return babar
+
+    def func_2(self, babar):
+        return baba
+
+    def func_3(self, babar):
+        return gdfsdfsdfsdfsd
+
+    @didyoumean
+    def func_1_deco(self, babar):
+        return babar
+
+    @didyoumean
+    def func_2_deco(self, babar):
+        return baba
+
+    @didyoumean
+    def func_3_deco(self, babar):
+        return gdfsdfsdfsdfsd
+
+    def test_decorator_no_exception(self):
+        """Check the case with no exception."""
+        self.no_exception('self.func_1(0)')
+        self.no_exception('self.func_1_deco(0)')
+
+    def test_decorator_suggestion(self):
+        """Check the case with a suggestion."""
+        sugg = ". Did you mean 'babar'?"
+        type1, value1, _ = self.get_exception('self.func_2(0)')
+        type2, value2, _ = self.get_exception('self.func_2_deco(0)')
+        self.assertEqual(type1, NameError)
+        self.assertEqual(type2, NameError)
+        self.assertEqual(str(value1) + sugg, str(value2))
+
+    def test_decorator_no_suggestion(self):
+        """Check the case with no suggestion."""
+        type1, value1, _ = self.get_exception('self.func_3(0)')
+        type2, value2, _ = self.get_exception('self.func_3_deco(0)')
+        self.assertEqual(type1, NameError)
+        self.assertEqual(type2, NameError)
+        self.assertEqual(str(value1), str(value2))
 
 if __name__ == '__main__':
     print(sys.version_info)
