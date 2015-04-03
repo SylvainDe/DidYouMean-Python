@@ -7,7 +7,7 @@ import itertools
 import inspect
 from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     ATTRIBUTEERROR_RE, UNSUBSCRIBTABLE_RE, UNEXPECTED_KEYWORDARG_RE,\
-    NOMODULE_RE, CANNOTIMPORT_RE, INVALID_COMP_RE
+    NOMODULE_RE, CANNOTIMPORT_RE, INVALID_COMP_RE, OUTSIDE_FUNCTION_RE
 
 #: Standard modules we'll consider while searching for undefined values
 # To be completed
@@ -292,11 +292,18 @@ def get_syntax_error_sugg(type_, value, _):
     if re.match(INVALID_COMP_RE, error_msg):
         yield quote('!=')
     else:
-        offset = value.offset
-        if offset > 2:
-            two_last = value.text[offset - 2:offset]
-            if two_last == '<>':
-                yield quote('!=')
+        match = re.match(OUTSIDE_FUNCTION_RE, error_msg)
+        if match:
+            yield "to indent it"
+            word, = match.groups()
+            if word == 'return':
+                yield "sys.exit([arg])"
+        else:
+            offset = value.offset
+            if offset > 2:
+                two_last = value.text[offset - 2:offset]
+                if two_last == '<>':
+                    yield quote('!=')
 
 
 # Functions related to ValueError

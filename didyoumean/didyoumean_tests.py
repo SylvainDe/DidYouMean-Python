@@ -647,8 +647,9 @@ class SyntaxErrorTests(AbstractTests):
         self.runs("1 + 2 == 2")
 
     def test_yield_return_out_of_func(self):
-        self.throws("yield 1", OUTSIDEFUNC)
-        self.throws("return 1", OUTSIDEFUNC)
+        sugg = "to indent it"
+        self.throws("yield 1", OUTSIDEFUNC, sugg)
+        self.throws("return 1", OUTSIDEFUNC, ["sys.exit([arg])", sugg])
 
     def test_print(self):
         code, new_code = 'print ""', 'print("")'
