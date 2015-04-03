@@ -69,6 +69,7 @@ LAST_VERSION = (10, 0)
 ALL_VERSIONS = (FIRST_VERSION, LAST_VERSION)
 is_pypy = hasattr(sys, "pypy_translation_info")
 
+
 def from_version(version):
     """Create tuple describing a range of versions from a given version."""
     return (version, LAST_VERSION)
