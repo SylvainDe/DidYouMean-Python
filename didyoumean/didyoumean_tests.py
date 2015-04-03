@@ -675,14 +675,22 @@ class ValueErrorTests(AbstractTests):
     """Class for tests related to ValueError."""
 
     def test_too_many_values(self):
-        self.throws(
-            'a, b, c = [1, 2, 3, 4]',
-            EXPECTEDLENGTH if is_pypy else TOOMANYVALUES)
+        code = 'a, b, c = [1, 2, 3, 4]'
+        if is_pypy:
+            version = (3, 0)
+            self.throws(code, EXPECTEDLENGTH, [], up_to_version(version))
+            self.throws(code, TOOMANYVALUES, [], from_version(version))
+        else:
+            self.throws(code, TOOMANYVALUES)
 
     def test_not_enough_values(self):
-        self.throws(
-            'a, b, c = [1, 2]',
-            EXPECTEDLENGTH if is_pypy else NEEDMOREVALUES)
+        code = 'a, b, c = [1, 2]'
+        if is_pypy:
+            version = (3, 0)
+            self.throws(code, EXPECTEDLENGTH, [], up_to_version(version))
+            self.throws(code, NEEDMOREVALUES, [], from_version(version))
+        else:
+            self.throws(code, NEEDMOREVALUES)
 
     def test_conversion_fails(self):
         self.throws('int("toto")', INVALIDLITERAL)
