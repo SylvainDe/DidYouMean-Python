@@ -64,6 +64,13 @@ def some_func2(abcdef=None):
     return abcdef
 
 
+def some_func3():
+    pass
+
+
+def some_func4(so, much, args):
+    pass
+
 # Logic to be able to have different tests on various version of Python
 FIRST_VERSION = (0, 0)
 LAST_VERSION = (10, 0)
@@ -103,9 +110,9 @@ class AbstractTests(unittest2.TestCase):
         """Helper function to run code and get what it throws."""
         try:
             exec(code)
-            self.assertTrue(False)
         except:
             return sys.exc_info()
+        self.assertTrue(False)
 
     def runs(self, code, version_range=ALL_VERSIONS):
         """Helper function to run code."""
@@ -524,6 +531,18 @@ class AttributeErrorTest(AbstractTests):
         """Should be 'some_func(1)'."""
         self.throws('some_func(1, 2)', NBARGERROR)
 
+    def test_nb_args2(self):
+        """Should be 'some_func3()'."""
+        self.throws('some_func3(1)', NBARGERROR)
+
+    def test_nb_args3(self):
+        """Should be 'some_func4(1, 2, 3)'."""
+        self.throws('some_func4(1)', NBARGERROR)
+
+    def test_nb_args4(self):
+        """Should be 'some_func4(1, 2, 3)'."""
+        self.throws('some_func4()', NBARGERROR)
+
     def test_keyword_args(self):
         """Should be 'some_func(1)'."""
         code = 'some_func(a=1)'
@@ -856,10 +875,12 @@ class RegexTests(unittest2.TestCase):
         s2 = "some_func() takes exactly 1 positional argument (2 given)"
         # Python 3.3/3.4/3.5
         s3 = "some_func() takes 1 positional argument but 2 were given"
+        # Various versions - TBD
+        s5 = "some_func() takes exactly 3 arguments (1 given)"
+        s4 = "some_func() takes no arguments (1 given)"
         groups = ('some_func',)
-        self.regex_matches(s1, NB_ARG_RE, groups)
-        self.regex_matches(s2, NB_ARG_RE, groups)
-        self.regex_matches(s3, NB_ARG_RE, groups)
+        for s in (s1, s2, s3, s4, s5):
+            self.regex_matches(s, NB_ARG_RE, groups)
 
     def test_need_more_values_to_unpack(self):
         """ Test NEED_MORE_VALUES_RE ."""
