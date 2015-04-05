@@ -22,7 +22,7 @@ UNHASHABLE_RE = r"^(?:unhashable type: )?'(\w+)'(?: objects are unhashable)?$"
 MISSING_PARENT_RE = r"^Missing parentheses in call to '(\w+)'$"
 INVALID_LITERAL_RE = r"^invalid literal for (\w+)\(\) with base \d+: '(\w+)'$"
 NB_ARG_RE = r"^(\w+)\(\) takes (?:exactly )?(?:no|\d+) " \
-    r"(?:positional )?arguments? \(?(?:but )?\d+ (?:were )?given\)?$"
+    r"(?:positional )?arguments? \(?(?:but )?\d+ (?:were |was )?given\)?$"
 INVALID_SYNTAX_RE = r"^invalid syntax$"
 INVALID_COMP_RE = r"^invalid comparison$"
 EXPECTED_LENGTH_RE = r"^expected length (\d+), got (\d+)$"
