@@ -548,6 +548,14 @@ class TypeErrorTests(AbstractTests):
         self.throws(bad_code, NBARGERROR)
         self.runs(good_code)
 
+    def test_nb_args1(self):
+        """Should have 0 args."""
+        typo, sugg = '1', ''
+        code = func_gen(param='', args='{0}')
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, UNKNOWN_TYPEERROR)  # FIXME
+        self.runs(good_code)
+
     def test_nb_args2(self):
         """Should have 1 arg."""
         typo, sugg = '', '1'
