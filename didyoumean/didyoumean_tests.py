@@ -996,48 +996,52 @@ class GetSuggStringTests(unittest2.TestCase):
 
 class DecoratorTest(AbstractTests):
     """ Tests about the didyoumean decorator. """
+    # TODO: SYNTAXERROR IS DIFFERENT, use msg -_-
 
-    def func_1(self, babar):
+    def func_no_exc(self, babar):
         return babar
 
-    def func_2(self, babar):
+    def func_exc_and_sugg(self, babar):
         return baba
 
-    def func_3(self, babar):
+    def func_no_sugg(self, babar):
         return gdfsdfsdfsdfsd
 
     @didyoumean
-    def func_1_deco(self, babar):
+    def func_no_exc_deco(self, babar):
         return babar
 
     @didyoumean
-    def func_2_deco(self, babar):
+    def func_exc_and_sugg_deco(self, babar):
         return baba
 
     @didyoumean
-    def func_3_deco(self, babar):
+    def func_no_sugg_deco(self, babar):
         return gdfsdfsdfsdfsd
 
     def test_decorator_no_exception(self):
         """Check the case with no exception."""
-        self.no_exception('self.func_1(0)')
-        self.no_exception('self.func_1_deco(0)')
+        self.no_exception('self.func_no_exc(0)')
+        self.no_exception('self.func_no_exc_deco(0)')
 
     def test_decorator_suggestion(self):
         """Check the case with a suggestion."""
+        type_ = NameError
         sugg = ". Did you mean 'babar'?"
-        type1, value1, _ = self.get_exception('self.func_2(0)')
-        type2, value2, _ = self.get_exception('self.func_2_deco(0)')
-        self.assertEqual(type1, NameError)
-        self.assertEqual(type2, NameError)
+        type1, value1, _ = self.get_exception('self.func_exc_and_sugg(0)')
+        type2, value2, _ = self.get_exception('self.func_exc_and_sugg_deco(0)')
+        self.assertEqual(type1, type_)
+        self.assertEqual(type2, type_)
+        self.assertEqual(value1.args[0] + sugg, value2.args[0])
         self.assertEqual(str(value1) + sugg, str(value2))
 
     def test_decorator_no_suggestion(self):
         """Check the case with no suggestion."""
-        type1, value1, _ = self.get_exception('self.func_3(0)')
-        type2, value2, _ = self.get_exception('self.func_3_deco(0)')
-        self.assertEqual(type1, NameError)
-        self.assertEqual(type2, NameError)
+        type_ = NameError
+        type1, value1, _ = self.get_exception('self.func_no_sugg(0)')
+        type2, value2, _ = self.get_exception('self.func_no_sugg_deco(0)')
+        self.assertEqual(type1, type_)
+        self.assertEqual(type2, type_)
         self.assertEqual(str(value1), str(value2))
 
 if __name__ == '__main__':
