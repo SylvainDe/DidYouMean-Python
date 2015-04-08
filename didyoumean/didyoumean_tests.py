@@ -708,7 +708,7 @@ class SyntaxErrorTests(AbstractTests):
     def test_yield_return_out_of_func(self):
         sugg = "to indent it"
         self.throws("yield 1", OUTSIDEFUNC, sugg)
-        self.throws("return 1", OUTSIDEFUNC, ["sys.exit([arg])", sugg])
+        self.throws("return 1", OUTSIDEFUNC, ["'sys.exit([arg])'", sugg])
 
     def test_print(self):
         code, new_code = 'print ""', 'print("")'

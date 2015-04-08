@@ -106,7 +106,6 @@ def get_name_error_sugg(type_, value, frame):
     if match:
         name, = match.groups()
         return get_name_suggestions(name, frame)
-    print("Oops, '%s' did not match" % error_msg)
     return []
 
 
@@ -159,7 +158,6 @@ def get_attribute_error_sugg(type_, value, frame):
     if match:
         type_str, attr = match.groups()
         return get_attribute_suggestions(type_str, attr, frame)
-    print("Oops, '%s' did not match" % error_msg)
     return []
 
 
@@ -228,7 +226,6 @@ def get_import_error_sugg(type_, value, frame):
         if match:
             imported_name, = match.groups()
             return get_imported_name_suggestion(imported_name, frame)
-    print("Oops, '%s' did not match" % error_msg)
     return []
 
 
@@ -297,7 +294,7 @@ def get_syntax_error_sugg(type_, value, _):
             yield "to indent it"
             word, = match.groups()
             if word == 'return':
-                yield "sys.exit([arg])"
+                yield "'sys.exit([arg])'"
         else:
             offset = value.offset
             if offset > 2:
