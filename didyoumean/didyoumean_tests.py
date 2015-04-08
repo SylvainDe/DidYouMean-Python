@@ -553,7 +553,7 @@ class TypeErrorTests(AbstractTests):
         typo, sugg = '', '1'
         code = func_gen(param='a', args='{0}')
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NBARGERROR)
+        self.throws(bad_code, UNKNOWN_TYPEERROR)  # FIXME
         self.runs(good_code)
 
     def test_nb_args3(self):
