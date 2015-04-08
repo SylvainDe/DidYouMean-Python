@@ -125,7 +125,7 @@ class AbstractTests(unittest2.TestCase):
                 issubclass(error_type, type_caught),
                 "%s not a subclass of %s" % (error_type, type_caught))
             if error_msg is not None:
-                self.assertRegexpMatches(''.join(value.args[0]), error_msg)
+                self.assertRegexpMatches(value.args[0], error_msg)
             if sugg is None:
                 sugg = []
             if not isinstance(sugg, list):
