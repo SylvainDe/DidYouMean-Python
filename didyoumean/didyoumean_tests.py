@@ -6,7 +6,8 @@ from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     NOMODULE_RE, CANNOTIMPORT_RE, INDEXOUTOFRANGE_RE, ZERO_LEN_FIELD_RE,\
     MATH_DOMAIN_ERROR_RE, TOO_MANY_VALUES_UNPACK_RE, OUTSIDE_FUNCTION_RE,\
     NEED_MORE_VALUES_RE, UNHASHABLE_RE, MISSING_PARENT_RE, INVALID_LITERAL_RE,\
-    NB_ARG_RE, INVALID_SYNTAX_RE, EXPECTED_LENGTH_RE, INVALID_COMP_RE
+    NB_ARG_RE, INVALID_SYNTAX_RE, EXPECTED_LENGTH_RE, INVALID_COMP_RE,\
+    MISSING_POS_ARG_RE
 from didyoumean_decorator import didyoumean
 import unittest2
 import math
@@ -16,6 +17,17 @@ import re
 # Following code is bad on purpose - please do not fix ;-)
 
 this_is_a_global_list = [1, 2]
+
+
+def func_gen(name='some_func', param='', body='pass', args=None):
+    """Function to generate code for function def (and sometimes a call to it).
+    Parameters are : name (with default), body (with default),
+    parameters (with default) and arguments to call the functions with (if not
+    provided or provided None, function call is not included in generated
+    code."""
+    func = "def {0}({1}):\n\t{2}\n".format(name, param, body)
+    call = "" if args is None else "{0}({1})\n".format(name, args)
+    return func + call
 
 
 def my_generator():
@@ -53,23 +65,6 @@ class FoobarClass():
     def some_method(self):
         pass
 
-
-def some_func(babar):
-    """Dummy function for testing purposes."""
-    return babar
-
-
-def some_func2(abcdef=None):
-    """Dummy function for testing purposes."""
-    return abcdef
-
-
-def some_func3():
-    pass
-
-
-def some_func4(so, much, args):
-    pass
 
 # Logic to be able to have different tests on various version of Python
 FIRST_VERSION = (0, 0)
@@ -112,7 +107,7 @@ class AbstractTests(unittest2.TestCase):
             exec(code)
         except:
             return sys.exc_info()
-        self.assertTrue(False)
+        self.assertTrue(False, "No exception thrown")
 
     def runs(self, code, version_range=ALL_VERSIONS):
         """Helper function to run code."""
@@ -126,7 +121,9 @@ class AbstractTests(unittest2.TestCase):
         if version_in_range(version_range):
             error_type, error_msg = error_info
             type_caught, value, traceback = self.get_exception(code)
-            self.assertTrue(issubclass(error_type, type_caught))
+            self.assertTrue(
+                issubclass(error_type, type_caught),
+                "%s not a subclass of %s" % (error_type, type_caught))
             if error_msg is not None:
                 self.assertRegexpMatches(''.join(value.args[0]), error_msg)
             if sugg is None:
@@ -139,36 +136,38 @@ class AbstractTests(unittest2.TestCase):
             self.assertEqual(suggestions, sugg)
 
 
-# NameError
+# NameError for NameErrorTests
 NAMEERROR = (NameError, NAMENOTDEFINED_RE)
 UNKNOWN_NAMEERROR = (NameError, None)
-# UnboundLocalError
+# UnboundLocalError for UnboundLocalErrorTests
 UNBOUNDLOCAL = (UnboundLocalError, UNBOUNDERROR_RE)
 UNKNOWN_UNBOUNDLOCAL = (UnboundLocalError, None)
-# TypeError
+# TypeError for TypeErrorTests
 NBARGERROR = (TypeError, NB_ARG_RE)
+MISSINGPOSERROR = (TypeError, MISSING_POS_ARG_RE)
 UNHASHABLE = (TypeError, UNHASHABLE_RE)
 UNSUBSCRIBTABLE = (TypeError, UNSUBSCRIBTABLE_RE)
 UNEXPECTEDKWARG = (TypeError, UNEXPECTED_KEYWORDARG_RE)
-# ImportError
+UNKNOWN_TYPEERROR = (TypeError, None)
+# ImportError for ImportErrorTests
 NOMODULE = (ImportError, NOMODULE_RE)
 CANNOTIMPORT = (ImportError, CANNOTIMPORT_RE)
 UNKNOWN_IMPORTERROR = (ImportError, None)
-# KeyError
+# KeyError for KeyErrorTests
 KEYERROR = (KeyError, None)
-# IndexError
+# IndexError for IndexErrorTests
 OUTOFRANGE = (IndexError, INDEXOUTOFRANGE_RE)
-# ValueError
+# ValueError for ValueErrorTests
 TOOMANYVALUES = (ValueError, TOO_MANY_VALUES_UNPACK_RE)
 NEEDMOREVALUES = (ValueError, NEED_MORE_VALUES_RE)
 EXPECTEDLENGTH = (ValueError, EXPECTED_LENGTH_RE)
 MATHDOMAIN = (ValueError, MATH_DOMAIN_ERROR_RE)
 ZEROLENERROR = (ValueError, ZERO_LEN_FIELD_RE)
 INVALIDLITERAL = (ValueError, INVALID_LITERAL_RE)
-# AttributeError
+# AttributeError for AttributeErrorTests
 ATTRIBUTEERROR = (AttributeError, ATTRIBUTEERROR_RE)
 UNKNOWN_ATTRIBUTEERROR = (AttributeError, None)
-# SyntaxError
+# SyntaxError for SyntaxErrorTests
 INVALIDSYNTAX = (SyntaxError, INVALID_SYNTAX_RE)
 OUTSIDEFUNC = (SyntaxError, OUTSIDE_FUNCTION_RE)
 MISSINGPARENT = (SyntaxError, MISSING_PARENT_RE)
@@ -188,16 +187,16 @@ class NameErrorTests(AbstractTests):
 
     def test_1_arg(self):
         """Should be 'foo'."""
-        code = "def func(foo):\n\t{0}\nfunc(1)"
         typo, sugg = "foob", "foo"
+        code = func_gen(param=sugg, body='{0}', args='1')
         bad_code, good_code = format_str(code, typo, sugg)
         self.throws(bad_code, NAMEERROR, "'" + sugg + "'")
         self.runs(good_code)
 
     def test_n_args(self):
         """Should be 'fool' or 'foot'."""
-        code = "def func(fool, foot, bar):\n\t{0}\nfunc(1, 2, 3)"
         typo, sugg1, sugg2 = "foob", "foot", "fool"
+        code = func_gen(param='fool, foot', body='{0}', args='1, 2')
         bad, good1, good2 = format_str(code, typo, sugg1, sugg2)
         self.throws(bad, NAMEERROR, ["'fool'", "'foot'"])
         self.runs(good1)
@@ -337,7 +336,7 @@ class NameErrorTests(AbstractTests):
         """"Should be self.babar."""
         self.throws(
             'FoobarClass().nameerror_self()',
-            NAMEERROR, ["'self.babar'"])
+            NAMEERROR, "'self.babar'")
 
     def test_self2(self):
         """Should be self.this_is_cls_mthd."""
@@ -376,7 +375,7 @@ class UnboundLocalErrorTests(AbstractTests):
             UNKNOWN_UNBOUNDLOCAL)
 
 
-class AttributeErrorTest(AbstractTests):
+class AttributeErrorTests(AbstractTests):
     """Class for tests related to AttributeError."""
 
     def test_nonetype(self):
@@ -484,7 +483,7 @@ class AttributeErrorTest(AbstractTests):
     def test_removed_function_attributes(self):
         """Some functions attributes are removed."""
         version = (3, 0)
-        code = 'some_func.{0}'
+        code = func_gen() + 'some_func.{0}'
         attributes = [('func_name', '__name__'),
                       ('func_doc', '__doc__'),
                       ('func_defaults', '__defaults__'),
@@ -512,6 +511,11 @@ class AttributeErrorTest(AbstractTests):
             self.throws(old_code, ATTRIBUTEERROR, [], from_version(version))
             self.runs(new_code)
 
+    def test_join(self):
+        """This can be frustrating, a suggestion could be nice."""
+        code = "['a', 'b'].join('-')"
+        self.throws(code, ATTRIBUTEERROR)
+
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""
         self.throws(
@@ -519,41 +523,75 @@ class AttributeErrorTest(AbstractTests):
             UNKNOWN_ATTRIBUTEERROR)
 
     # TODO: Add sugg for situation where self/cls is the missing parameter
+
+
+class TypeErrorTests(AbstractTests):
+    """Class for tests related to TypeError."""
+
     def test_unhashable(self):
         """Test that other errors do not crash."""
         self.throws('dict()[list()] = 1', UNHASHABLE)
 
     def test_not_sub(self):
-        """Should be 'some_func(2)'."""
-        self.throws('some_func[2]', UNSUBSCRIBTABLE, "'function(value)'")
+        """Should be function call, not [] operator."""
+        typo, sugg = '[2]', '(2)'
+        code = func_gen(param='a') + 'some_func{0}'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, UNSUBSCRIBTABLE, "'function(value)'")
+        self.runs(good_code)
 
     def test_nb_args(self):
-        """Should be 'some_func(1)'."""
-        self.throws('some_func(1, 2)', NBARGERROR)
+        """Should have 1 arg."""
+        typo, sugg = '1, 2', '1'
+        code = func_gen(param='a', args='{0}')
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, NBARGERROR)
+        self.runs(good_code)
 
     def test_nb_args2(self):
-        """Should be 'some_func3()'."""
-        self.throws('some_func3(1)', NBARGERROR)
+        """Should have 1 arg."""
+        typo, sugg = '', '1'
+        code = func_gen(param='a', args='{0}')
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, NBARGERROR)
+        self.runs(good_code)
 
     def test_nb_args3(self):
-        """Should be 'some_func4(1, 2, 3)'."""
-        pass
-        # FIXME self.throws('some_func4(1)', NBARGERROR)
+        """Should have 3 args."""
+        typo, sugg = '1', '1, 2, 3'
+        code = func_gen(param='so, much, args', args='{0}')
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, UNKNOWN_TYPEERROR)  # FIXME
+        self.runs(good_code)
 
     def test_nb_args4(self):
-        """Should be 'some_func4(1, 2, 3)'."""
-        pass
-        # FIXME self.throws('some_func4()', NBARGERROR)
+        """Should have 3 args."""
+        typo, sugg = '', '1, 2, 3'
+        code = func_gen(param='so, much, args', args='{0}')
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, UNKNOWN_TYPEERROR)  # FIXME
+        self.runs(good_code)
+
+    def test_nb_args5(self):
+        """Should have 3 args."""
+        typo, sugg = '1, 2', '1, 2, 3'
+        code = func_gen(param='so, much, args', args='{0}')
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, UNKNOWN_TYPEERROR)  # FIXME
+        self.runs(good_code)
 
     def test_keyword_args(self):
-        """Should be 'some_func(1)'."""
-        code = 'some_func(a=1)'
-        self.throws(code, UNEXPECTEDKWARG)
+        """Should be param 'babar' not 'a' but it's hard to guess."""
+        typo, sugg = 'a', 'babar'
+        code = func_gen(param=sugg, args='{0}=1')
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, UNEXPECTEDKWARG)
+        self.runs(good_code)
 
     def test_keyword_args2(self):
-        """Should be 'some_func2(abcdef=1)'."""
-        code = 'some_func2({0}=1)'
+        """Should be param 'abcdef' not 'abcdf'."""
         typo, sugg = 'abcdf', 'abcdef'
+        code = func_gen(param=sugg, args='{0}=1')
         bad_code, good_code = format_str(code, typo, sugg)
         self.throws(bad_code, UNEXPECTEDKWARG, "'" + sugg + "'")
         self.runs(good_code)
@@ -744,9 +782,9 @@ class RegexTests(unittest2.TestCase):
     def regex_matches(self, text, regexp, groups=None):
         """Check that text matches regexp giving groups given values."""
         self.assertRegexpMatches(text, regexp)   # does pretty printing
-        m = re.match(regexp, text)
-        self.assertTrue(m)
-        self.assertEqual(groups, m.groups())
+        match = re.match(regexp, text)
+        self.assertTrue(match)
+        self.assertEqual(groups, match.groups())
 
     def test_unbound_assignment(self):
         """ Test UNBOUNDERROR_RE ."""
@@ -881,12 +919,20 @@ class RegexTests(unittest2.TestCase):
         s4 = "some_func() takes no arguments (1 given)"
         s5 = "some_func() takes exactly 3 arguments (1 given)"
         s6 = "some_func() takes 0 positional arguments but 1 was given"
-        # FIXME
-        s7 = "some_func() missing 2 required positional arguments: " \
-            "'much' and 'args'"
         groups = ('some_func',)
         for s in (s1, s2, s3, s4, s5, s6):
             self.regex_matches(s, NB_ARG_RE, groups)
+
+    def test_missing_positional_arg(self):
+        """ Test MISSING_POS_ARG_RE ."""
+        # Various versions - TBD
+        s1 = "some_func() missing 2 required positional arguments: " \
+            "'much' and 'args'"
+        s2 = "some_func() missing 1 required positional argument: " \
+            "'much'"
+        groups = ('some_func',)
+        self.regex_matches(s1, MISSING_POS_ARG_RE, groups)
+        self.regex_matches(s2, MISSING_POS_ARG_RE, groups)
 
     def test_need_more_values_to_unpack(self):
         """ Test NEED_MORE_VALUES_RE ."""
