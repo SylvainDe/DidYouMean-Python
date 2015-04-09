@@ -93,26 +93,28 @@ def version_in_range(version_range):
     return beg <= sys.version_info < end
 
 
+def no_exception(code):
+    """Helper function to run code and check it works."""
+    exec(code)
+
+
+def get_exception(code):
+    """Helper function to run code and get what it throws."""
+    try:
+        exec(code)
+    except:
+        return sys.exc_info()
+    assert False, "No exception thrown"
+
+
 # Tests
 class AbstractTests(unittest2.TestCase):
     """Generic class to test get_suggestions_for_exception."""
 
-    def no_exception(self, code):
-        """Helper function to run code and check it works."""
-        exec(code)
-
-    def get_exception(self, code):
-        """Helper function to run code and get what it throws."""
-        try:
-            exec(code)
-        except:
-            return sys.exc_info()
-        self.assertTrue(False, "No exception thrown")
-
     def runs(self, code, version_range=ALL_VERSIONS):
         """Helper function to run code."""
         if version_in_range(version_range):
-            self.no_exception(code)
+            no_exception(code)
 
     def throws(self, code, error_info,
                sugg=None, version_range=ALL_VERSIONS):
@@ -120,7 +122,7 @@ class AbstractTests(unittest2.TestCase):
         that what we have expected suggestions."""
         if version_in_range(version_range):
             error_type, error_msg = error_info
-            type_caught, value, traceback = self.get_exception(code)
+            type_caught, value, traceback = get_exception(code)
             self.assertTrue(
                 issubclass(error_type, type_caught),
                 "%s not a subclass of %s" % (error_type, type_caught))
@@ -807,8 +809,8 @@ class RegexTests(unittest2.TestCase):
         # Python 2.6/2.7/3.2/3.3/PyPy/PyPy3
         s2 = "global name 'some_name' is not defined"
         groups = ('some_name',)
-        self.regex_matches(s1, NAMENOTDEFINED_RE, groups)
-        self.regex_matches(s2, NAMENOTDEFINED_RE, groups)
+        for s in (s1, s2):
+            self.regex_matches(s, NAMENOTDEFINED_RE, groups)
 
     def test_attribute_error(self):
         """ Test ATTRIBUTEERROR_RE ."""
@@ -838,8 +840,8 @@ class RegexTests(unittest2.TestCase):
         # Python 3.4/3.5/PyPy/PyPy3
         s2 = "cannot import name 'pie'"
         groups = ('pie',)
-        self.regex_matches(s1, CANNOTIMPORT_RE, groups)
-        self.regex_matches(s2, CANNOTIMPORT_RE, groups)
+        for s in (s1, s2):
+            self.regex_matches(s, CANNOTIMPORT_RE, groups)
 
     def test_no_module_named(self):
         """ Test NOMODULE_RE ."""
@@ -848,8 +850,8 @@ class RegexTests(unittest2.TestCase):
         # Python 3.3/3.4/3.5
         s2 = "No module named 'fake_module'"
         groups = ('fake_module', )
-        self.regex_matches(s1, NOMODULE_RE, groups)
-        self.regex_matches(s2, NOMODULE_RE, groups)
+        for s in (s1, s2):
+            self.regex_matches(s, NOMODULE_RE, groups)
 
     def test_index_out_of_range(self):
         """ Test INDEXOUTOFRANGE_RE ."""
@@ -866,9 +868,8 @@ class RegexTests(unittest2.TestCase):
         # Python 3.2/3.3/3.4/3.5/PyPy/PyPy3
         s3 = "'function' object is not subscriptable"
         groups = ('function',)
-        self.regex_matches(s1, UNSUBSCRIBTABLE_RE, groups)
-        self.regex_matches(s2, UNSUBSCRIBTABLE_RE, groups)
-        self.regex_matches(s3, UNSUBSCRIBTABLE_RE, groups)
+        for s in (s1, s2, s3):
+            self.regex_matches(s, UNSUBSCRIBTABLE_RE, groups)
 
     def test_unexpected_kw_arg(self):
         """ Test UNEXPECTED_KEYWORDARG_RE ."""
@@ -894,8 +895,8 @@ class RegexTests(unittest2.TestCase):
         s1 = "too many values to unpack"
         # Python 3.2/3.3/3.4/3.5/PyPy3
         s2 = "too many values to unpack (expected 3)"
-        self.regex_matches(s1, TOO_MANY_VALUES_UNPACK_RE, ())
-        self.regex_matches(s2, TOO_MANY_VALUES_UNPACK_RE, ())
+        for s in (s1, s2):
+            self.regex_matches(s, TOO_MANY_VALUES_UNPACK_RE, ())
 
     def test_unhashable_type(self):
         """ Test UNHASHABLE_RE ."""
@@ -903,8 +904,8 @@ class RegexTests(unittest2.TestCase):
         s1 = "unhashable type: 'list'"
         # PyPy/PyPy3
         s2 = "'list' objects are unhashable"
-        self.regex_matches(s1, UNHASHABLE_RE, ('list',))
-        self.regex_matches(s2, UNHASHABLE_RE, ('list',))
+        for s in (s1, s2):
+            self.regex_matches(s, UNHASHABLE_RE, ('list',))
 
     def test_outside_function(self):
         """ Test OUTSIDE_FUNCTION_RE ."""
@@ -912,20 +913,19 @@ class RegexTests(unittest2.TestCase):
         s1 = "'return' outside function"
         # PyPy/PyPy3
         s2 = "return outside function"
-        self.regex_matches(s1, OUTSIDE_FUNCTION_RE, ('return',))
-        self.regex_matches(s2, OUTSIDE_FUNCTION_RE, ('return',))
+        for s in (s1, s2):
+            self.regex_matches(s, OUTSIDE_FUNCTION_RE, ('return',))
 
     def test_nb_positional_argument(self):
         """ Test NB_ARG_RE ."""
-        # Python 2.6/2.7
+        # Python 2.6/2.7/PyPy/PyPy3
         s1 = "some_func() takes exactly 1 argument (2 given)"
-        # Python 3.2/PyPy/PyPy3
-        s2 = "some_func() takes exactly 1 positional argument (2 given)"
+        s2 = "some_func() takes exactly 3 arguments (1 given)"
+        s3 = "some_func() takes no arguments (1 given)"
+        # Python 3.2
+        s4 = "some_func() takes exactly 1 positional argument (2 given)"
         # Python 3.3/3.4/3.5
-        s3 = "some_func() takes 1 positional argument but 2 were given"
-        # Various versions - TBD
-        s4 = "some_func() takes no arguments (1 given)"
-        s5 = "some_func() takes exactly 3 arguments (1 given)"
+        s5 = "some_func() takes 1 positional argument but 2 were given"
         s6 = "some_func() takes 0 positional arguments but 1 was given"
         groups = ('some_func',)
         for s in (s1, s2, s3, s4, s5, s6):
@@ -933,14 +933,14 @@ class RegexTests(unittest2.TestCase):
 
     def test_missing_positional_arg(self):
         """ Test MISSING_POS_ARG_RE ."""
-        # Various versions - TBD
+        # Python 3.3/3.4/3.5
         s1 = "some_func() missing 2 required positional arguments: " \
             "'much' and 'args'"
         s2 = "some_func() missing 1 required positional argument: " \
             "'much'"
         groups = ('some_func',)
-        self.regex_matches(s1, MISSING_POS_ARG_RE, groups)
-        self.regex_matches(s2, MISSING_POS_ARG_RE, groups)
+        for s in (s1, s2):
+            self.regex_matches(s, MISSING_POS_ARG_RE, groups)
 
     def test_need_more_values_to_unpack(self):
         """ Test NEED_MORE_VALUES_RE ."""
@@ -1002,42 +1002,29 @@ class GetSuggStringTests(unittest2.TestCase):
             get_suggestion_string(('0', '1')), ". Did you mean 0, 1?")
 
 
-class DecoratorTest(AbstractTests):
+class AddStringToExcTest(unittest2.TestCase):
+    """ Tests about add_string_to_exception. """
+    pass
+
+
+class DecoratorTest(unittest2.TestCase):
     """ Tests about the didyoumean decorator. """
-    # TODO: SYNTAXERROR IS DIFFERENT, use msg -_-
-
-    def func_no_exc(self, babar):
-        return babar
-
-    def func_exc_and_sugg(self, babar):
-        return baba
-
-    def func_no_sugg(self, babar):
-        return gdfsdfsdfsdfsd
-
-    @didyoumean
-    def func_no_exc_deco(self, babar):
-        return babar
-
-    @didyoumean
-    def func_exc_and_sugg_deco(self, babar):
-        return baba
-
-    @didyoumean
-    def func_no_sugg_deco(self, babar):
-        return gdfsdfsdfsdfsd
+    # TODO: SYNTAXERROR IS DIFFERENT-_-
+    deco = "@didyoumean\n"
 
     def test_decorator_no_exception(self):
         """Check the case with no exception."""
-        self.no_exception('self.func_no_exc(0)')
-        self.no_exception('self.func_no_exc_deco(0)')
+        code = func_gen(param='babar', body='babar', args='0')
+        no_exception(code)
+        no_exception(self.deco + code)
 
     def test_decorator_suggestion(self):
         """Check the case with a suggestion."""
         type_ = NameError
         sugg = ". Did you mean 'babar'?"
-        type1, value1, _ = self.get_exception('self.func_exc_and_sugg(0)')
-        type2, value2, _ = self.get_exception('self.func_exc_and_sugg_deco(0)')
+        code = func_gen(param='babar', body='baba', args='0')
+        type1, value1, _ = get_exception(code)
+        type2, value2, _ = get_exception(self.deco + code)
         self.assertEqual(type1, type_)
         self.assertEqual(type2, type_)
         self.assertEqual(value1.args[0] + sugg, value2.args[0])
@@ -1046,11 +1033,29 @@ class DecoratorTest(AbstractTests):
     def test_decorator_no_suggestion(self):
         """Check the case with no suggestion."""
         type_ = NameError
-        type1, value1, _ = self.get_exception('self.func_no_sugg(0)')
-        type2, value2, _ = self.get_exception('self.func_no_sugg_deco(0)')
+        code = func_gen(param='babar', body='fdjhflsdsqfjlkqs', args='0')
+        type1, value1, _ = get_exception(code)
+        type2, value2, _ = get_exception(self.deco + code)
         self.assertEqual(type1, type_)
         self.assertEqual(type2, type_)
         self.assertEqual(str(value1), str(value2))
+
+    def test_decorator_syntax(self):
+        """Check the case with no suggestion."""
+        type_ = SyntaxError
+        # sugg = ". Did you mean to indent it, 'sys.exit([arg])'?"
+        code = 'return'
+        type1, value1, _ = get_exception(code)
+        type2, value2, _ = get_exception(self.deco + code)
+        self.assertEqual(type1, type_)
+        self.assertEqual(type2, type_)
+        print(value1, value1.args)
+        print(value2, value2.args)
+        # FIXME
+        # self.assertEqual(value1.msg + sugg, value2.msg)
+        # self.assertEqual(value1.args[0] + sugg, value2.args[0])
+        # self.assertEqual(str(value1), str(value2))
+
 
 if __name__ == '__main__':
     print(sys.version_info)
