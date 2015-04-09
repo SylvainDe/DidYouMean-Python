@@ -1,6 +1,7 @@
 # -*- coding: utf-8
 """Unit tests for code in didyoumean.py."""
-from didyoumean import get_suggestions_for_exception, get_suggestion_string
+from didyoumean import get_suggestions_for_exception, get_suggestion_string,\
+    add_string_to_exception
 from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     ATTRIBUTEERROR_RE, UNSUBSCRIBTABLE_RE, UNEXPECTED_KEYWORDARG_RE,\
     NOMODULE_RE, CANNOTIMPORT_RE, INDEXOUTOFRANGE_RE, ZERO_LEN_FIELD_RE,\
@@ -63,6 +64,7 @@ class FoobarClass():
         return this_is_cls_mthd
 
     def some_method(self):
+        """Method for testing purposes."""
         pass
 
 
@@ -89,6 +91,7 @@ def format_str(template, *args):
 
 
 def version_in_range(version_range):
+    """ Check that version is in a range version."""
     beg, end = version_range
     return beg <= sys.version_info < end
 
@@ -1004,12 +1007,60 @@ class GetSuggStringTests(unittest2.TestCase):
 
 class AddStringToExcTest(unittest2.TestCase):
     """ Tests about add_string_to_exception. """
-    pass
+
+    def test_add_empty_string(self):
+        """ Empty string added to NameError. """
+        code = func_gen(param='babar', body='baba', args='0')
+        type_, value, _ = get_exception(code)
+        self.assertEqual(NameError, type_)
+        str1, repres = str(value), repr(value)
+        add_string_to_exception(value, "")
+        str2, repres2 = str(value), repr(value)
+        self.assertEqual(str1, str2)
+        self.assertEqual(repres, repres2)
+
+    def test_add_string(self):
+        """ Non-empty string added to NameError. """
+        s = "ABCDEF"
+        code = func_gen(param='babar', body='baba', args='0')
+        type_, value, _ = get_exception(code)
+        self.assertEqual(NameError, type_)
+        str1, repres = str(value), repr(value)
+        add_string_to_exception(value, s)
+        str2, repres2 = str(value), repr(value)
+        self.assertEqual(str1 + s, str2)
+        self.assertTrue(s not in repres, repres)
+        self.assertTrue(s in repres2, repres2)
+
+    def test_add_empty_string_to_syntaxerr(self):
+        """ Empty string added to SyntaxError. """
+        code = 'return'
+        type_, value, _ = get_exception(code)
+        self.assertEqual(SyntaxError, type_)
+        str1, repres = str(value), repr(value)
+        add_string_to_exception(value, "")
+        str2, repres2 = str(value), repr(value)
+        self.assertEqual(str1, str2)
+        self.assertEqual(repres, repres2)
+
+    def test_add_string_to_syntaxerr(self):
+        """ Non-empty string added to SyntaxError. """
+        s = "ABCDEF"
+        code = 'return'
+        type_, value, _ = get_exception(code)
+        self.assertEqual(SyntaxError, type_)
+        str1, repres = str(value), repr(value)
+        add_string_to_exception(value, s)
+        str2, repres2 = str(value), repr(value)
+        self.assertTrue(s not in str1, str1)
+        if False:  # FIXME - Issue #14
+            self.assertTrue(s in str2, str2)
+        self.assertTrue(s not in repres, repres)
+        self.assertTrue(s in repres2, repres2)
 
 
 class DecoratorTest(unittest2.TestCase):
     """ Tests about the didyoumean decorator. """
-    # TODO: SYNTAXERROR IS DIFFERENT-_-
     deco = "@didyoumean\n"
 
     def test_decorator_no_exception(self):
@@ -1027,8 +1078,12 @@ class DecoratorTest(unittest2.TestCase):
         type2, value2, _ = get_exception(self.deco + code)
         self.assertEqual(type1, type_)
         self.assertEqual(type2, type_)
-        self.assertEqual(value1.args[0] + sugg, value2.args[0])
-        self.assertEqual(str(value1) + sugg, str(value2))
+        str1, str2 = str(value1), str(value2)
+        repr1, repr2 = repr(value1), repr(value2)
+        self.assertEqual(str1 + sugg, str2)
+        self.assertNotEqual(repr1, repr2)
+        self.assertTrue(sugg not in repr1, repr1)
+        self.assertTrue(sugg in repr2, repr2)
 
     def test_decorator_no_suggestion(self):
         """Check the case with no suggestion."""
@@ -1039,22 +1094,26 @@ class DecoratorTest(unittest2.TestCase):
         self.assertEqual(type1, type_)
         self.assertEqual(type2, type_)
         self.assertEqual(str(value1), str(value2))
+        self.assertEqual(repr(value1), repr(value2))
 
     def test_decorator_syntax(self):
-        """Check the case with no suggestion."""
+        """Check the case with syntax error suggestion."""
         type_ = SyntaxError
-        # sugg = ". Did you mean to indent it, 'sys.exit([arg])'?"
-        code = 'return'
+        sugg = ". Did you mean to indent it, 'sys.exit([arg])'?"
+        code = func_gen(body='exec("return")', args='')
         type1, value1, _ = get_exception(code)
         type2, value2, _ = get_exception(self.deco + code)
         self.assertEqual(type1, type_)
         self.assertEqual(type2, type_)
-        print(value1, value1.args)
-        print(value2, value2.args)
-        # FIXME
-        # self.assertEqual(value1.msg + sugg, value2.msg)
-        # self.assertEqual(value1.args[0] + sugg, value2.args[0])
-        # self.assertEqual(str(value1), str(value2))
+        str1, str2 = str(value1), str(value2)
+        repr1, repr2 = repr(value1), repr(value2)
+        self.assertTrue(sugg not in str1, str1)
+        if False:  # FIXME - Issue #14
+            self.assertNotEqual(str1, str2)
+            self.assertTrue(sugg in str2, str2)
+        self.assertNotEqual(repr1, repr2)
+        self.assertTrue(sugg not in repr1, repr1)
+        self.assertTrue(sugg in repr2, repr2)
 
 
 if __name__ == '__main__':
