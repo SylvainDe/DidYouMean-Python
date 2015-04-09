@@ -1052,9 +1052,10 @@ class AddStringToExcTest(unittest2.TestCase):
         str1, repres = str(value), repr(value)
         add_string_to_exception(value, s)
         str2, repres2 = str(value), repr(value)
+        self.assertNotEqual(str1, str2)
         self.assertTrue(s not in str1, str1)
-        if False:  # FIXME - Issue #14
-            self.assertTrue(s in str2, str2)
+        self.assertTrue(s in str2, str2)
+        self.assertNotEqual(repres, repres2)
         self.assertTrue(s not in repres, repres)
         self.assertTrue(s in repres2, repres2)
 
@@ -1107,10 +1108,9 @@ class DecoratorTest(unittest2.TestCase):
         self.assertEqual(type2, type_)
         str1, str2 = str(value1), str(value2)
         repr1, repr2 = repr(value1), repr(value2)
+        self.assertNotEqual(str1, str2)
         self.assertTrue(sugg not in str1, str1)
-        if False:  # FIXME - Issue #14
-            self.assertNotEqual(str1, str2)
-            self.assertTrue(sugg in str2, str2)
+        self.assertTrue(sugg in str2, str2)
         self.assertNotEqual(repr1, repr2)
         self.assertTrue(sugg not in repr1, repr1)
         self.assertTrue(sugg in repr2, repr2)

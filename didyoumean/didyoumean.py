@@ -355,11 +355,20 @@ def get_suggestions_for_exception(type_, value, traceback):
 
 def add_string_to_exception(value, string):
     """Add string to the exception parameter."""
+    # The point is to have the string visible when the exception is printed
+    # or converted to string - may it be via `str()`, `repr()` or when the
+    # exception is uncaught and displayed (which seems to use `str()`).
+    # In an ideal world, one just needs to update `args` but apparently it
+    # is not enough for SyntaxError (and others?) where `msg` is to be
+    # updated too (for `str()`, not for `repr()`).
     assert type(value.args) == tuple
     nb_args = len(value.args)
-    if string and nb_args:
-        value.args = tuple([value.args[0] + string] + list(value.args[1:]))
-        assert len(value.args) == nb_args
+    if string:
+        if nb_args:
+            value.args = tuple([value.args[0] + string] + list(value.args[1:]))
+            assert len(value.args) == nb_args
+        if hasattr(value, 'msg'):
+            value.msg += string
 
 
 def get_last_frame(traceback):
