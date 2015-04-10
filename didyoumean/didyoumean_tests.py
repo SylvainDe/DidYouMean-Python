@@ -72,7 +72,7 @@ class FoobarClass():
 FIRST_VERSION = (0, 0)
 LAST_VERSION = (10, 0)
 ALL_VERSIONS = (FIRST_VERSION, LAST_VERSION)
-is_pypy = hasattr(sys, "pypy_translation_info")
+IS_PYPY = hasattr(sys, "pypy_translation_info")
 
 
 def from_version(version):
@@ -609,6 +609,18 @@ class TypeErrorTests(AbstractTests):
         self.throws(bad_code, UNEXPECTEDKWARG, "'" + sugg + "'")
         self.runs(good_code)
 
+    def test_no_implicit_str_conv(self):
+        """ Trying to concatenate a non-string value to a string."""
+        pass
+
+    def test_assignment_to_range(self):
+        """ Trying to assign to range works on list, not on range."""
+        code = '{0}[2] = 1'
+        typo, sugg = 'range(4)', 'list(range(4))'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, UNKNOWN_TYPEERROR)  # FIXME
+        self.runs(good_code)
+
 
 class ImportErrorTests(AbstractTests):
     """Class for tests related to ImportError."""
@@ -716,14 +728,17 @@ class SyntaxErrorTests(AbstractTests):
     """Class for tests related to SyntaxError."""
 
     def test_no_error(self):
+        """ No error."""
         self.runs("1 + 2 == 2")
 
     def test_yield_return_out_of_func(self):
+        """ yield/return needs to be in functions."""
         sugg = "to indent it"
         self.throws("yield 1", OUTSIDEFUNC, sugg)
         self.throws("return 1", OUTSIDEFUNC, ["'sys.exit([arg])'", sugg])
 
     def test_print(self):
+        """ print is a functions now and needs parenthesis."""
         code, new_code = 'print ""', 'print("")'
         version = (3, 0)
         version2 = (3, 4)
@@ -733,6 +748,7 @@ class SyntaxErrorTests(AbstractTests):
         self.runs(new_code)
 
     def test_exec(self):
+        """ exec is a functions now and needs parenthesis."""
         code, new_code = 'exec "1"', 'exec("1")'
         version = (3, 0)
         version2 = (3, 4)
@@ -742,6 +758,7 @@ class SyntaxErrorTests(AbstractTests):
         self.runs(new_code)
 
     def test_old_comparison(self):
+        """ <> comparison is removed, != always works."""
         code = '1 {0} 2'
         old, new = '<>', '!='
         version = (3, 0)
@@ -749,17 +766,48 @@ class SyntaxErrorTests(AbstractTests):
         self.runs(old_code, up_to_version(version))
         self.throws(
             old_code,
-            INVALIDCOMP if is_pypy else INVALIDSYNTAX,
+            INVALIDCOMP if IS_PYPY else INVALIDSYNTAX,
             "'!='", from_version(version))
         self.runs(new_code)
+
+    def test_missing_colon(self):
+        """ Missing colon is a classic mistake."""
+        code = "if True{0}\n\tpass"
+        bad_code, good_code = format_str(code, "", ":")
+        self.throws(bad_code, INVALIDSYNTAX)
+        self.runs(good_code)
+
+    def test_simple_equal(self):
+        """ '=' for comparison is a classic mistake."""
+        code = "if 2 {0} 3:\n\tpass"
+        bad_code, good_code = format_str(code, "=", "==")
+        self.throws(bad_code, INVALIDSYNTAX)
+        self.runs(good_code)
+
+    def test_keyword_as_identifier(self):
+        """ Using a keyword as a variable name. """
+        code = '{0} = 1'
+        bad_code, good_code = format_str(code, "from", "from_")
+        self.throws(bad_code, INVALIDSYNTAX)
+        self.runs(good_code)
+
+    def test_increment(self):
+        """ Using a keyword as a variable name. """
+        code = 'a = 0\na{0}'
+        for op in ('-', '+'):
+            typo, sugg = 2*op, op + '=1'
+            bad_code, good_code = format_str(code, typo, sugg)
+            self.throws(bad_code, INVALIDSYNTAX)
+            self.runs(good_code)
 
 
 class ValueErrorTests(AbstractTests):
     """Class for tests related to ValueError."""
 
     def test_too_many_values(self):
+        """ Unpack 4 values in 3 variables."""
         code = 'a, b, c = [1, 2, 3, 4]'
-        if is_pypy:
+        if IS_PYPY:
             version = (3, 0)
             self.throws(code, EXPECTEDLENGTH, [], up_to_version(version))
             self.throws(code, TOOMANYVALUES, [], from_version(version))
@@ -767,8 +815,9 @@ class ValueErrorTests(AbstractTests):
             self.throws(code, TOOMANYVALUES)
 
     def test_not_enough_values(self):
+        """ Unpack 2 values in 3 variables."""
         code = 'a, b, c = [1, 2]'
-        if is_pypy:
+        if IS_PYPY:
             version = (3, 0)
             self.throws(code, EXPECTEDLENGTH, [], up_to_version(version))
             self.throws(code, NEEDMOREVALUES, [], from_version(version))
@@ -776,13 +825,16 @@ class ValueErrorTests(AbstractTests):
             self.throws(code, NEEDMOREVALUES)
 
     def test_conversion_fails(self):
+        """ Conversion fails."""
         self.throws('int("toto")', INVALIDLITERAL)
 
     def test_math_domain(self):
+        """ Math function used out of its domain."""
         code = 'import math\nlg = math.log(-1)'
         self.throws(code, MATHDOMAIN)
 
     def test_zero_len_field_in_format(self):
+        """ Format {} is not valid before Python 2.7."""
         code = '"{}".format(0)'
         version = (2, 7)
         self.throws(code, ZEROLENERROR, [], up_to_version(version))
@@ -802,184 +854,205 @@ class RegexTests(unittest2.TestCase):
     def test_unbound_assignment(self):
         """ Test UNBOUNDERROR_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
-        s = "local variable 'some_var' referenced before assignment"
-        self.regex_matches(s, UNBOUNDERROR_RE, ('some_var',))
+        msg = "local variable 'some_var' referenced before assignment"
+        self.regex_matches(msg, UNBOUNDERROR_RE, ('some_var',))
 
     def test_name_not_defined(self):
         """ Test NAMENOTDEFINED_RE ."""
-        # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy3
-        s1 = "name 'some_name' is not defined"
-        # Python 2.6/2.7/3.2/3.3/PyPy/PyPy3
-        s2 = "global name 'some_name' is not defined"
+        msgs = [
+            # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy3
+            "name 'some_name' is not defined",
+            # Python 2.6/2.7/3.2/3.3/PyPy/PyPy3
+            "global name 'some_name' is not defined",
+        ]
         groups = ('some_name',)
-        for s in (s1, s2):
-            self.regex_matches(s, NAMENOTDEFINED_RE, groups)
+        for msg in msgs:
+            self.regex_matches(msg, NAMENOTDEFINED_RE, groups)
 
     def test_attribute_error(self):
         """ Test ATTRIBUTEERROR_RE ."""
-        # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
-        s1 = "'some.class' object has no attribute 'attri'"
-        g1 = ('some.class', 'attri')
-        # Python 2.6/2.7/PyPy
-        s2 = "SomeClass instance has no attribute 'attri'"
-        g2 = ('SomeClass', 'attri')
-        # Python 3.5
-        s3 = "module 'some_module' has no attribute 'attri'"
-        g3 = ('some_module', 'attri')
-        # Python 2.6/2.7
-        s4 = "class SomeClass has no attribute 'attri'"
-        # Python 3.2/3.3/3.4/3.5
-        s5 = "type object 'SomeClass' has no attribute 'attri'"
-        self.regex_matches(s1, ATTRIBUTEERROR_RE, g1)
-        self.regex_matches(s2, ATTRIBUTEERROR_RE, g2)
-        self.regex_matches(s3, ATTRIBUTEERROR_RE, g3)
-        self.regex_matches(s4, ATTRIBUTEERROR_RE, g2)
-        self.regex_matches(s5, ATTRIBUTEERROR_RE, g2)
+        group_msg = {
+            ('some.class', 'attri'): [
+                # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
+                "'some.class' object has no attribute 'attri'",
+            ],
+            ('SomeClass', 'attri'): [
+                # Python 2.6/2.7/PyPy
+                "SomeClass instance has no attribute 'attri'",
+                # Python 2.6/2.7
+                "class SomeClass has no attribute 'attri'",
+                # Python 3.2/3.3/3.4/3.5
+                "type object 'SomeClass' has no attribute 'attri'",
+            ],
+            ('some_module', 'attri'): [
+                # Python 3.5
+                "module 'some_module' has no attribute 'attri'",
+            ]
+        }
+        for group, msgs in group_msg.items():
+            for msg in msgs:
+                self.regex_matches(msg, ATTRIBUTEERROR_RE, group)
 
     def test_cannot_import(self):
         """ Test CANNOTIMPORT_RE ."""
-        # Python 2.6/2.7/3.2/3.3
-        s1 = "cannot import name pie"
-        # Python 3.4/3.5/PyPy/PyPy3
-        s2 = "cannot import name 'pie'"
+        msgs = [
+            # Python 2.6/2.7/3.2/3.3
+            "cannot import name pie",
+            # Python 3.4/3.5/PyPy/PyPy3
+            "cannot import name 'pie'",
+        ]
         groups = ('pie',)
-        for s in (s1, s2):
-            self.regex_matches(s, CANNOTIMPORT_RE, groups)
+        for msg in msgs:
+            self.regex_matches(msg, CANNOTIMPORT_RE, groups)
 
     def test_no_module_named(self):
         """ Test NOMODULE_RE ."""
-        # Python 2.6/2.7/3.2/PyPy/PyPy3
-        s1 = "No module named fake_module"
-        # Python 3.3/3.4/3.5
-        s2 = "No module named 'fake_module'"
+        msgs = [
+            # Python 2.6/2.7/3.2/PyPy/PyPy3
+            "No module named fake_module",
+            # Python 3.3/3.4/3.5
+            "No module named 'fake_module'",
+        ]
         groups = ('fake_module', )
-        for s in (s1, s2):
-            self.regex_matches(s, NOMODULE_RE, groups)
+        for msg in msgs:
+            self.regex_matches(msg, NOMODULE_RE, groups)
 
     def test_index_out_of_range(self):
         """ Test INDEXOUTOFRANGE_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
-        s = "list index out of range"
-        self.regex_matches(s, INDEXOUTOFRANGE_RE, ())
+        msg = "list index out of range"
+        self.regex_matches(msg, INDEXOUTOFRANGE_RE, ())
 
     def test_unsubscriptable(self):
         """ Test UNSUBSCRIBTABLE_RE ."""
-        # Python 2.6
-        s1 = "'function' object is unsubscriptable"
-        # Python 2.7
-        s2 = "'function' object has no attribute '__getitem__'"
-        # Python 3.2/3.3/3.4/3.5/PyPy/PyPy3
-        s3 = "'function' object is not subscriptable"
+        msgs = [
+            # Python 2.6
+            "'function' object is unsubscriptable",
+            # Python 2.7
+            "'function' object has no attribute '__getitem__'",
+            # Python 3.2/3.3/3.4/3.5/PyPy/PyPy3
+            "'function' object is not subscriptable",
+        ]
         groups = ('function',)
-        for s in (s1, s2, s3):
-            self.regex_matches(s, UNSUBSCRIBTABLE_RE, groups)
+        for msg in msgs:
+            self.regex_matches(msg, UNSUBSCRIBTABLE_RE, groups)
 
     def test_unexpected_kw_arg(self):
         """ Test UNEXPECTED_KEYWORDARG_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
-        s = "some_func() got an unexpected keyword argument 'a'"
-        self.regex_matches(s, UNEXPECTED_KEYWORDARG_RE, ('some_func', 'a'))
+        msg = "some_func() got an unexpected keyword argument 'a'"
+        self.regex_matches(msg, UNEXPECTED_KEYWORDARG_RE, ('some_func', 'a'))
 
     def test_zero_length_field(self):
         """ Test ZERO_LEN_FIELD_RE ."""
         # Python 2.6
-        s = "zero length field name in format"
-        self.regex_matches(s, ZERO_LEN_FIELD_RE, ())
+        msg = "zero length field name in format"
+        self.regex_matches(msg, ZERO_LEN_FIELD_RE, ())
 
     def test_math_domain_error(self):
         """ Test MATH_DOMAIN_ERROR_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
-        s = "math domain error"
-        self.regex_matches(s, MATH_DOMAIN_ERROR_RE, ())
+        msg = "math domain error"
+        self.regex_matches(msg, MATH_DOMAIN_ERROR_RE, ())
 
     def test_too_many_values(self):
         """ Test TOO_MANY_VALUES_UNPACK_RE ."""
-        # Python 2.6/2.7
-        s1 = "too many values to unpack"
-        # Python 3.2/3.3/3.4/3.5/PyPy3
-        s2 = "too many values to unpack (expected 3)"
-        for s in (s1, s2):
-            self.regex_matches(s, TOO_MANY_VALUES_UNPACK_RE, ())
+        msgs = [
+            # Python 2.6/2.7
+            "too many values to unpack",
+            # Python 3.2/3.3/3.4/3.5/PyPy3
+            "too many values to unpack (expected 3)",
+        ]
+        for msg in msgs:
+            self.regex_matches(msg, TOO_MANY_VALUES_UNPACK_RE, ())
 
     def test_unhashable_type(self):
         """ Test UNHASHABLE_RE ."""
-        # Python 2.6/2.7/3.2/3.3/3.4/3.5
-        s1 = "unhashable type: 'list'"
-        # PyPy/PyPy3
-        s2 = "'list' objects are unhashable"
-        for s in (s1, s2):
-            self.regex_matches(s, UNHASHABLE_RE, ('list',))
+        msgs = [
+            # Python 2.6/2.7/3.2/3.3/3.4/3.5
+            "unhashable type: 'list'",
+            # PyPy/PyPy3
+            "'list' objects are unhashable",
+        ]
+        for msg in msgs:
+            self.regex_matches(msg, UNHASHABLE_RE, ('list',))
 
     def test_outside_function(self):
         """ Test OUTSIDE_FUNCTION_RE ."""
-        # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
-        s1 = "'return' outside function"
-        # PyPy/PyPy3
-        s2 = "return outside function"
-        for s in (s1, s2):
-            self.regex_matches(s, OUTSIDE_FUNCTION_RE, ('return',))
+        msgs = [
+            # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
+            "'return' outside function",
+            # PyPy/PyPy3
+            "return outside function",
+        ]
+        for msg in msgs:
+            self.regex_matches(msg, OUTSIDE_FUNCTION_RE, ('return',))
 
     def test_nb_positional_argument(self):
         """ Test NB_ARG_RE ."""
-        # Python 2.6/2.7/PyPy/PyPy3
-        s1 = "some_func() takes exactly 1 argument (2 given)"
-        s2 = "some_func() takes exactly 3 arguments (1 given)"
-        s3 = "some_func() takes no arguments (1 given)"
-        # Python 3.2
-        s4 = "some_func() takes exactly 1 positional argument (2 given)"
-        # Python 3.3/3.4/3.5
-        s5 = "some_func() takes 1 positional argument but 2 were given"
-        s6 = "some_func() takes 0 positional arguments but 1 was given"
+        msgs = [
+            # Python 2.6/2.7/PyPy/PyPy3
+            "some_func() takes exactly 1 argument (2 given)",
+            "some_func() takes exactly 3 arguments (1 given)",
+            "some_func() takes no arguments (1 given)",
+            # Python 3.2
+            "some_func() takes exactly 1 positional argument (2 given)",
+            # Python 3.3/3.4/3.5
+            "some_func() takes 1 positional argument but 2 were given",
+            "some_func() takes 0 positional arguments but 1 was given",
+        ]
         groups = ('some_func',)
-        for s in (s1, s2, s3, s4, s5, s6):
-            self.regex_matches(s, NB_ARG_RE, groups)
+        for msg in msgs:
+            self.regex_matches(msg, NB_ARG_RE, groups)
 
     def test_missing_positional_arg(self):
         """ Test MISSING_POS_ARG_RE ."""
-        # Python 3.3/3.4/3.5
-        s1 = "some_func() missing 2 required positional arguments: " \
-            "'much' and 'args'"
-        s2 = "some_func() missing 1 required positional argument: " \
-            "'much'"
+        msgs = [
+            # Python 3.3/3.4/3.5
+            "some_func() missing 2 required positional arguments: "
+            "'much' and 'args'",
+            "some_func() missing 1 required positional argument: "
+            "'much'",
+        ]
         groups = ('some_func',)
-        for s in (s1, s2):
-            self.regex_matches(s, MISSING_POS_ARG_RE, groups)
+        for msg in msgs:
+            self.regex_matches(msg, MISSING_POS_ARG_RE, groups)
 
     def test_need_more_values_to_unpack(self):
         """ Test NEED_MORE_VALUES_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy3
-        s = "need more than 2 values to unpack"
-        self.regex_matches(s, NEED_MORE_VALUES_RE, ())
+        msg = "need more than 2 values to unpack"
+        self.regex_matches(msg, NEED_MORE_VALUES_RE, ())
 
     def test_missing_parentheses(self):
         """ Test MISSING_PARENT_RE ."""
         # Python 3.4/3.5
-        s = "Missing parentheses in call to 'exec'"
-        self.regex_matches(s, MISSING_PARENT_RE, ('exec',))
+        msg = "Missing parentheses in call to 'exec'"
+        self.regex_matches(msg, MISSING_PARENT_RE, ('exec',))
 
     def test_invalid_literal(self):
         """ Test INVALID_LITERAL_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
-        s = "invalid literal for int() with base 10: 'toto'"
-        self.regex_matches(s, INVALID_LITERAL_RE, ('int', 'toto'))
+        msg = "invalid literal for int() with base 10: 'toto'"
+        self.regex_matches(msg, INVALID_LITERAL_RE, ('int', 'toto'))
 
     def test_invalid_syntax(self):
         """ Test INVALID_SYNTAX_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy3
-        s = "invalid syntax"
-        self.regex_matches(s, INVALID_SYNTAX_RE, ())
+        msg = "invalid syntax"
+        self.regex_matches(msg, INVALID_SYNTAX_RE, ())
 
     def test_invalid_comp(self):
         """ Test INVALID_COMP_RE ."""
         # PyPy3
-        s = "invalid comparison"
-        self.regex_matches(s, INVALID_COMP_RE, ())
+        msg = "invalid comparison"
+        self.regex_matches(msg, INVALID_COMP_RE, ())
 
     def test_expected_length(self):
         """ Test EXPECTED_LENGTH_RE ."""
         # PyPy
-        s = "expected length 3, got 2"
-        self.regex_matches(s, EXPECTED_LENGTH_RE, ('3', '2'))
+        msg = "expected length 3, got 2"
+        self.regex_matches(msg, EXPECTED_LENGTH_RE, ('3', '2'))
 
 
 class GetSuggStringTests(unittest2.TestCase):
@@ -1021,16 +1094,16 @@ class AddStringToExcTest(unittest2.TestCase):
 
     def test_add_string(self):
         """ Non-empty string added to NameError. """
-        s = "ABCDEF"
+        string = "ABCDEF"
         code = func_gen(param='babar', body='baba', args='0')
         type_, value, _ = get_exception(code)
         self.assertEqual(NameError, type_)
         str1, repres = str(value), repr(value)
-        add_string_to_exception(value, s)
+        add_string_to_exception(value, string)
         str2, repres2 = str(value), repr(value)
-        self.assertEqual(str1 + s, str2)
-        self.assertTrue(s not in repres, repres)
-        self.assertTrue(s in repres2, repres2)
+        self.assertEqual(str1 + string, str2)
+        self.assertTrue(string not in repres, repres)
+        self.assertTrue(string in repres2, repres2)
 
     def test_add_empty_string_to_syntaxerr(self):
         """ Empty string added to SyntaxError. """
@@ -1045,24 +1118,24 @@ class AddStringToExcTest(unittest2.TestCase):
 
     def test_add_string_to_syntaxerr(self):
         """ Non-empty string added to SyntaxError. """
-        s = "ABCDEF"
+        string = "ABCDEF"
         code = 'return'
         type_, value, _ = get_exception(code)
         self.assertEqual(SyntaxError, type_)
         str1, repres = str(value), repr(value)
-        add_string_to_exception(value, s)
+        add_string_to_exception(value, string)
         str2, repres2 = str(value), repr(value)
         self.assertNotEqual(str1, str2)
-        self.assertTrue(s not in str1, str1)
-        self.assertTrue(s in str2, str2)
+        self.assertTrue(string not in str1, str1)
+        self.assertTrue(string in str2, str2)
         self.assertNotEqual(repres, repres2)
-        self.assertTrue(s not in repres, repres)
-        self.assertTrue(s in repres2, repres2)
+        self.assertTrue(string not in repres, repres)
+        self.assertTrue(string in repres2, repres2)
 
 
 class DecoratorTest(unittest2.TestCase):
     """ Tests about the didyoumean decorator. """
-    deco = "@didyoumean\n"
+    deco = "@" + didyoumean.__name__ + "\n"
 
     def test_decorator_no_exception(self):
         """Check the case with no exception."""
