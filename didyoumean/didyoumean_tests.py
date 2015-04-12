@@ -615,10 +615,13 @@ class TypeErrorTests(AbstractTests):
 
     def test_assignment_to_range(self):
         """ Trying to assign to range works on list, not on range."""
+        # FIXME
         code = '{0}[2] = 1'
         typo, sugg = 'range(4)', 'list(range(4))'
+        version = (3, 0)
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, UNKNOWN_TYPEERROR)  # FIXME
+        self.runs(bad_code, up_to_version(version))
+        self.throws(bad_code, UNKNOWN_TYPEERROR, [], from_version(version))
         self.runs(good_code)
 
 
