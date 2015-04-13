@@ -355,6 +355,10 @@ class NameErrorTests(AbstractTests):
             'FoobarClass().nameerror_cls()', NAMEERROR,
             ["'FoobarClass.this_is_cls_mthd'", "'cls.this_is_cls_mthd'"])
 
+    def test_main(self):
+        """Should be '__main__'."""
+        self.throws('__main_', NAMEERROR)
+
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""
         self.throws(
@@ -664,6 +668,11 @@ class ImportErrorTests(AbstractTests):
         self.throws(bad_code, NOMODULE, "'" + sugg + "'")
         self.runs(good_code)
 
+    def test_import_future(self):
+        """ Should be '__future__' ."""
+        code = 'from __future_ import division'
+        self.throws(code, NOMODULE)
+
     def test_no_name_no_sugg(self):
         """No suggestion."""
         self.throws('from math import fsfsdfdjlkf', CANNOTIMPORT)
@@ -802,6 +811,18 @@ class SyntaxErrorTests(AbstractTests):
             bad_code, good_code = format_str(code, typo, sugg)
             self.throws(bad_code, INVALIDSYNTAX)
             self.runs(good_code)
+
+    def test_import_future_not_first(self):
+        """ Imports from __future__ need before anything else ."""
+        code = 'a = 8/7\nfrom __future__ import division'
+        self.throws(code, (SyntaxError, "^from __future__ imports must occur"
+                    " at the beginning of the file$"))
+
+    def test_import_future(self):
+        """ Should be 'division' ."""
+        code = 'from __future__ import divisio'
+        self.throws(code, (SyntaxError, "^future feature divisio is not"
+                    " defined$"))
 
 
 class ValueErrorTests(AbstractTests):

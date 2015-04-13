@@ -297,7 +297,7 @@ def get_syntax_error_sugg(type_, value, _):
                 yield "'sys.exit([arg])'"
         else:
             offset = value.offset
-            if offset > 2:
+            if offset is not None and offset > 2:
                 two_last = value.text[offset - 2:offset]
                 if two_last == '<>':
                     yield quote('!=')
