@@ -8,7 +8,7 @@ from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     MATH_DOMAIN_ERROR_RE, TOO_MANY_VALUES_UNPACK_RE, OUTSIDE_FUNCTION_RE,\
     NEED_MORE_VALUES_RE, UNHASHABLE_RE, MISSING_PARENT_RE, INVALID_LITERAL_RE,\
     NB_ARG_RE, INVALID_SYNTAX_RE, EXPECTED_LENGTH_RE, INVALID_COMP_RE,\
-    MISSING_POS_ARG_RE
+    MISSING_POS_ARG_RE, FUTURE_FIRST_RE, FUTURE_FEATURE_NOT_DEF_RE
 from didyoumean_decorator import didyoumean
 import unittest2
 import math
@@ -177,6 +177,8 @@ INVALIDSYNTAX = (SyntaxError, INVALID_SYNTAX_RE)
 OUTSIDEFUNC = (SyntaxError, OUTSIDE_FUNCTION_RE)
 MISSINGPARENT = (SyntaxError, MISSING_PARENT_RE)
 INVALIDCOMP = (SyntaxError, INVALID_COMP_RE)
+FUTUREFIRST = (SyntaxError, FUTURE_FIRST_RE)
+FUTFEATNOTDEF = (SyntaxError, FUTURE_FEATURE_NOT_DEF_RE)
 
 
 class NameErrorTests(AbstractTests):
@@ -668,7 +670,7 @@ class ImportErrorTests(AbstractTests):
         self.throws(bad_code, NOMODULE, "'" + sugg + "'")
         self.runs(good_code)
 
-    def test_import_future(self):
+    def test_import_future_nomodule(self):
         """ Should be '__future__' ."""
         code = 'from __future_ import division'
         self.throws(code, NOMODULE)
@@ -815,14 +817,12 @@ class SyntaxErrorTests(AbstractTests):
     def test_import_future_not_first(self):
         """ Imports from __future__ need before anything else ."""
         code = 'a = 8/7\nfrom __future__ import division'
-        self.throws(code, (SyntaxError, "^from __future__ imports must occur"
-                    " at the beginning of the file$"))
+        self.throws(code, FUTUREFIRST)
 
-    def test_import_future(self):
+    def test_import_future_not_def(self):
         """ Should be 'division' ."""
         code = 'from __future__ import divisio'
-        self.throws(code, (SyntaxError, "^future feature divisio is not"
-                    " defined$"))
+        self.throws(code, FUTFEATNOTDEF)
 
 
 class ValueErrorTests(AbstractTests):
@@ -1077,6 +1077,23 @@ class RegexTests(unittest2.TestCase):
         # PyPy
         msg = "expected length 3, got 2"
         self.regex_matches(msg, EXPECTED_LENGTH_RE, ('3', '2'))
+
+    def test_future_first(self):
+        """ Test FUTURE_FIRST_RE. """
+        msgs = [
+            # Python 2.6/2.7/3.2/3.3/3.4/3.5
+            "from __future__ imports must occur at the beginning of the file",
+            # PyPy/PyPy3
+            "__future__ statements must appear at beginning of file",
+        ]
+        for msg in msgs:
+            self.regex_matches(msg, FUTURE_FIRST_RE, ())
+
+    def test_future_feature_not_def(self):
+        """ Test FUTURE_FEATURE_NOT_DEF_RE. """
+        # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
+        msg = "future feature divisio is not defined"
+        self.regex_matches(msg, FUTURE_FEATURE_NOT_DEF_RE, ('divisio',))
 
 
 class GetSuggStringTests(unittest2.TestCase):
