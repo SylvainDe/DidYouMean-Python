@@ -617,7 +617,11 @@ class TypeErrorTests(AbstractTests):
 
     def test_no_implicit_str_conv(self):
         """ Trying to concatenate a non-string value to a string."""
-        pass
+        code = '{0} + " things"'
+        typo, sugg = '12', 'str(12)'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, UNKNOWN_TYPEERROR)  # FIXME
+        self.runs(good_code)
 
     def test_assignment_to_range(self):
         """ Trying to assign to range works on list, not on range."""
@@ -809,7 +813,7 @@ class SyntaxErrorTests(AbstractTests):
         self.runs(good_code)
 
     def test_increment(self):
-        """ Using a keyword as a variable name. """
+        """ Trying to use '++' or '--'. """
         code = 'a = 0\na{0}'
         for op in ('-', '+'):
             typo, sugg = 2*op, op + '=1'
