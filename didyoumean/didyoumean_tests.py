@@ -672,8 +672,11 @@ class ImportErrorTests(AbstractTests):
 
     def test_import_future_nomodule(self):
         """ Should be '__future__' ."""
-        code = 'from __future_ import division'
-        self.throws(code, NOMODULE)
+        code = 'import {0}'
+        typo, sugg = '__future_', '__future__'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, NOMODULE, "'" + sugg + "'")
+        self.runs(good_code)
 
     def test_no_name_no_sugg(self):
         """No suggestion."""
@@ -821,8 +824,11 @@ class SyntaxErrorTests(AbstractTests):
 
     def test_import_future_not_def(self):
         """ Should be 'division' ."""
-        code = 'from __future__ import divisio'
-        self.throws(code, FUTFEATNOTDEF)
+        code = 'from __future__ import {0}'
+        typo, sugg = 'divisio', 'division'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, FUTFEATNOTDEF, "'" + sugg + "'")
+        self.runs(good_code)
 
 
 class ValueErrorTests(AbstractTests):

@@ -7,13 +7,14 @@ import itertools
 import inspect
 from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     ATTRIBUTEERROR_RE, UNSUBSCRIBTABLE_RE, UNEXPECTED_KEYWORDARG_RE,\
-    NOMODULE_RE, CANNOTIMPORT_RE, INVALID_COMP_RE, OUTSIDE_FUNCTION_RE
+    NOMODULE_RE, CANNOTIMPORT_RE, INVALID_COMP_RE, OUTSIDE_FUNCTION_RE,\
+    FUTURE_FEATURE_NOT_DEF_RE
 
 #: Standard modules we'll consider while searching for undefined values
 # To be completed
 STAND_MODULES = set(['string', 'os', 'sys', 're', 'math', 'random',
                      'datetime', 'timeit', 'unittest', 'itertools',
-                     'functools'])
+                     'functools', '__future__'])
 
 #: Almost synonyms methods that can be confused from one type to another
 # To be completed
@@ -221,11 +222,10 @@ def get_import_error_sugg(type_, value, frame):
     if match:
         module_str, = match.groups()
         return get_module_name_suggestion(module_str)
-    else:
-        match = re.match(CANNOTIMPORT_RE, error_msg)
-        if match:
-            imported_name, = match.groups()
-            return get_imported_name_suggestion(imported_name, frame)
+    match = re.match(CANNOTIMPORT_RE, error_msg)
+    if match:
+        imported_name, = match.groups()
+        return get_imported_name_suggestion(imported_name, frame)
     return []
 
 
@@ -237,15 +237,15 @@ def get_module_name_suggestion(module_str):
 
 def get_imported_name_suggestion(imported_name, frame):
     """Get the suggestions closest to the failing import."""
+    module_name = frame.f_code.co_names[0]
     return itertools.chain(
-        suggest_imported_name_as_typo(imported_name, frame),
+        suggest_imported_name_as_typo(imported_name, module_name, frame),
         suggest_import_from_module(imported_name, frame))
 
 
-def suggest_imported_name_as_typo(imported_name, frame):
+def suggest_imported_name_as_typo(imported_name, module_name, frame):
     """Suggest that imported name could be a typo from actual name in module.
     Example: 'from math import pie' -> 'from math import pi'."""
-    module_name = frame.f_code.co_names[0]
     return get_close_matches(
         imported_name,
         dir(import_from_frame(module_name, frame)))
@@ -282,25 +282,29 @@ def get_type_error_sugg(type_, value, frame):
 
 
 # Functions related to SyntaxError
-def get_syntax_error_sugg(type_, value, _):
+def get_syntax_error_sugg(type_, value, frame):
     """Get suggestions for SyntaxError exception."""
     assert issubclass(type_, SyntaxError)
     error_msg = value.args[0]
-    if re.match(INVALID_COMP_RE, error_msg):
+    match = re.match(OUTSIDE_FUNCTION_RE, error_msg)
+    if match:
+        yield "to indent it"
+        word, = match.groups()
+        if word == 'return':
+            yield "'sys.exit([arg])'"
+    match = re.match(FUTURE_FEATURE_NOT_DEF_RE, error_msg)
+    if match:
+        feature, = match.groups()
+        for m in suggest_imported_name_as_typo(feature, '__future__', frame):
+            yield m
+    match = re.match(INVALID_COMP_RE, error_msg)
+    if match:
         yield quote('!=')
-    else:
-        match = re.match(OUTSIDE_FUNCTION_RE, error_msg)
-        if match:
-            yield "to indent it"
-            word, = match.groups()
-            if word == 'return':
-                yield "'sys.exit([arg])'"
-        else:
-            offset = value.offset
-            if offset is not None and offset > 2:
-                two_last = value.text[offset - 2:offset]
-                if two_last == '<>':
-                    yield quote('!=')
+    offset = value.offset
+    if offset is not None and offset > 2:
+        two_last = value.text[offset - 2:offset]
+        if two_last == '<>':
+            yield quote('!=')
 
 
 # Functions related to ValueError
