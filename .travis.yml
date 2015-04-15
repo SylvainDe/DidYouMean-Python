@@ -20,6 +20,7 @@ before_script:
 
 script:
  - coverage run -m unittest2.__main__ discover --start-directory=didyoumean --pattern=*.py
+ - python didyoumean/readme_examples.py || true
 
 after_success:
   coveralls

@@ -27,96 +27,145 @@ Example
 _More examples can be found from the test file `didyoumean/didyoumean_tests.py`._
 
 
-### Name Error
+### NameError
 
-##### Fuzzy matches on existing names
+##### Fuzzy matches on existing names (local, builtin, keywords, modules, etc)
 
 ```python
 def my_func(foo, bar):
-    return foob
-#>>> Before : NameError: global name 'foob' is not defined
-#>>> After : NameError: global name 'foob' is not defined. Did you mean 'foo'?
-
-def my_func():
-    return maxi
-#>>> Before : NameError: global name 'maxi' is not defined
-#>>> After : NameError: global name 'maxi' is not defined. Did you mean 'max'?
+	return foob
+my_func(1, 2)
+#>>> Before: NameError("global name 'foob' is not defined",)
+#>>> After: NameError("global name 'foob' is not defined. Did you mean 'foo'?",)
 ```
-
+```python
+def my_func(lst):
+	return leng(foo)
+my_func([0])
+#>>> Before: NameError("global name 'leng' is not defined",)
+#>>> After: NameError("global name 'leng' is not defined. Did you mean 'len'?",)
+```
+```python
+import math
+maths.pi
+#>>> Before: NameError("name 'maths' is not defined",)
+#>>> After: NameError("name 'maths' is not defined. Did you mean 'math'?",)
+```
+```python
+def my_func():
+	passs
+my_func()
+#>>> Before: NameError("global name 'passs' is not defined",)
+#>>> After: NameError("global name 'passs' is not defined. Did you mean 'pass'?",)
+```
+```python
+def my_func():
+	foo = 1
+	foob +=1
+my_func()
+#>>> Before: UnboundLocalError("local variable 'foob' referenced before assignment",)
+#>>> After: UnboundLocalError("local variable 'foob' referenced before assignment. Did you mean 'foo'?",)
+```
 ##### Looking for missing imports
 
 ```python
-def my_func():
-    return functools.wraps
-#>>> Before : NameError: global name 'functools' is not defined
-#>>> After : NameError: global name 'functools' is not defined. Did you mean to import functools first?
+functools.wraps()
+#>>> Before: NameError("name 'functools' is not defined",)
+#>>> After: NameError("name 'functools' is not defined. Did you mean to import functools first?",)
 ```
-
-
 ##### Checking if name is the attribute of a defined object
 
-Useful when forgetting `self` or `cls` in a method.
+```python
+class Duck():
+	def __init__(self):
+		quack()
+	def quack(self):
+		pass
+d = Duck()
+#>>> Before: NameError("global name 'quack' is not defined",)
+#>>> After: NameError("global name 'quack' is not defined. Did you mean 'self.quack'?",)
+```
+```python
+import math
+pi
+#>>> Before: NameError("name 'pi' is not defined",)
+#>>> After: NameError("name 'pi' is not defined. Did you mean 'math.pi'?",)
+```
+### TypeError
+
+##### Fuzzy matches on keyword arguments
 
 ```python
-def my_meth(self):
-    return my_meth2()
-#>>> Before : NameError: global name 'my_meth2' is not defined
-#>>> After : NameError: global name 'my_meth2' is not defined. Did you mean 'self.my_meth2'?
+def my_func(abcde):
+	pass
+my_func(abcdf=1)
+#>>> Before: TypeError("my_func() got an unexpected keyword argument 'abcdf'",)
+#>>> After: TypeError("my_func() got an unexpected keyword argument 'abcdf'. Did you mean 'abcde'?",)
 ```
-
-### Attribute Error
-
-##### Fuzzy matches on existing attributes
-
-```python
-def my_func():
-    lst = [1, 2, 3]
-    lst.appendh(4)
-#>>> Before : AttributeError: 'list' object has no attribute 'appendh'
-#>>> After : AttributeError: 'list' object has no attribute 'appendh'. Did you mean 'append'?
-```
-
-
-##### Detection of mis-used builtins
-
-```python
-def my_func():
-    lst = [1, 2, 3]
-    return lst.max()
-#>>> Before : AttributeError: 'list' object has no attribute 'max'
-#>>> After : AttributeError: 'list' object has no attribute 'max'. Did you mean 'max(list)'?
-```
-
-##### Trying to find method with similar meaning (hardcoded)
-
-```python
-def my_func():
-    lst = [1, 2, 3]
-    return lst.add(4)
-#>>> Before : AttributeError: 'list' object has no attribute 'add'
-#>>> After : AttributeError: 'list' object has no attribute 'add'. Did you mean 'append'?
-```
-
-### Import Error
-
-##### Fuzzy matches on existing modules
-
-```python
-from maths import pi
-#>>> Before : ImportError: No module named maths
-#>>> After : ImportError: No module named maths. Did you mean 'math'?
-```
-
+### ImportError
 
 ##### Fuzzy matches on elements of the module
 
 ```python
 from math import pie
-#>>> Before : ImportError: cannot import name pie
-#>>> After : ImportError: cannot import name pie. Did you mean 'pi'?
+#>>> Before: ImportError('cannot import name pie',)
+#>>> After: ImportError("cannot import name pie. Did you mean 'pi'?",)
 ```
+##### Fuzzy matches on existing modules
 
+```python
+from maths import pi
+#>>> Before: ImportError('No module named maths',)
+#>>> After: ImportError("No module named maths. Did you mean 'math'?",)
+```
+### AttributeError
 
+##### Fuzzy matches on existing attributes
+
+```python
+lst = [1, 2, 3]
+lst.appendh(4)
+#>>> Before: AttributeError("'list' object has no attribute 'appendh'",)
+#>>> After: AttributeError("'list' object has no attribute 'appendh'. Did you mean 'append'?",)
+```
+```python
+import math
+math.pie
+#>>> Before: AttributeError("'module' object has no attribute 'pie'",)
+#>>> After: AttributeError("'module' object has no attribute 'pie'. Did you mean 'pi'?",)
+```
+##### Detection of mis-used builtins
+
+```python
+lst = [1, 2, 3]
+lst.max()
+#>>> Before: AttributeError("'list' object has no attribute 'max'",)
+#>>> After: AttributeError("'list' object has no attribute 'max'. Did you mean 'max(list)'?",)
+```
+##### Trying to find method with similar meaning (hardcoded)
+
+```python
+lst = [1, 2, 3]
+lst.add(4)
+#>>> Before: AttributeError("'list' object has no attribute 'add'",)
+#>>> After: AttributeError("'list' object has no attribute 'add'. Did you mean 'append'?",)
+```
+### SyntaxError
+
+##### Fuzzy matches when importing from __future__
+
+```python
+from __future__ import divisio
+#>>> Before: SyntaxError('future feature divisio is not defined',)
+#>>> After: SyntaxError("future feature divisio is not defined. Did you mean 'division'?",)
+```
+##### Various
+
+```python
+return
+#>>> Before: SyntaxError("'return' outside function", ('<string>', 1, 0, None))
+#>>> After: SyntaxError("'return' outside function. Did you mean to indent it, 'sys.exit([arg])'?", ('<string>', 1, 0, None))
+```
 Usage
 -----
 
