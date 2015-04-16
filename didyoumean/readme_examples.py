@@ -22,7 +22,7 @@ def main():
     examples = {
         (1, NameError): {
             (1, "Fuzzy matches on existing names "
-            "(local, builtin, keywords, modules, etc)"): [
+                "(local, builtin, keywords, modules, etc)"): [
                 "def my_func(foo, bar):\n\treturn foob\nmy_func(1, 2)",
                 "def my_func(lst):\n\treturn leng(foo)\nmy_func([0])",
                 "import math\nmaths.pi",
