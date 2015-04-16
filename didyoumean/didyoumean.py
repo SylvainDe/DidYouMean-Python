@@ -298,36 +298,6 @@ def get_syntax_error_sugg(type_, value, frame):
             yield quote('!=')
 
 
-# Functions related to ValueError
-def get_value_error_sugg(type_, value, _):
-    """Get suggestions for ValueError exception."""
-    assert issubclass(type_, ValueError)
-    assert len(value.args) == 1
-    error_msg, = value.args
-    error_msg = error_msg
-    return []
-
-
-# Functions related to IndexError
-def get_index_error_sugg(type_, value, _):
-    """Get suggestions for IndexError exception."""
-    assert issubclass(type_, IndexError)
-    assert len(value.args) == 1
-    error_msg, = value.args
-    error_msg = error_msg
-    return []
-
-
-# Functions related to KeyError
-def get_key_error_sugg(type_, value, _):
-    """Get suggestions for KeyError exception."""
-    assert issubclass(type_, KeyError)
-    assert len(value.args) == 1
-    error_msg, = value.args
-    error_msg = error_msg
-    return []
-
-
 def get_suggestions_for_exception(type_, value, traceback):
     """Get suggestions for an exception."""
     frame = get_last_frame(traceback)
@@ -337,9 +307,6 @@ def get_suggestions_for_exception(type_, value, traceback):
         TypeError: get_type_error_sugg,
         ImportError: get_import_error_sugg,
         SyntaxError: get_syntax_error_sugg,
-        ValueError: get_value_error_sugg,
-        IndexError: get_index_error_sugg,
-        KeyError: get_key_error_sugg,
     }
     return itertools.chain.from_iterable(
         func(type_, value, frame)
