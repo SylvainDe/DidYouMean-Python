@@ -4,7 +4,6 @@ import keyword
 import difflib
 import re
 import itertools
-import inspect
 from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     ATTRIBUTEERROR_RE, UNSUBSCRIBTABLE_RE, UNEXPECTED_KEYWORDARG_RE,\
     NOMODULE_RE, CANNOTIMPORT_RE, INVALID_COMP_RE, OUTSIDE_FUNCTION_RE,\
@@ -276,7 +275,7 @@ def get_type_error_sugg(type_, value, frame):
             func_name, kw_arg = match.groups()
             objs = get_objects_in_frame(frame)
             func = objs[func_name][0]
-            args = inspect.getargspec(func).args
+            args = func.__code__.co_varnames
             for match in get_close_matches(kw_arg, args):
                 yield match
 
