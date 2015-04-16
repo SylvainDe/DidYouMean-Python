@@ -622,6 +622,16 @@ class TypeErrorTests(AbstractTests):
         bad_code, good_code = format_str(code, typo, sugg)
         self.throws(bad_code, UNKNOWN_TYPEERROR)  # FIXME
         self.runs(good_code)
+        # Python 2.6/2.7/3.2/3.3/3.4/PyPy/PyPy3
+        # "unsupported operand type(s) for +: 'int' and 'str'"
+
+    def test_no_implicit_str_conv2(self):
+        """ Trying to concatenate a non-string value to a string."""
+        code = '"things " + {0}'
+        typo, sugg = '12', 'str(12)'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, UNKNOWN_TYPEERROR)  # FIXME
+        self.runs(good_code)
 
     def test_assignment_to_range(self):
         """ Trying to assign to range works on list, not on range."""
