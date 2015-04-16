@@ -86,14 +86,6 @@ def debug_traceback(traceback):
         traceback = traceback.tb_next
 
 
-def print_error_info(type_, value, _):
-    """Print error information."""
-    assert issubclass(type_, Exception)
-    # value = value
-    print(type_, value)
-    return []
-
-
 # Functions related to NameError
 def get_name_error_sugg(type_, value, frame):
     """Get suggestions for NameError exception."""
@@ -340,7 +332,6 @@ def get_suggestions_for_exception(type_, value, traceback):
     """Get suggestions for an exception."""
     frame = get_last_frame(traceback)
     error_types = {
-        Exception: print_error_info,
         NameError: get_name_error_sugg,
         AttributeError: get_attribute_error_sugg,
         TypeError: get_type_error_sugg,
