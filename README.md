@@ -66,13 +66,6 @@ my_func()
 #>>> Before: UnboundLocalError("local variable 'foob' referenced before assignment",)
 #>>> After: UnboundLocalError("local variable 'foob' referenced before assignment. Did you mean 'foo'?",)
 ```
-##### Looking for missing imports
-
-```python
-functools.wraps()
-#>>> Before: NameError("name 'functools' is not defined",)
-#>>> After: NameError("name 'functools' is not defined. Did you mean to import functools first?",)
-```
 ##### Checking if name is the attribute of a defined object
 
 ```python
@@ -91,32 +84,12 @@ pi
 #>>> Before: NameError("name 'pi' is not defined",)
 #>>> After: NameError("name 'pi' is not defined. Did you mean 'math.pi'?",)
 ```
-### TypeError
-
-##### Fuzzy matches on keyword arguments
+##### Looking for missing imports
 
 ```python
-def my_func(abcde):
-	pass
-my_func(abcdf=1)
-#>>> Before: TypeError("my_func() got an unexpected keyword argument 'abcdf'",)
-#>>> After: TypeError("my_func() got an unexpected keyword argument 'abcdf'. Did you mean 'abcde'?",)
-```
-### ImportError
-
-##### Fuzzy matches on elements of the module
-
-```python
-from math import pie
-#>>> Before: ImportError('cannot import name pie',)
-#>>> After: ImportError("cannot import name pie. Did you mean 'pi'?",)
-```
-##### Fuzzy matches on existing modules
-
-```python
-from maths import pi
-#>>> Before: ImportError('No module named maths',)
-#>>> After: ImportError("No module named maths. Did you mean 'math'?",)
+functools.wraps()
+#>>> Before: NameError("name 'functools' is not defined",)
+#>>> After: NameError("name 'functools' is not defined. Did you mean to import functools first?",)
 ```
 ### AttributeError
 
@@ -150,6 +123,40 @@ lst.add(4)
 #>>> Before: AttributeError("'list' object has no attribute 'add'",)
 #>>> After: AttributeError("'list' object has no attribute 'add'. Did you mean 'append'?",)
 ```
+### ImportError
+
+##### Fuzzy matches on existing modules
+
+```python
+from maths import pi
+#>>> Before: ImportError('No module named maths',)
+#>>> After: ImportError("No module named maths. Did you mean 'math'?",)
+```
+##### Fuzzy matches on elements of the module
+
+```python
+from math import pie
+#>>> Before: ImportError('cannot import name pie',)
+#>>> After: ImportError("cannot import name pie. Did you mean 'pi'?",)
+```
+##### Looking for import from wrong module
+
+```python
+from itertools import pi
+#>>> Before: ImportError('cannot import name pi',)
+#>>> After: ImportError("cannot import name pi. Did you mean 'from math import pi'?",)
+```
+### TypeError
+
+##### Fuzzy matches on keyword arguments
+
+```python
+def my_func(abcde):
+	pass
+my_func(abcdf=1)
+#>>> Before: TypeError("my_func() got an unexpected keyword argument 'abcdf'",)
+#>>> After: TypeError("my_func() got an unexpected keyword argument 'abcdf'. Did you mean 'abcde'?",)
+```
 ### SyntaxError
 
 ##### Fuzzy matches when importing from __future__
@@ -166,6 +173,8 @@ return
 #>>> Before: SyntaxError("'return' outside function", ('<string>', 1, 0, None))
 #>>> After: SyntaxError("'return' outside function. Did you mean to indent it, 'sys.exit([arg])'?", ('<string>', 1, 0, None))
 ```
+
+
 Usage
 -----
 
