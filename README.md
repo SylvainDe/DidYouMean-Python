@@ -20,6 +20,8 @@ See also :
 
  - [Did You Mean in Perl](http://perltricks.com/article/122/2014/10/31/Implementing-Did-You-Mean-in-Perl)
 
+ - [TheF*ck](https://github.com/nvbn/thefuck) : Correct and execute your previous shell command.
+
 
 Example
 -------
