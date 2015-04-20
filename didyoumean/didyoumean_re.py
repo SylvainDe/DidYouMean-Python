@@ -17,7 +17,8 @@ MATH_DOMAIN_ERROR_RE = r"^math domain error$"
 TOO_MANY_VALUES_UNPACK_RE = r"^too many values " \
     r"to unpack(?: \(expected \d+\))?$"
 OUTSIDE_FUNCTION_RE = r"^'?(\w+)'? outside function$"
-NEED_MORE_VALUES_RE = r"^need more than \d+ values to unpack$"
+NEED_MORE_VALUES_RE = r"^(?:need more than \d+|not enough) values to unpack" \
+    r"(?: \(expected \d+, got \d+\))?$"
 UNHASHABLE_RE = r"^(?:unhashable type: )?'(\w+)'(?: objects are unhashable)?$"
 MISSING_PARENT_RE = r"^Missing parentheses in call to '(\w+)'$"
 INVALID_LITERAL_RE = r"^invalid literal for (\w+)\(\) with base \d+: '(\w+)'$"

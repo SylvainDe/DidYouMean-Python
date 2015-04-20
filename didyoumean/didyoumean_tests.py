@@ -1064,9 +1064,14 @@ class RegexTests(unittest2.TestCase):
 
     def test_need_more_values_to_unpack(self):
         """ Test NEED_MORE_VALUES_RE ."""
-        # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy3
-        msg = "need more than 2 values to unpack"
-        self.regex_matches(msg, NEED_MORE_VALUES_RE, ())
+        msgs = [
+            # Python 2.6/2.7/3.2/3.3/3.4/3.5(?)/PyPy3
+            "need more than 2 values to unpack",
+            # Python 3.5
+            "not enough values to unpack (expected 3, got 2)",
+        ]
+        for msg in msgs:
+            self.regex_matches(msg, NEED_MORE_VALUES_RE, ())
 
     def test_missing_parentheses(self):
         """ Test MISSING_PARENT_RE ."""
