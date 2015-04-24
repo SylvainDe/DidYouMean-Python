@@ -130,7 +130,8 @@ class AbstractTests(unittest2.TestCase):
                 issubclass(error_type, type_caught),
                 "%s not a subclass of %s" % (error_type, type_caught))
             if error_msg is not None:
-                self.assertRegexpMatches(value.args[0], error_msg)
+                msg = value.args[0] if value.args else ''
+                self.assertRegexpMatches(msg, error_msg)
             if sugg is None:
                 sugg = []
             if not isinstance(sugg, list):
@@ -179,6 +180,8 @@ MISSINGPARENT = (SyntaxError, MISSING_PARENT_RE)
 INVALIDCOMP = (SyntaxError, INVALID_COMP_RE)
 FUTUREFIRST = (SyntaxError, FUTURE_FIRST_RE)
 FUTFEATNOTDEF = (SyntaxError, FUTURE_FEATURE_NOT_DEF_RE)
+# MemoryError for MemoryErrorTests
+MEMORYERROR = (MemoryError, '')
 
 
 class NameErrorTests(AbstractTests):
@@ -845,6 +848,26 @@ class SyntaxErrorTests(AbstractTests):
         self.runs(good_code)
 
 
+class MemoryErrorTests(AbstractTests):
+    """Class for tests related to MemoryError."""
+
+    def test_out_of_memory(self):
+        """ Test what happens in case of MemoryError. """
+        code = '[0] * 999999999999999'
+        self.throws(code, MEMORYERROR)
+
+    def test_out_of_memory_range(self):
+        """ Test what happens in case of MemoryError. """
+        code = '{0}(999999999999999)'
+        typo, sugg = 'range', 'xrange'
+        bad_code, good_code = format_str(code, typo, sugg)
+        version = (3, 0)
+        self.throws(
+            bad_code, MEMORYERROR, "'" + sugg + "'", up_to_version(version))
+        self.runs(good_code, up_to_version(version))
+        self.runs(bad_code, from_version(version))
+
+
 class ValueErrorTests(AbstractTests):
     """Class for tests related to ValueError."""
 
@@ -1144,64 +1167,110 @@ class GetSuggStringTests(unittest2.TestCase):
             get_suggestion_string(('0', '1')), ". Did you mean 0, 1?")
 
 
-class AddStringToExcTest(unittest2.TestCase):
+class TestWithStringFunction(unittest2.TestCase):
+    """ Unit test class with an helper method. """
+
+    def assertStringAdded(self, string, before, after, concat=True, adj=0):
+        """ Check that `string` has been added to `before` to get `after`.
+        In some representation, string is not added via pure concatenation but
+        can be added anywhere. Reusing as many already defined assert methods
+        to have the pretty printing.
+        - Argument `concat` is used to know whether concatenation is to be
+        checked (after = before + string)
+        `adj` is used as an adjustment when comparing string lengths."""
+        if string:
+            self.assertNotEqual(before, after)
+            self.assertTrue(string not in before, before)
+            self.assertTrue(string in after, after)
+            self.assertEqual(len(after), len(before) + len(string) + adj)
+            if concat:
+                self.assertEqual(before + string, after)
+        else:
+            self.assertEqual(before, after)
+
+
+class AddStringToExcTest(TestWithStringFunction):
     """ Tests about add_string_to_exception. """
+
+    def get_exc_as_str_before_and_after(self, code, type_arg, string):
+        """ Retrieve string representations of exceptions raised by code
+        before and after calling add_string_to_exception. """
+        type_, value, _ = get_exception(code)
+        self.assertEqual(type_arg, type_)
+        str1, repr1 = str(value), repr(value)
+        add_string_to_exception(value, string)
+        str2, repr2 = str(value), repr(value)
+        return (str1, repr1, str2, repr2)
 
     def test_add_empty_string(self):
         """ Empty string added to NameError. """
+        string = ""
         code = func_gen(param='babar', body='baba', args='0')
-        type_, value, _ = get_exception(code)
-        self.assertEqual(NameError, type_)
-        str1, repres = str(value), repr(value)
-        add_string_to_exception(value, "")
-        str2, repres2 = str(value), repr(value)
-        self.assertEqual(str1, str2)
-        self.assertEqual(repres, repres2)
+        str1, repr1, str2, repr2 = self.get_exc_as_str_before_and_after(
+            code, NameError, string)
+        self.assertStringAdded(string, str1, str2)
+        self.assertStringAdded(string, repr1, repr2)
 
     def test_add_string(self):
         """ Non-empty string added to NameError. """
         string = "ABCDEF"
         code = func_gen(param='babar', body='baba', args='0')
-        type_, value, _ = get_exception(code)
-        self.assertEqual(NameError, type_)
-        str1, repres = str(value), repr(value)
-        add_string_to_exception(value, string)
-        str2, repres2 = str(value), repr(value)
-        self.assertEqual(str1 + string, str2)
-        self.assertTrue(string not in repres, repres)
-        self.assertTrue(string in repres2, repres2)
+        str1, repr1, str2, repr2 = self.get_exc_as_str_before_and_after(
+            code, NameError, string)
+        self.assertStringAdded(string, str1, str2)
+        self.assertStringAdded(string, repr1, repr2, False)
 
     def test_add_empty_string_to_syntaxerr(self):
         """ Empty string added to SyntaxError. """
+        string = ""
         code = 'return'
-        type_, value, _ = get_exception(code)
-        self.assertEqual(SyntaxError, type_)
-        str1, repres = str(value), repr(value)
-        add_string_to_exception(value, "")
-        str2, repres2 = str(value), repr(value)
-        self.assertEqual(str1, str2)
-        self.assertEqual(repres, repres2)
+        str1, repr1, str2, repr2 = self.get_exc_as_str_before_and_after(
+            code, SyntaxError, string)
+        self.assertStringAdded(string, str1, str2)
+        self.assertStringAdded(string, repr1, repr2)
 
     def test_add_string_to_syntaxerr(self):
         """ Non-empty string added to SyntaxError. """
         string = "ABCDEF"
         code = 'return'
-        type_, value, _ = get_exception(code)
-        self.assertEqual(SyntaxError, type_)
-        str1, repres = str(value), repr(value)
-        add_string_to_exception(value, string)
-        str2, repres2 = str(value), repr(value)
-        self.assertNotEqual(str1, str2)
-        self.assertTrue(string not in str1, str1)
-        self.assertTrue(string in str2, str2)
-        self.assertNotEqual(repres, repres2)
-        self.assertTrue(string not in repres, repres)
-        self.assertTrue(string in repres2, repres2)
+        str1, repr1, str2, repr2 = self.get_exc_as_str_before_and_after(
+            code, SyntaxError, string)
+        self.assertStringAdded(string, str1, str2, False)
+        self.assertStringAdded(string, repr1, repr2, False)
+
+    def test_add_empty_string_to_memoryerr(self):
+        """ Empty string added to MemoryError. """
+        string = ""
+        code = '[0] * 999999999999999'
+        str1, repr1, str2, repr2 = self.get_exc_as_str_before_and_after(
+            code, MemoryError, string)
+        self.assertStringAdded(string, str1, str2)
+        self.assertStringAdded(string, repr1, repr2)
+
+    def test_add_string_to_memoryerr(self):
+        """ Non-empty string added to MemoryError. """
+        string = "ABCDEF"
+        code = '[0] * 999999999999999'
+        str1, repr1, str2, repr2 = self.get_exc_as_str_before_and_after(
+            code, MemoryError, string)
+        self.assertStringAdded(string, str1, str2)
+        self.assertStringAdded(string, repr1, repr2, False, 3)
 
 
-class DecoratorTest(unittest2.TestCase):
+class DecoratorTest(TestWithStringFunction):
     """ Tests about the didyoumean decorator. """
     deco = "@" + didyoumean.__name__ + "\n"
+
+    def get_undeco_and_deco_exc_as_str(self, code, type_arg):
+        """ Retrieve string representations of exceptions raised by code
+        without and with the decorator. """
+        type1, value1, _ = get_exception(code)
+        type2, value2, _ = get_exception(self.deco + code)
+        self.assertEqual(type_arg, type1)
+        self.assertEqual(type_arg, type2)
+        str1, repr1 = str(value1), repr(value1)
+        str2, repr2 = str(value2), repr(value2)
+        return (str1, repr1, str2, repr2)
 
     def test_decorator_no_exception(self):
         """Check the case with no exception."""
@@ -1214,45 +1283,29 @@ class DecoratorTest(unittest2.TestCase):
         type_ = NameError
         sugg = ". Did you mean 'babar'?"
         code = func_gen(param='babar', body='baba', args='0')
-        type1, value1, _ = get_exception(code)
-        type2, value2, _ = get_exception(self.deco + code)
-        self.assertEqual(type1, type_)
-        self.assertEqual(type2, type_)
-        str1, str2 = str(value1), str(value2)
-        repr1, repr2 = repr(value1), repr(value2)
-        self.assertEqual(str1 + sugg, str2)
-        self.assertNotEqual(repr1, repr2)
-        self.assertTrue(sugg not in repr1, repr1)
-        self.assertTrue(sugg in repr2, repr2)
+        str1, repr1, str2, repr2 = self.get_undeco_and_deco_exc_as_str(
+            code, type_)
+        self.assertStringAdded(sugg, str1, str2)
+        self.assertStringAdded(sugg, repr1, repr2, False)
 
     def test_decorator_no_suggestion(self):
         """Check the case with no suggestion."""
         type_ = NameError
         code = func_gen(param='babar', body='fdjhflsdsqfjlkqs', args='0')
-        type1, value1, _ = get_exception(code)
-        type2, value2, _ = get_exception(self.deco + code)
-        self.assertEqual(type1, type_)
-        self.assertEqual(type2, type_)
-        self.assertEqual(str(value1), str(value2))
-        self.assertEqual(repr(value1), repr(value2))
+        str1, repr1, str2, repr2 = self.get_undeco_and_deco_exc_as_str(
+            code, type_)
+        self.assertStringAdded("", str1, str2)
+        self.assertStringAdded("", repr1, repr2)
 
     def test_decorator_syntax(self):
         """Check the case with syntax error suggestion."""
         type_ = SyntaxError
         sugg = ". Did you mean to indent it, 'sys.exit([arg])'?"
         code = func_gen(body='exec("return")', args='')
-        type1, value1, _ = get_exception(code)
-        type2, value2, _ = get_exception(self.deco + code)
-        self.assertEqual(type1, type_)
-        self.assertEqual(type2, type_)
-        str1, str2 = str(value1), str(value2)
-        repr1, repr2 = repr(value1), repr(value2)
-        self.assertNotEqual(str1, str2)
-        self.assertTrue(sugg not in str1, str1)
-        self.assertTrue(sugg in str2, str2)
-        self.assertNotEqual(repr1, repr2)
-        self.assertTrue(sugg not in repr1, repr1)
-        self.assertTrue(sugg in repr2, repr2)
+        str1, repr1, str2, repr2 = self.get_undeco_and_deco_exc_as_str(
+            code, type_)
+        self.assertStringAdded(sugg, str1, str2, False)
+        self.assertStringAdded(sugg, repr1, repr2, False)
 
 
 if __name__ == '__main__':

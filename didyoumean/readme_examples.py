@@ -74,6 +74,12 @@ def main():
                 "return",
             ],
         },
+        (6, MemoryError): {
+            (1, "Search for a memory-efficient equivalent"): [
+                # FIXME : This example will no work on all versions :
+                # "range(99999999999)",
+            ],
+        },
     }
 
     str_func = repr  # could be str or repr

@@ -298,6 +298,18 @@ def get_syntax_error_sugg(type_, value, frame):
             yield quote('!=')
 
 
+# Functions related to MemoryError
+def get_memory_error_sugg(type_, value, frame):
+    """Get suggestions for MemoryError exception."""
+    assert issubclass(type_, MemoryError)
+    objs = get_objects_in_frame(frame)
+    suggs = {'range': 'xrange'}
+    for name in frame.f_code.co_names:
+        sugg = suggs.get(name)
+        if sugg is not None and sugg in objs:
+            yield quote(sugg)
+
+
 def get_suggestions_for_exception(type_, value, traceback):
     """Get suggestions for an exception."""
     frame = get_last_frame(traceback)
@@ -307,6 +319,7 @@ def get_suggestions_for_exception(type_, value, traceback):
         TypeError: get_type_error_sugg,
         ImportError: get_import_error_sugg,
         SyntaxError: get_syntax_error_sugg,
+        MemoryError: get_memory_error_sugg,
     }
     return itertools.chain.from_iterable(
         func(type_, value, frame)
@@ -321,13 +334,16 @@ def add_string_to_exception(value, string):
     # exception is uncaught and displayed (which seems to use `str()`).
     # In an ideal world, one just needs to update `args` but apparently it
     # is not enough for SyntaxError (and others?) where `msg` is to be
-    # updated too (for `str()`, not for `repr()`).
+    # updated too (for `str()`, not for `repr()`). Also, in case of memory
+    # errors (and others?), we don't have any args so we just add one.
     assert type(value.args) == tuple
     nb_args = len(value.args)
     if string:
         if nb_args:
             value.args = tuple([value.args[0] + string] + list(value.args[1:]))
             assert len(value.args) == nb_args
+        else:  # adding the string anyway
+            value.args = (string, )
         if hasattr(value, 'msg'):
             value.msg += string
 
