@@ -299,7 +299,7 @@ def get_syntax_error_sugg(type_, value, frame):
 
 
 # Functions related to MemoryError
-def get_memory_error_sugg(type_, value, frame):
+def get_memory_error_sugg(type_, _, frame):
     """Get suggestions for MemoryError exception."""
     assert issubclass(type_, MemoryError)
     objs = get_objects_in_frame(frame)

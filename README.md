@@ -6,6 +6,7 @@ DidYouMean-Python
 
 [![Coverage Status](https://coveralls.io/repos/SylvainDe/DidYouMean-Python/badge.svg?branch=master)](https://coveralls.io/r/SylvainDe/DidYouMean-Python?branch=master)
 
+[![Code Health](https://landscape.io/github/SylvainDe/DidYouMean-Python/master/landscape.svg?style=flat)](https://landscape.io/github/SylvainDe/DidYouMean-Python/master)
 
 Logic to have various kind of suggestions in case of errors (NameError, AttributeError, etc). Can be used via a simple import or a dedicated decorator.
 
