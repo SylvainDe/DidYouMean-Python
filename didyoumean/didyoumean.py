@@ -350,6 +350,8 @@ def add_string_to_exception(value, string):
 
 def get_last_frame(traceback):
     """Extract last frame from a traceback."""
+    if traceback is None:
+        return None
     while traceback.tb_next:
         traceback = traceback.tb_next
     return traceback.tb_frame

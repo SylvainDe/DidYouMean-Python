@@ -889,7 +889,7 @@ class MemoryErrorTests(AbstractTests):
         typo, sugg = 'range', 'xrange'
         bad_code, good_code = format_str(code, typo, sugg)
         self.runs(bad_code, ALL_VERSIONS, 'pypy')
-        version = (2, 6)
+        version = (2, 7)
         version2 = (3, 0)
         self.throws(
             bad_code,
