@@ -72,7 +72,7 @@ class FoobarClass():
 FIRST_VERSION = (0, 0)
 LAST_VERSION = (10, 0)
 ALL_VERSIONS = (FIRST_VERSION, LAST_VERSION)
-IS_PYPY = hasattr(sys, "pypy_translation_info")
+INTERPRETERS = ['cython', 'pypy']
 
 
 def from_version(version):
@@ -85,15 +85,31 @@ def up_to_version(version):
     return (FIRST_VERSION, version)
 
 
+def version_in_range(version_range):
+    """ Test if current version is in a range version."""
+    beg, end = version_range
+    return beg <= sys.version_info < end
+
+
+def interpreter_in(interpreters):
+    """ Test if current interpreter is in a list of interpreters. """
+    is_pypy = hasattr(sys, "pypy_translation_info")
+    interpreter = 'pypy' if is_pypy else 'cython'
+    return interpreter in interpreters
+
+
 def format_str(template, *args):
     """Format multiple string by using first arg as a template."""
     return [template.format(arg) for arg in args]
 
 
-def version_in_range(version_range):
-    """ Check that version is in a range version."""
-    beg, end = version_range
-    return beg <= sys.version_info < end
+def listify(value, default):
+    """ Return list from value, using default value if value is None. """
+    if value is None:
+        value = default
+    if not isinstance(value, list):
+        value = [value]
+    return value
 
 
 def no_exception(code):
@@ -114,16 +130,23 @@ def get_exception(code):
 class AbstractTests(unittest2.TestCase):
     """Generic class to test get_suggestions_for_exception."""
 
-    def runs(self, code, version_range=ALL_VERSIONS):
+    def runs(self, code, version_range=None, interpreters=None):
         """Helper function to run code."""
-        if version_in_range(version_range):
+        interpreters = listify(interpreters, INTERPRETERS)
+        if version_range is None:
+            version_range = ALL_VERSIONS
+        if version_in_range(version_range) and interpreter_in(interpreters):
             no_exception(code)
 
     def throws(self, code, error_info,
-               sugg=None, version_range=ALL_VERSIONS):
+               sugg=None, version_range=None, interpreters=None):
         """Helper function to run code and check what it throws
         that what we have expected suggestions."""
-        if version_in_range(version_range):
+        if version_range is None:
+            version_range = ALL_VERSIONS
+        interpreters = listify(interpreters, INTERPRETERS)
+        sugg = listify(sugg, [])
+        if version_in_range(version_range) and interpreter_in(interpreters):
             error_type, error_msg = error_info
             type_caught, value, traceback = get_exception(code)
             self.assertTrue(
@@ -132,10 +155,6 @@ class AbstractTests(unittest2.TestCase):
             if error_msg is not None:
                 msg = value.args[0] if value.args else ''
                 self.assertRegexpMatches(msg, error_msg)
-            if sugg is None:
-                sugg = []
-            if not isinstance(sugg, list):
-                sugg = [sugg]
             suggestions = sorted(
                 get_suggestions_for_exception(
                     type_caught, value, traceback))
@@ -800,8 +819,16 @@ class SyntaxErrorTests(AbstractTests):
         self.runs(old_code, up_to_version(version))
         self.throws(
             old_code,
-            INVALIDCOMP if IS_PYPY else INVALIDSYNTAX,
-            "'!='", from_version(version))
+            INVALIDCOMP,
+            "'!='",
+            from_version(version),
+            'pypy')
+        self.throws(
+            old_code,
+            INVALIDSYNTAX,
+            "'!='",
+            from_version(version),
+            'cython')
         self.runs(new_code)
 
     def test_missing_colon(self):
@@ -861,11 +888,22 @@ class MemoryErrorTests(AbstractTests):
         code = '{0}(999999999999999)'
         typo, sugg = 'range', 'xrange'
         bad_code, good_code = format_str(code, typo, sugg)
-        version = (3, 0)
+        self.runs(bad_code, ALL_VERSIONS, 'pypy')
+        version = (2, 6)
+        version2 = (3, 0)
         self.throws(
-            bad_code, MEMORYERROR, "'" + sugg + "'", up_to_version(version))
-        self.runs(good_code, up_to_version(version))
-        self.runs(bad_code, from_version(version))
+            bad_code,
+            (OverflowError, None),
+            [],
+            up_to_version(version),
+            'cython')
+        self.throws(
+            bad_code,
+            MEMORYERROR, "'" + sugg + "'",
+            (version, version2),
+            'cython')
+        self.runs(good_code, up_to_version(version2), 'cython')
+        self.runs(bad_code, from_version(version2), 'cython')
 
 
 class ValueErrorTests(AbstractTests):
@@ -874,22 +912,18 @@ class ValueErrorTests(AbstractTests):
     def test_too_many_values(self):
         """ Unpack 4 values in 3 variables."""
         code = 'a, b, c = [1, 2, 3, 4]'
-        if IS_PYPY:
-            version = (3, 0)
-            self.throws(code, EXPECTEDLENGTH, [], up_to_version(version))
-            self.throws(code, TOOMANYVALUES, [], from_version(version))
-        else:
-            self.throws(code, TOOMANYVALUES)
+        version = (3, 0)
+        self.throws(code, EXPECTEDLENGTH, [], up_to_version(version), 'pypy')
+        self.throws(code, TOOMANYVALUES, [], from_version(version), 'pypy')
+        self.throws(code, TOOMANYVALUES, [], ALL_VERSIONS, 'cython')
 
     def test_not_enough_values(self):
         """ Unpack 2 values in 3 variables."""
         code = 'a, b, c = [1, 2]'
-        if IS_PYPY:
-            version = (3, 0)
-            self.throws(code, EXPECTEDLENGTH, [], up_to_version(version))
-            self.throws(code, NEEDMOREVALUES, [], from_version(version))
-        else:
-            self.throws(code, NEEDMOREVALUES)
+        version = (3, 0)
+        self.throws(code, EXPECTEDLENGTH, [], up_to_version(version), 'pypy')
+        self.throws(code, NEEDMOREVALUES, [], from_version(version), 'pypy')
+        self.throws(code, NEEDMOREVALUES, [], ALL_VERSIONS, 'cython')
 
     def test_conversion_fails(self):
         """ Conversion fails."""
@@ -911,7 +945,7 @@ class ValueErrorTests(AbstractTests):
 class RegexTests(unittest2.TestCase):
     """Tests to check that error messages match the regexps."""
 
-    def regex_matches(self, text, regexp, groups=None):
+    def regex_matches(self, text, regexp, groups):
         """Check that text matches regexp giving groups given values."""
         self.assertRegexpMatches(text, regexp)   # does pretty printing
         match = re.match(regexp, text)
