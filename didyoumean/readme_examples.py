@@ -10,7 +10,7 @@ def get_exception(code):
         exec(code)
     except:
         return sys.exc_info()
-    assert False
+    return None
 
 
 def main():
@@ -76,8 +76,7 @@ def main():
         },
         (6, MemoryError): {
             (1, "Search for a memory-efficient equivalent"): [
-                # FIXME : This example will no work on all versions :
-                # "range(99999999999)",
+                "range(99999999999)",
             ],
         },
     }
@@ -88,12 +87,16 @@ def main():
         for (_, desc), codes in sorted(exc_examples.items()):
             print("##### %s\n" % desc)
             for code in codes:
-                type_, value, traceback = get_exception(code)
-                assert issubclass(type_, exc_type)
-                before = str_func(value)
-                add_suggestions_to_exception(type_, value, traceback)
-                after = str_func(value)
-                assert before != after
+                exc = get_exception(code)
+                if exc is None:
+                    before = after = "No exception thrown on this version of Python"
+                else:
+                    type_, value, traceback = exc
+                    assert issubclass(type_, exc_type)
+                    before = str_func(value)
+                    add_suggestions_to_exception(type_, value, traceback)
+                    after = str_func(value)
+                    assert before != after
                 print("""```python
 %s
 #>>> Before: %s
