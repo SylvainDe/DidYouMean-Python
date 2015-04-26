@@ -7,7 +7,7 @@ import itertools
 from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     ATTRIBUTEERROR_RE, UNSUBSCRIBTABLE_RE, UNEXPECTED_KEYWORDARG_RE,\
     NOMODULE_RE, CANNOTIMPORT_RE, INVALID_COMP_RE, OUTSIDE_FUNCTION_RE,\
-    FUTURE_FEATURE_NOT_DEF_RE
+    FUTURE_FEATURE_NOT_DEF_RE, RESULT_TOO_MANY_ITEMS
 
 #: Standard modules we'll consider while searching for undefined values
 # To be completed
@@ -303,11 +303,30 @@ def get_memory_error_sugg(type_, _, frame):
     """Get suggestions for MemoryError exception."""
     assert issubclass(type_, MemoryError)
     objs = get_objects_in_frame(frame)
-    suggs = {'range': 'xrange'}
     for name in frame.f_code.co_names:
-        sugg = suggs.get(name)
-        if sugg is not None and sugg in objs:
-            yield quote(sugg)
+        for sugg in suggest_memory_friendly_equi(name):
+            if sugg in objs:
+                yield quote(sugg)
+
+
+# Functions related to OverflowError
+def get_overflow_error_sugg(type_, value, frame):
+    """Get suggestions for OverflowError exception."""
+    assert issubclass(type_, OverflowError)
+    objs = get_objects_in_frame(frame)
+    error_msg = value.args[0]
+    match = re.match(RESULT_TOO_MANY_ITEMS, error_msg)
+    if match:
+        func, = match.groups()
+        for sugg in suggest_memory_friendly_equi(func):
+            if sugg in objs:
+                yield quote(sugg)
+
+
+def suggest_memory_friendly_equi(name):
+    """ Suggest name of a memory friendly equivalent for a function. """
+    suggs = {'range': ['xrange']}
+    return suggs.get(name, [])
 
 
 def get_suggestions_for_exception(type_, value, traceback):
@@ -320,6 +339,7 @@ def get_suggestions_for_exception(type_, value, traceback):
         ImportError: get_import_error_sugg,
         SyntaxError: get_syntax_error_sugg,
         MemoryError: get_memory_error_sugg,
+        OverflowError: get_overflow_error_sugg,
     }
     return itertools.chain.from_iterable(
         func(type_, value, frame)

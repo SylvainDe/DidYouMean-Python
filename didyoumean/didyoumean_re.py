@@ -32,3 +32,4 @@ EXPECTED_LENGTH_RE = r"^expected length (\d+), got (\d+)$"
 FUTURE_FIRST_RE = r"^(?:from )?__future__ (?:imports|statements) must " \
     r"(?:occur|appear) at (?:the )?beginning of (?:the )?file$"
 FUTURE_FEATURE_NOT_DEF_RE = r"^future feature (\w+) is not defined$"
+RESULT_TOO_MANY_ITEMS = r"^(\w+)\(\) result has too many items$"

@@ -187,7 +187,15 @@ range(99999999999)
 #>>> Before: MemoryError()
 #>>> After: MemoryError(". Did you mean 'xrange'?",)
 ```
+### OverflowError
 
+##### Search for a memory-efficient equivalent
+
+```python
+range(999999999999999)
+#>>> Before: OverflowError('range() result has too many items',)
+#>>> After: OverflowError("range() result has too many items. Did you mean 'xrange'?",)
+```
 
 Usage
 -----

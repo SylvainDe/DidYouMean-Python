@@ -76,7 +76,12 @@ def main():
         },
         (6, MemoryError): {
             (1, "Search for a memory-efficient equivalent"): [
-                "range(99999999999)",
+                "range(999999999999999)",
+            ],
+        },
+        (7, OverflowError): {
+            (1, "Search for a memory-efficient equivalent"): [
+                "range(999999999999999)",
             ],
         },
     }
@@ -93,11 +98,14 @@ def main():
                         "No exception thrown on this version of Python"
                 else:
                     type_, value, traceback = exc
-                    assert issubclass(type_, exc_type)
-                    before = str_func(value)
-                    add_suggestions_to_exception(type_, value, traceback)
-                    after = str_func(value)
-                    assert before != after
+                    if not issubclass(type_, exc_type):
+                        before = after = \
+                            "Wrong exception thrown on this version of Python"
+                    else:
+                        before = str_func(value)
+                        add_suggestions_to_exception(type_, value, traceback)
+                        after = str_func(value)
+                        assert before != after
                 print("""```python
 %s
 #>>> Before: %s

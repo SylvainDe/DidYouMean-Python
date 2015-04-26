@@ -8,7 +8,8 @@ from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     MATH_DOMAIN_ERROR_RE, TOO_MANY_VALUES_UNPACK_RE, OUTSIDE_FUNCTION_RE,\
     NEED_MORE_VALUES_RE, UNHASHABLE_RE, MISSING_PARENT_RE, INVALID_LITERAL_RE,\
     NB_ARG_RE, INVALID_SYNTAX_RE, EXPECTED_LENGTH_RE, INVALID_COMP_RE,\
-    MISSING_POS_ARG_RE, FUTURE_FIRST_RE, FUTURE_FEATURE_NOT_DEF_RE
+    MISSING_POS_ARG_RE, FUTURE_FIRST_RE, FUTURE_FEATURE_NOT_DEF_RE,\
+    RESULT_TOO_MANY_ITEMS
 from didyoumean_decorator import didyoumean
 import unittest2
 import math
@@ -199,8 +200,9 @@ MISSINGPARENT = (SyntaxError, MISSING_PARENT_RE)
 INVALIDCOMP = (SyntaxError, INVALID_COMP_RE)
 FUTUREFIRST = (SyntaxError, FUTURE_FIRST_RE)
 FUTFEATNOTDEF = (SyntaxError, FUTURE_FEATURE_NOT_DEF_RE)
-# MemoryError for MemoryErrorTests
+# MemoryError and OverflowError for MemoryErrorTests
 MEMORYERROR = (MemoryError, '')
+OVERFLOWERR = (OverflowError, RESULT_TOO_MANY_ITEMS)
 
 
 class NameErrorTests(AbstractTests):
@@ -893,8 +895,7 @@ class MemoryErrorTests(AbstractTests):
         version2 = (3, 0)
         self.throws(
             bad_code,
-            (OverflowError, None),
-            [],
+            OVERFLOWERR, "'" + sugg + "'",
             up_to_version(version),
             'cython')
         self.throws(
@@ -1177,6 +1178,11 @@ class RegexTests(unittest2.TestCase):
         msg = "future feature divisio is not defined"
         self.regex_matches(msg, FUTURE_FEATURE_NOT_DEF_RE, ('divisio',))
 
+    def test_result_has_too_many_items(self):
+        """ Test RESULT_TOO_MANY_ITEMS. """
+        # Python 2.6
+        msg = "range() result has too many items"
+        self.regex_matches(msg, RESULT_TOO_MANY_ITEMS, ('range',))
 
 class GetSuggStringTests(unittest2.TestCase):
     """ Tests about get_suggestion_string. """
