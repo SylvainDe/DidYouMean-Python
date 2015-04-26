@@ -89,7 +89,8 @@ def main():
             for code in codes:
                 exc = get_exception(code)
                 if exc is None:
-                    before = after = "No exception thrown on this version of Python"
+                    before = after = \
+                        "No exception thrown on this version of Python"
                 else:
                     type_, value, traceback = exc
                     assert issubclass(type_, exc_type)
