@@ -1184,6 +1184,7 @@ class RegexTests(unittest2.TestCase):
         msg = "range() result has too many items"
         self.regex_matches(msg, RESULT_TOO_MANY_ITEMS, ('range',))
 
+
 class GetSuggStringTests(unittest2.TestCase):
     """ Tests about get_suggestion_string. """
 
