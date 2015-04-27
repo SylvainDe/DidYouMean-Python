@@ -108,7 +108,8 @@ def get_name_suggestions(name, frame):
         suggest_name_as_attribute(name, objs),
         suggest_name_as_standard_module(name),
         suggest_name_as_name_typo(name, objs),
-        suggest_name_as_keyword_typo(name))
+        suggest_name_as_keyword_typo(name),
+        suggest_name_as_special_case(name))
 
 
 def suggest_name_as_attribute(name, objdict):
@@ -138,6 +139,13 @@ def suggest_name_as_keyword_typo(name):
     """Suggest that name could be a typo (misspelled keyword).
     Example: 'yieldd' -> 'yield'."""
     return get_close_matches(name, keyword.kwlist)
+
+
+def suggest_name_as_special_case(name):
+    """ Suggest that name could correspond to a typo with special handling."""
+    # Imaginary unit is '1j' in Python
+    if name == 'i' or name == 'j':
+        yield quote('1j') + " (imaginary unit)"
 
 
 # Functions related to AttributeError

@@ -385,6 +385,16 @@ class NameErrorTests(AbstractTests):
         """Should be '__main__'."""
         self.throws('__main_', NAMEERROR)
 
+    def test_complex_numbers(self):
+        """ Should be 1j ."""
+        code = 'assert {0} ** 2 == -1'
+        sugg = '1j'
+        good_code, bad_code_i, bad_code_j = format_str(code, sugg, 'i', 'j')
+        suggestion = "'" + sugg + "' (imaginary unit)"
+        self.throws(bad_code_i, NAMEERROR, suggestion)
+        self.throws(bad_code_j, NAMEERROR, suggestion)
+        self.runs(good_code)
+
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""
         self.throws(

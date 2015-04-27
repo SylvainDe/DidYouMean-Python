@@ -37,6 +37,9 @@ def main():
             (3, "Looking for missing imports"): [
                 "functools.wraps()",
             ],
+            (4, "Special cases"): [
+                "assert j ** 2 == -1",
+            ],
         },
         (2, AttributeError): {
             (1, "Fuzzy matches on existing attributes"): [

@@ -96,6 +96,14 @@ functools.wraps()
 #>>> Before: NameError("name 'functools' is not defined",)
 #>>> After: NameError("name 'functools' is not defined. Did you mean to import functools first?",)
 ```
+##### Special cases
+
+```python
+assert j ** 2 == -1
+#>>> Before: NameError("name 'j' is not defined",)
+#>>> After: NameError("name 'j' is not defined. Did you mean '1j' (imaginary unit)?",)
+```
+
 ### AttributeError
 
 ##### Fuzzy matches on existing attributes
