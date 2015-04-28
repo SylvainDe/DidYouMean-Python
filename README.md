@@ -92,9 +92,16 @@ pi
 ##### Looking for missing imports
 
 ```python
-functools.wraps()
-#>>> Before: NameError("name 'functools' is not defined",)
-#>>> After: NameError("name 'functools' is not defined. Did you mean to import functools first?",)
+os.getenv
+#>>> Before: NameError("name 'os' is not defined",)
+#>>> After: NameError("name 'os' is not defined. Did you mean to import os first?",)
+```
+##### Looking in missing imports
+
+```python
+getenv
+#>>> Before: NameError("name 'getenv' is not defined",)
+#>>> After: NameError("name 'getenv' is not defined. Did you mean 'getenv' from os (not imported)?",)
 ```
 ##### Special cases
 

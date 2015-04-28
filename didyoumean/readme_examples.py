@@ -35,9 +35,12 @@ def main():
                 "import math\npi",
             ],
             (3, "Looking for missing imports"): [
-                "functools.wraps()",
+                "os.getenv",
             ],
-            (4, "Special cases"): [
+            (4, "Looking in missing imports"): [
+                "getenv",
+            ],
+            (5, "Special cases"): [
                 "assert j ** 2 == -1",
             ],
         },

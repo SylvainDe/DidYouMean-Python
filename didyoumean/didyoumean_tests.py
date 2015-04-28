@@ -283,6 +283,15 @@ class NameErrorTests(AbstractTests):
         self.throws(bad_code, NAMEERROR, "'" + sugg + "'")
         self.runs(good_code)
 
+    def test_not_imported(self):
+        """Should be os.getenv after importing os"""
+        # This test assumes that `module` is not imported
+        module, attr = 'os', 'getenv'
+        bad_code = attr
+        good_code = 'from %s import %s\n' % (module, attr) + bad_code
+        self.runs(good_code)
+        self.throws(bad_code, NAMEERROR, "'getenv' from os (not imported)")
+
     def test_no_sugg(self):
         """No suggestion."""
         self.throws('a = ldkjhfnvdlkjhvgfdhgf', NAMEERROR)
@@ -299,7 +308,13 @@ class NameErrorTests(AbstractTests):
         code = 'reduce(lambda x, y: x + y, [1, 2, 3, 4, 5])'
         version = (3, 0)
         self.runs(code, up_to_version(version))
-        self.throws(code, NAMEERROR, [], from_version(version))
+        self.runs('from functools import reduce\n' + code,
+                  from_version(version))
+        self.throws(
+            code,
+            NAMEERROR,
+            "'reduce' from functools (not imported)",
+            from_version(version))
 
     def test_removed_apply(self):
         """Builtin apply is removed."""

@@ -109,6 +109,7 @@ def get_name_suggestions(name, frame):
         suggest_name_as_standard_module(name),
         suggest_name_as_name_typo(name, objs),
         suggest_name_as_keyword_typo(name),
+        suggest_name_as_missing_import(name, objs, frame),
         suggest_name_as_special_case(name))
 
 
@@ -120,6 +121,14 @@ def suggest_name_as_attribute(name, objdict):
             if hasattr(obj, name):
                 yield quote(nameobj + '.' + name) + (' (hidden)' if i else '')
                 break
+
+
+def suggest_name_as_missing_import(name, objdict, frame):
+    """Suggest that name could come from missing import.
+    Example: 'foo' -> 'import mod, mod.foo'."""
+    for mod in STAND_MODULES:
+        if mod not in objdict and name in dir(import_from_frame(mod, frame)):
+            yield "'%s' from %s (not imported)" % (name, mod)
 
 
 def suggest_name_as_standard_module(name):
