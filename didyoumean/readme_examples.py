@@ -72,7 +72,12 @@ def main():
                 "def my_func(abcde):\n\tpass\nmy_func(abcdf=1)",
             ],
         },
-        (5, SyntaxError): {
+        (5, ValueError): {
+            (1, "Special cases"): [
+                "'Foo{}'.format('bar')",
+            ],
+        },
+        (6, SyntaxError): {
             (1, "Fuzzy matches when importing from __future__"): [
                 "from __future__ import divisio",
             ],
@@ -80,12 +85,12 @@ def main():
                 "return",
             ],
         },
-        (6, MemoryError): {
+        (7, MemoryError): {
             (1, "Search for a memory-efficient equivalent"): [
                 "range(999999999999999)",
             ],
         },
-        (7, OverflowError): {
+        (8, OverflowError): {
             (1, "Search for a memory-efficient equivalent"): [
                 "range(999999999999999)",
             ],

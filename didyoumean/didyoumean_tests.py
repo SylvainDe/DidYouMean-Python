@@ -962,10 +962,13 @@ class ValueErrorTests(AbstractTests):
 
     def test_zero_len_field_in_format(self):
         """ Format {} is not valid before Python 2.7."""
-        code = '"{}".format(0)'
+        code = '"{0}".format(0)'
+        old, new = '{0}', '{}'
+        old_code, new_code = format_str(code, old, new)
         version = (2, 7)
-        self.throws(code, ZEROLENERROR, [], up_to_version(version))
-        self.runs(code, from_version(version))
+        self.runs(old_code)
+        self.throws(new_code, ZEROLENERROR, '{0}', up_to_version(version))
+        self.runs(new_code, from_version(version))
 
 
 class RegexTests(unittest2.TestCase):

@@ -7,7 +7,7 @@ import itertools
 from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     ATTRIBUTEERROR_RE, UNSUBSCRIBTABLE_RE, UNEXPECTED_KEYWORDARG_RE,\
     NOMODULE_RE, CANNOTIMPORT_RE, INVALID_COMP_RE, OUTSIDE_FUNCTION_RE,\
-    FUTURE_FEATURE_NOT_DEF_RE, RESULT_TOO_MANY_ITEMS
+    FUTURE_FEATURE_NOT_DEF_RE, RESULT_TOO_MANY_ITEMS, ZERO_LEN_FIELD_RE
 
 #: Standard modules we'll consider while searching for undefined values
 # To be completed
@@ -289,6 +289,17 @@ def get_type_error_sugg(type_, value, frame):
                 yield match
 
 
+# Functions related to ValueError
+def get_value_error_sugg(type_, value, frame):
+    """Get suggestions for ValueError exception."""
+    assert issubclass(type_, ValueError)
+    assert len(value.args) == 1
+    error_msg, = value.args
+    match = re.match(ZERO_LEN_FIELD_RE, error_msg)
+    if match:
+        yield '{0}'
+
+
 # Functions related to SyntaxError
 def get_syntax_error_sugg(type_, value, frame):
     """Get suggestions for SyntaxError exception."""
@@ -353,6 +364,7 @@ def get_suggestions_for_exception(type_, value, traceback):
         NameError: get_name_error_sugg,
         AttributeError: get_attribute_error_sugg,
         TypeError: get_type_error_sugg,
+        ValueError: get_value_error_sugg,
         ImportError: get_import_error_sugg,
         SyntaxError: get_syntax_error_sugg,
         MemoryError: get_memory_error_sugg,

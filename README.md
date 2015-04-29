@@ -10,7 +10,7 @@ DidYouMean-Python
 
 [![Code Climate](https://codeclimate.com/github/SylvainDe/DidYouMean-Python/badges/gpa.svg)](https://codeclimate.com/github/SylvainDe/DidYouMean-Python)
 
-Logic to have various kind of suggestions in case of errors (NameError, AttributeError, ImportError, TypeError, SyntaxError, MemoryError, etc). Can be used via a simple import or a dedicated decorator.
+Logic to have various kind of suggestions in case of errors (NameError, AttributeError, ImportError, TypeError, ValueError, SyntaxError, MemoryError, OverflowError). Can be used via a simple import or a dedicated decorator.
 
 Inspired by "Did you mean" for Ruby ([Explanation](http://www.yukinishijima.net/2014/10/21/did-you-mean-experience-in-ruby.html), [Github Page](https://github.com/yuki24/did_you_mean)), this is a simple implementation for/in Python. I wanted to see if I could mess around and create something similar in Python and it seems to be possible.
 
@@ -176,6 +176,15 @@ def my_func(abcde):
 my_func(abcdf=1)
 #>>> Before: TypeError("my_func() got an unexpected keyword argument 'abcdf'",)
 #>>> After: TypeError("my_func() got an unexpected keyword argument 'abcdf'. Did you mean 'abcde'?",)
+```
+### ValueError
+
+##### Special cases
+
+```python
+'Foo{}'.format('bar')
+#>>> Before: ValueError('zero length field name in format',)
+#>>> After: ValueError('zero length field name in format. Did you mean {0}?',)
 ```
 ### SyntaxError
 
