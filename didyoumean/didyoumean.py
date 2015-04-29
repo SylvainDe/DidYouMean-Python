@@ -290,7 +290,7 @@ def get_type_error_sugg(type_, value, frame):
 
 
 # Functions related to ValueError
-def get_value_error_sugg(type_, value, frame):
+def get_value_error_sugg(type_, value, _):
     """Get suggestions for ValueError exception."""
     assert issubclass(type_, ValueError)
     assert len(value.args) == 1
