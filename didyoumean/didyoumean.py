@@ -54,7 +54,7 @@ ScopedObj = namedtuple('ScopedObj', 'obj scope')
 
 def add_scope_to_dict(dict_, scope):
     """ Convert name:obj dict to name:ScopedObj(obj,scope) dict."""
-    return {k: ScopedObj(v, scope) for k, v in dict_.items()}
+    return dict((k, ScopedObj(v, scope)) for k, v in dict_.items())
 
 
 def get_objects_in_frame(frame):
