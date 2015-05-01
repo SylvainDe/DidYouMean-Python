@@ -420,13 +420,21 @@ class NameErrorTests(AbstractTests):
 class UnboundLocalErrorTests(AbstractTests):
     """Class for tests related to UnboundLocalError."""
 
-    def test_1(self):
+    def test_unbound_typo(self):
         """Should be foo."""
         code = 'def func():\n\tfoo = 1\n\t{0} +=1\nfunc()'
         typo, sugg = "foob", "foo"
         bad_code, good_code = format_str(code, typo, sugg)
         self.throws(bad_code, UNBOUNDLOCAL, "'" + sugg + "'")
         self.runs(good_code)
+
+    def test_unbound_global(self):
+        """Should be global nb."""
+        code = 'nb = 0\ndef func():\n\t{0}nb +=1\nfunc()'
+        sugg = 'global nb'
+        bad_code, good_code = format_str(code, "", sugg + "\n\t")
+        self.throws(bad_code, UNBOUNDLOCAL)
+        self.runs(good_code)  # this is to be run afterward :-/
 
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""
