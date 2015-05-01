@@ -9,6 +9,9 @@ python:
   - "pypy"
   - "pypy3"
 
+before_install:
+  - pip install codecov
+
 install:
   - pip install pep8
   - pip install --upgrade pyflakes
@@ -24,3 +27,4 @@ script:
 
 after_success:
   coveralls
+  codecov
