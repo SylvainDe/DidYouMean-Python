@@ -213,7 +213,7 @@ class NameErrorTests(AbstractTests):
         code = "foo = 0\n{0}"
         typo, sugg = "foob", "foo"
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NAMEERROR, "'" + sugg + "'")
+        self.throws(bad_code, NAMEERROR, "'" + sugg + "' (local)")
         self.runs(good_code)
 
     def test_1_arg(self):
@@ -221,7 +221,7 @@ class NameErrorTests(AbstractTests):
         typo, sugg = "foob", "foo"
         code = func_gen(param=sugg, body='{0}', args='1')
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NAMEERROR, "'" + sugg + "'")
+        self.throws(bad_code, NAMEERROR, "'" + sugg + "' (local)")
         self.runs(good_code)
 
     def test_n_args(self):
@@ -229,26 +229,26 @@ class NameErrorTests(AbstractTests):
         typo, sugg1, sugg2 = "foob", "foot", "fool"
         code = func_gen(param='fool, foot', body='{0}', args='1, 2')
         bad, good1, good2 = format_str(code, typo, sugg1, sugg2)
-        self.throws(bad, NAMEERROR, ["'fool'", "'foot'"])
+        self.throws(bad, NAMEERROR, ["'fool' (local)", "'foot' (local)"])
         self.runs(good1)
         self.runs(good2)
 
     def test_builtin(self):
         """Should be 'max'."""
         typo, sugg = 'maxi', 'max'
-        self.throws(typo, NAMEERROR, "'" + sugg + "'")
+        self.throws(typo, NAMEERROR, "'" + sugg + "' (builtin)")
         self.runs(sugg)
 
     def test_keyword(self):
         """Should be 'pass'."""
         typo, sugg = 'passs', 'pass'
-        self.throws(typo, NAMEERROR, "'" + sugg + "'")
+        self.throws(typo, NAMEERROR, "'" + sugg + "' (keyword)")
         self.runs(sugg)
 
     def test_global(self):
         """Should be this_is_a_global_list."""
         typo, sugg = 'this_is_a_global_lis', 'this_is_a_global_list'
-        self.throws(typo, NAMEERROR, "'" + sugg + "'")
+        self.throws(typo, NAMEERROR, "'" + sugg + "' (global)")
         self.runs(sugg)
 
     def test_import(self):
@@ -256,15 +256,15 @@ class NameErrorTests(AbstractTests):
         code = 'import math\n{0}.pi'
         typo, sugg = 'maths', 'math'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NAMEERROR, "'" + sugg + "'")
+        self.throws(bad_code, NAMEERROR, "'" + sugg + "' (local)")
         self.runs(good_code)
 
     def test_import2(self):
-        """Should be my_imported_math.pi."""
+        """Should be  (local)my_imported_math.pi."""
         code = 'import math as my_imported_math\n{0}.pi'
         typo, sugg = 'my_imported_maths', 'my_imported_math'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NAMEERROR, "'" + sugg + "'")
+        self.throws(bad_code, NAMEERROR, "'" + sugg + "' (local)")
         self.runs(good_code)
 
     def test_imported(self):
@@ -339,7 +339,7 @@ class NameErrorTests(AbstractTests):
         self.runs(code, up_to_version(version))
         self.throws(
             code, NAMEERROR,
-            ["'iter'", "'sys.intern'"],
+            ["'iter' (builtin)", "'sys.intern'"],
             from_version(version))
         self.runs(new_code, from_version(version))
 
@@ -355,7 +355,8 @@ class NameErrorTests(AbstractTests):
         code = 'i = raw_input("Prompt:")'
         version = (3, 0)
         # self.runs(code, up_to_version(version))
-        self.throws(code, NAMEERROR, "'input'", from_version(version))
+        self.throws(
+            code, NAMEERROR, "'input' (builtin)", from_version(version))
 
     def test_removed_buffer(self):
         """Builtin buffer is removed - use memoryview instead."""
@@ -376,7 +377,7 @@ class NameErrorTests(AbstractTests):
         """Should be math.pi but module math is hidden."""
         math.pi  # just a way to say that math module is needed in globals
         code = 'math = ""\np = pi'
-        self.throws(code, NAMEERROR, "'math.pi' (hidden)")
+        self.throws(code, NAMEERROR, "'math.pi' (global hidden by local)")
 
     def test_self(self):
         """"Should be self.babar."""
@@ -425,7 +426,7 @@ class UnboundLocalErrorTests(AbstractTests):
         code = 'def func():\n\tfoo = 1\n\t{0} +=1\nfunc()'
         typo, sugg = "foob", "foo"
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, UNBOUNDLOCAL, "'" + sugg + "'")
+        self.throws(bad_code, UNBOUNDLOCAL, "'" + sugg + "' (local)")
         self.runs(good_code)
 
     def test_unbound_global(self):
@@ -1358,7 +1359,7 @@ class DecoratorTest(TestWithStringFunction):
     def test_decorator_suggestion(self):
         """Check the case with a suggestion."""
         type_ = NameError
-        sugg = ". Did you mean 'babar'?"
+        sugg = ". Did you mean 'babar' (local)?"
         code = func_gen(param='babar', body='baba', args='0')
         str1, repr1, str2, repr2 = self.get_undeco_and_deco_exc_as_str(
             code, type_)

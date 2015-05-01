@@ -4,6 +4,7 @@ import keyword
 import difflib
 import re
 import itertools
+from collections import namedtuple
 from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     ATTRIBUTEERROR_RE, UNSUBSCRIBTABLE_RE, UNEXPECTED_KEYWORDARG_RE,\
     NOMODULE_RE, CANNOTIMPORT_RE, INVALID_COMP_RE, OUTSIDE_FUNCTION_RE,\
@@ -13,7 +14,7 @@ from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
 # To be completed
 STAND_MODULES = set(['string', 'os', 'sys', 're', 'math', 'random',
                      'datetime', 'timeit', 'unittest', 'itertools',
-                     'functools', '__future__'])
+                     'functools', 'collections', '__future__'])
 
 #: Almost synonyms methods that can be confused from one type to another
 # To be completed
@@ -29,8 +30,7 @@ def quote(string):
 def get_close_matches(word, possibilities):
     """Wrapper around difflib.get_close_matches() to be able to
     change default values or implementation details easily."""
-    for string in difflib.get_close_matches(word, possibilities, 3, 0.7):
-        yield quote(string)
+    return difflib.get_close_matches(word, possibilities, 3, 0.7)
 
 
 def get_suggestion_string(sugg):
@@ -49,14 +49,21 @@ def merge_dict(*dicts):
             ret.setdefault(key, []).append(val)
     return ret
 
+ScopedObj = namedtuple('ScopedObj', 'obj scope')
+
+
+def add_scope_to_dict(dict_, scope):
+    """ Convert name:obj dict to name:ScopedObj(obj,scope) dict."""
+    return {k: ScopedObj(v, scope) for k, v in dict_.items()}
+
 
 def get_objects_in_frame(frame):
     """Get objects defined in a given frame.
     This includes variable, types, builtins, etc."""
     return merge_dict(  # LEGB Rule (missing E atm - not sure if a problem)
-        frame.f_locals,
-        frame.f_globals,
-        frame.f_builtins,
+        add_scope_to_dict(frame.f_locals, 'local'),
+        add_scope_to_dict(frame.f_globals, 'global'),
+        add_scope_to_dict(frame.f_builtins, 'builtin'),
     )
 
 
@@ -117,10 +124,14 @@ def suggest_name_as_attribute(name, objdict):
     """Suggest that name could be an attribute of an object.
     Example: 'do_stuff()' -> 'self.do_stuff()'."""
     for nameobj, objs in objdict.items():
-        for i, obj in enumerate(objs):
+        prev_scope = None
+        for obj, scope in objs:
             if hasattr(obj, name):
-                yield quote(nameobj + '.' + name) + (' (hidden)' if i else '')
+                yield quote(nameobj + '.' + name) + \
+                    ('' if prev_scope is None else
+                     ' (%s hidden by %s)' % (scope, prev_scope))
                 break
+            prev_scope = scope
 
 
 def suggest_name_as_missing_import(name, objdict, frame):
@@ -141,13 +152,15 @@ def suggest_name_as_standard_module(name):
 def suggest_name_as_name_typo(name, objdict):
     """Suggest that name could be a typo (misspelled existing name).
     Example: 'foobaf' -> 'foobar'."""
-    return get_close_matches(name, objdict.keys())
+    for n in get_close_matches(name, objdict.keys()):
+        yield quote(n) + ' (' + objdict[n][0].scope + ')'
 
 
 def suggest_name_as_keyword_typo(name):
     """Suggest that name could be a typo (misspelled keyword).
     Example: 'yieldd' -> 'yield'."""
-    return get_close_matches(name, keyword.kwlist)
+    for n in get_close_matches(name, keyword.kwlist):
+        yield quote(n) + " (keyword)"
 
 
 def suggest_name_as_special_case(name):
@@ -176,12 +189,14 @@ def get_attribute_suggestions(type_str, attribute, frame):
     if type_str == 'module':
         # For module, we want to get the actual name of the module
         module_name = frame.f_code.co_names[0]
-        attributes = set(dir(objs[module_name][0]))
+        mod = objs[module_name][0].obj
+        attributes = set(dir(mod))
     elif type_str in objs:
         # it kind of sucks that we retrieve the representation of the
         # type (as in 'str(type(whatever))' which might not be a known
         # name.
-        attributes = set(dir(objs[type_str][0]))
+        obj = objs[type_str][0].obj
+        attributes = set(dir(obj))
     else:  # could/should be more precise
         attributes = set()
 
@@ -217,7 +232,8 @@ def suggest_attribute_synonyms(attribute, attributes):
 def suggest_attribute_as_typo(attribute, attributes):
     """Suggest the attribute could be a typo.
     Example: 'a.do_baf()' -> 'a.do_bar()'."""
-    return get_close_matches(attribute, attributes)
+    for n in get_close_matches(attribute, attributes):
+        yield quote(n)
 
 
 # Functions related to ImportError
@@ -240,7 +256,8 @@ def get_import_error_sugg(type_, value, frame):
 def get_module_name_suggestion(module_str):
     """Get the suggestions closest to the failing module import.
     Example: 'import maths' -> 'import math'."""
-    return get_close_matches(module_str, STAND_MODULES)
+    for n in get_close_matches(module_str, STAND_MODULES):
+        yield quote(n)
 
 
 def get_imported_name_suggestion(imported_name, frame):
@@ -254,9 +271,9 @@ def get_imported_name_suggestion(imported_name, frame):
 def suggest_imported_name_as_typo(imported_name, module_name, frame):
     """Suggest that imported name could be a typo from actual name in module.
     Example: 'from math import pie' -> 'from math import pi'."""
-    return get_close_matches(
-        imported_name,
-        dir(import_from_frame(module_name, frame)))
+    dir_mod = dir(import_from_frame(module_name, frame))
+    for n in get_close_matches(imported_name, dir_mod):
+        yield quote(n)
 
 
 def suggest_import_from_module(imported_name, frame):
@@ -283,10 +300,10 @@ def get_type_error_sugg(type_, value, frame):
         if match:
             func_name, kw_arg = match.groups()
             objs = get_objects_in_frame(frame)
-            func = objs[func_name][0]
+            func = objs[func_name][0].obj
             args = func.__code__.co_varnames
-            for match in get_close_matches(kw_arg, args):
-                yield match
+            for n in get_close_matches(kw_arg, args):
+                yield quote(n)
 
 
 # Functions related to ValueError

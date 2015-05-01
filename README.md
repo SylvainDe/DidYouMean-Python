@@ -41,27 +41,27 @@ def my_func(foo, bar):
 	return foob
 my_func(1, 2)
 #>>> Before: NameError("global name 'foob' is not defined",)
-#>>> After: NameError("global name 'foob' is not defined. Did you mean 'foo'?",)
+#>>> After: NameError("global name 'foob' is not defined. Did you mean 'foo' (local)?",)
 ```
 ```python
 def my_func(lst):
 	return leng(foo)
 my_func([0])
 #>>> Before: NameError("global name 'leng' is not defined",)
-#>>> After: NameError("global name 'leng' is not defined. Did you mean 'len'?",)
+#>>> After: NameError("global name 'leng' is not defined. Did you mean 'len' (builtin)?",)
 ```
 ```python
 import math
 maths.pi
 #>>> Before: NameError("name 'maths' is not defined",)
-#>>> After: NameError("name 'maths' is not defined. Did you mean 'math'?",)
+#>>> After: NameError("name 'maths' is not defined. Did you mean 'math' (local)?",)
 ```
 ```python
 def my_func():
 	passs
 my_func()
 #>>> Before: NameError("global name 'passs' is not defined",)
-#>>> After: NameError("global name 'passs' is not defined. Did you mean 'pass'?",)
+#>>> After: NameError("global name 'passs' is not defined. Did you mean 'pass' (keyword)?",)
 ```
 ```python
 def my_func():
@@ -69,7 +69,7 @@ def my_func():
 	foob +=1
 my_func()
 #>>> Before: UnboundLocalError("local variable 'foob' referenced before assignment",)
-#>>> After: UnboundLocalError("local variable 'foob' referenced before assignment. Did you mean 'foo'?",)
+#>>> After: UnboundLocalError("local variable 'foob' referenced before assignment. Did you mean 'foo' (local)?",)
 ```
 ##### Checking if name is the attribute of a defined object
 
@@ -110,7 +110,6 @@ assert j ** 2 == -1
 #>>> Before: NameError("name 'j' is not defined",)
 #>>> After: NameError("name 'j' is not defined. Did you mean '1j' (imaginary unit)?",)
 ```
-
 ### AttributeError
 
 ##### Fuzzy matches on existing attributes
