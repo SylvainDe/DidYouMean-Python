@@ -10,7 +10,7 @@ DidYouMean-Python
 
 [![Code Climate](https://codeclimate.com/github/SylvainDe/DidYouMean-Python/badges/gpa.svg)](https://codeclimate.com/github/SylvainDe/DidYouMean-Python)
 
-Logic to have various kind of suggestions in case of errors (NameError, AttributeError, ImportError, TypeError, ValueError, SyntaxError, MemoryError, OverflowError). Can be used via a simple import or a dedicated decorator.
+Logic to have various kind of suggestions in case of errors (NameError, AttributeError, ImportError, TypeError, ValueError, SyntaxError, MemoryError, OverflowError). Can be used via a simple import or a dedicated decorator (and other ways to be defined soon).
 
 Inspired by "Did you mean" for Ruby ([Explanation](http://www.yukinishijima.net/2014/10/21/did-you-mean-experience-in-ruby.html), [Github Page](https://github.com/yuki24/did_you_mean)), this is a simple implementation for/in Python. I wanted to see if I could mess around and create something similar in Python and it seems to be possible.
 
@@ -236,7 +236,7 @@ Once you have the code, it can be used in two different ways :
 Implementation
 --------------
 
-Both the hook and the decorator use the same logic behind the scene. It works in a pretty simple way : when an exception happens, we try to get the relevant information out of the error message and of the backtrace to find the most relevant suggestions. To filter the best suggestions out of everything, I am currently using ```difflib```.
+All external APIs (decorator, hook, etc) use the same logic behind the scene. It works in a pretty simple way : when an exception happens, we try to get the relevant information out of the error message and of the backtrace to find the most relevant suggestions. To filter the best suggestions out of everything in case of fuzzy match, I am currently using ```difflib```.
 
 
 Contributing
