@@ -94,12 +94,12 @@ def debug_traceback(traceback):
 
 
 # Functions related to NameError
-def get_name_error_sugg(type_, value, frame):
+def get_name_error_sugg(value, frame):
     """Get suggestions for NameError exception."""
-    assert issubclass(type_, NameError)
+    assert isinstance(value, NameError)
     assert len(value.args) == 1
     error_msg, = value.args
-    error_re = UNBOUNDERROR_RE if issubclass(type_, UnboundLocalError) \
+    error_re = UNBOUNDERROR_RE if isinstance(value, UnboundLocalError) \
         else NAMENOTDEFINED_RE
     match = re.match(error_re, error_msg)
     if match:
@@ -171,9 +171,9 @@ def suggest_name_as_special_case(name):
 
 
 # Functions related to AttributeError
-def get_attribute_error_sugg(type_, value, frame):
+def get_attribute_error_sugg(value, frame):
     """Get suggestions for AttributeError exception."""
-    assert issubclass(type_, AttributeError)
+    assert isinstance(value, AttributeError)
     assert len(value.args) == 1
     error_msg, = value.args
     match = re.match(ATTRIBUTEERROR_RE, error_msg)
@@ -237,9 +237,9 @@ def suggest_attribute_as_typo(attribute, attributes):
 
 
 # Functions related to ImportError
-def get_import_error_sugg(type_, value, frame):
+def get_import_error_sugg(value, frame):
     """Get suggestions for ImportError exception."""
-    assert issubclass(type_, ImportError)
+    assert isinstance(value, ImportError)
     assert len(value.args) == 1
     error_msg, = value.args
     match = re.match(NOMODULE_RE, error_msg)
@@ -285,9 +285,9 @@ def suggest_import_from_module(imported_name, frame):
 
 
 # Functions related to TypeError
-def get_type_error_sugg(type_, value, frame):
+def get_type_error_sugg(value, frame):
     """Get suggestions for TypeError exception."""
-    assert issubclass(type_, TypeError)
+    assert isinstance(value, TypeError)
     assert len(value.args) == 1
     error_msg, = value.args
     match = re.match(UNSUBSCRIBTABLE_RE, error_msg)
@@ -307,9 +307,9 @@ def get_type_error_sugg(type_, value, frame):
 
 
 # Functions related to ValueError
-def get_value_error_sugg(type_, value, _):
+def get_value_error_sugg(value, _):
     """Get suggestions for ValueError exception."""
-    assert issubclass(type_, ValueError)
+    assert isinstance(value, ValueError)
     assert len(value.args) == 1
     error_msg, = value.args
     match = re.match(ZERO_LEN_FIELD_RE, error_msg)
@@ -318,9 +318,9 @@ def get_value_error_sugg(type_, value, _):
 
 
 # Functions related to SyntaxError
-def get_syntax_error_sugg(type_, value, frame):
+def get_syntax_error_sugg(value, frame):
     """Get suggestions for SyntaxError exception."""
-    assert issubclass(type_, SyntaxError)
+    assert isinstance(value, SyntaxError)
     error_msg = value.args[0]
     match = re.match(OUTSIDE_FUNCTION_RE, error_msg)
     if match:
@@ -344,9 +344,9 @@ def get_syntax_error_sugg(type_, value, frame):
 
 
 # Functions related to MemoryError
-def get_memory_error_sugg(type_, _, frame):
+def get_memory_error_sugg(value, frame):
     """Get suggestions for MemoryError exception."""
-    assert issubclass(type_, MemoryError)
+    assert isinstance(value, MemoryError)
     objs = get_objects_in_frame(frame)
     for name in frame.f_code.co_names:
         for sugg in suggest_memory_friendly_equi(name):
@@ -355,9 +355,9 @@ def get_memory_error_sugg(type_, _, frame):
 
 
 # Functions related to OverflowError
-def get_overflow_error_sugg(type_, value, frame):
+def get_overflow_error_sugg(value, frame):
     """Get suggestions for OverflowError exception."""
-    assert issubclass(type_, OverflowError)
+    assert isinstance(value, OverflowError)
     objs = get_objects_in_frame(frame)
     error_msg = value.args[0]
     match = re.match(RESULT_TOO_MANY_ITEMS, error_msg)
@@ -374,9 +374,8 @@ def suggest_memory_friendly_equi(name):
     return suggs.get(name, [])
 
 
-def get_suggestions_for_exception(type_, value, traceback):
+def get_suggestions_for_exception(value, traceback):
     """Get suggestions for an exception."""
-    assert isinstance(value, type_)
     frame = get_last_frame(traceback)
     error_types = {
         NameError: get_name_error_sugg,
@@ -389,9 +388,9 @@ def get_suggestions_for_exception(type_, value, traceback):
         OverflowError: get_overflow_error_sugg,
     }
     return itertools.chain.from_iterable(
-        func(type_, value, frame)
+        func(value, frame)
         for error_type, func in error_types.items()
-        if issubclass(type_, error_type))
+        if isinstance(value, error_type))
 
 
 def add_string_to_exception(value, string):
@@ -432,6 +431,5 @@ def add_suggestions_to_exception(type_, value, traceback):
         value,
         get_suggestion_string(
             get_suggestions_for_exception(
-                type_,
                 value,
                 traceback)))

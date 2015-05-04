@@ -159,8 +159,7 @@ class AbstractTests(unittest2.TestCase):
                 msg = value.args[0] if value.args else ''
                 self.assertRegexpMatches(msg, error_msg)
             suggestions = sorted(
-                get_suggestions_for_exception(
-                    type_caught, value, traceback))
+                get_suggestions_for_exception(value, traceback))
             self.assertEqual(suggestions, sugg)
 
 
