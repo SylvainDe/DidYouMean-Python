@@ -33,9 +33,3 @@ class didyoumean_contextmanager(object):
                     value = type_(*value)
                 add_suggestions_to_exception(type_, value, traceback)
                 raise value
-
-
-if __name__ == '__main__':
-    print(sys.version_info)
-    with didyoumean_contextmanager():
-        __name_

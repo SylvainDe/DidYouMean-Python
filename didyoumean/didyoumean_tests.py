@@ -894,7 +894,7 @@ class SyntaxErrorTests(AbstractTests):
         """ Trying to use '++' or '--'. """
         code = 'a = 0\na{0}'
         for op in ('-', '+'):
-            typo, sugg = 2*op, op + '=1'
+            typo, sugg = 2 * op, op + '=1'
             bad_code, good_code = format_str(code, typo, sugg)
             self.throws(bad_code, INVALIDSYNTAX)
             self.runs(good_code)
