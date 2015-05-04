@@ -11,6 +11,7 @@ from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     MISSING_POS_ARG_RE, FUTURE_FIRST_RE, FUTURE_FEATURE_NOT_DEF_RE,\
     RESULT_TOO_MANY_ITEMS
 from didyoumean_decorator import didyoumean
+from didyoumean_contextmanager import didyoumean_contextmanager
 import unittest2
 import math
 import sys
@@ -150,6 +151,7 @@ class AbstractTests(unittest2.TestCase):
         if version_in_range(version_range) and interpreter_in(interpreters):
             error_type, error_msg = error_info
             type_caught, value, traceback = get_exception(code)
+            self.assertTrue(isinstance(value, type_caught))
             self.assertTrue(
                 issubclass(error_type, type_caught),
                 "%s not a subclass of %s" % (error_type, type_caught))
@@ -1335,18 +1337,35 @@ class AddStringToExcTest(TestWithStringFunction):
         self.assertStringAdded(string, repr1, repr2, False, 3)
 
 
+def get_code_with_decorator(code):
+    """ Wraps code so that is uses the decorator. """
+    return "@" + didyoumean.__name__ + "\n" + code
+
+
+def get_code_with_contextmanager(code):
+    """ Wraps code so that is uses the context manager. """
+    return "@" + didyoumean.__name__ + "\n" + code
+    return "with " + didyoumean_contextmanager.__name__ + "():\n\t" + \
+        "\t".join(code.splitlines(True))
+
+
 class DecoratorTest(TestWithStringFunction):
     """ Tests about the didyoumean decorator. """
-    deco = "@" + didyoumean.__name__ + "\n"
 
-    def get_undeco_and_deco_exc_as_str(self, code, type_arg):
+    def get_code_with_api(self, code):
+        """ Wrap code to use tested API. """
+        return get_code_with_decorator(code)
+
+    def get_exc_as_str(self, code, type_arg):
         """ Retrieve string representations of exceptions raised by code
         without and with the decorator. """
         type1, value1, _ = get_exception(code)
-        type2, value2, _ = get_exception(self.deco + code)
+        self.assertTrue(isinstance(value1, type1))
         self.assertEqual(type_arg, type1)
-        self.assertEqual(type_arg, type2)
         str1, repr1 = str(value1), repr(value1)
+        type2, value2, _ = get_exception(self.get_code_with_api(code))
+        self.assertTrue(isinstance(value2, type2))
+        self.assertEqual(type_arg, type2)
         str2, repr2 = str(value2), repr(value2)
         return (str1, repr1, str2, repr2)
 
@@ -1354,14 +1373,14 @@ class DecoratorTest(TestWithStringFunction):
         """Check the case with no exception."""
         code = func_gen(param='babar', body='babar', args='0')
         no_exception(code)
-        no_exception(self.deco + code)
+        no_exception(self.get_code_with_api(code))
 
     def test_decorator_suggestion(self):
         """Check the case with a suggestion."""
         type_ = NameError
         sugg = ". Did you mean 'babar' (local)?"
         code = func_gen(param='babar', body='baba', args='0')
-        str1, repr1, str2, repr2 = self.get_undeco_and_deco_exc_as_str(
+        str1, repr1, str2, repr2 = self.get_exc_as_str(
             code, type_)
         self.assertStringAdded(sugg, str1, str2)
         self.assertStringAdded(sugg, repr1, repr2, False)
@@ -1370,7 +1389,7 @@ class DecoratorTest(TestWithStringFunction):
         """Check the case with no suggestion."""
         type_ = NameError
         code = func_gen(param='babar', body='fdjhflsdsqfjlkqs', args='0')
-        str1, repr1, str2, repr2 = self.get_undeco_and_deco_exc_as_str(
+        str1, repr1, str2, repr2 = self.get_exc_as_str(
             code, type_)
         self.assertStringAdded("", str1, str2)
         self.assertStringAdded("", repr1, repr2)
@@ -1380,7 +1399,63 @@ class DecoratorTest(TestWithStringFunction):
         type_ = SyntaxError
         sugg = ". Did you mean to indent it, 'sys.exit([arg])'?"
         code = func_gen(body='exec("return")', args='')
-        str1, repr1, str2, repr2 = self.get_undeco_and_deco_exc_as_str(
+        str1, repr1, str2, repr2 = self.get_exc_as_str(
+            code, type_)
+        self.assertStringAdded(sugg, str1, str2, False)
+        self.assertStringAdded(sugg, repr1, repr2, False)
+
+
+class ContextManagerTest(TestWithStringFunction):
+    """ Tests about the didyoumean context manager. """
+
+    def get_code_with_api(self, code):
+        """ Wrap code to use tested API. """
+        return get_code_with_contextmanager(code)
+
+    def get_exc_as_str(self, code, type_arg):
+        """ Retrieve string representations of exceptions raised by code
+        without and with the context manager. """
+        type1, value1, _ = get_exception(code)
+        self.assertTrue(isinstance(value1, type1))
+        self.assertEqual(type_arg, type1)
+        str1, repr1 = str(value1), repr(value1)
+        type2, value2, _ = get_exception(self.get_code_with_api(code))
+        self.assertTrue(isinstance(value2, type2))
+        self.assertEqual(type_arg, type2)
+        str2, repr2 = str(value2), repr(value2)
+        return (str1, repr1, str2, repr2)
+
+    def test_conman_no_exception(self):
+        """Check the case with no exception."""
+        code = func_gen(param='babar', body='babar', args='0')
+        no_exception(code)
+        no_exception(self.get_code_with_api(code))
+
+    def test_conman_suggestion(self):
+        """Check the case with a suggestion."""
+        type_ = NameError
+        sugg = ". Did you mean 'babar' (local)?"
+        code = func_gen(param='babar', body='baba', args='0')
+        str1, repr1, str2, repr2 = self.get_exc_as_str(
+            code, type_)
+        self.assertStringAdded(sugg, str1, str2)
+        self.assertStringAdded(sugg, repr1, repr2, False)
+
+    def test_conman_no_suggestion(self):
+        """Check the case with no suggestion."""
+        type_ = NameError
+        code = func_gen(param='babar', body='fdjhflsdsqfjlkqs', args='0')
+        str1, repr1, str2, repr2 = self.get_exc_as_str(
+            code, type_)
+        self.assertStringAdded("", str1, str2)
+        self.assertStringAdded("", repr1, repr2)
+
+    def test_conman_syntax(self):
+        """Check the case with syntax error suggestion."""
+        type_ = SyntaxError
+        sugg = ". Did you mean to indent it, 'sys.exit([arg])'?"
+        code = func_gen(body='exec("return")', args='')
+        str1, repr1, str2, repr2 = self.get_exc_as_str(
             code, type_)
         self.assertStringAdded(sugg, str1, str2, False)
         self.assertStringAdded(sugg, repr1, repr2, False)

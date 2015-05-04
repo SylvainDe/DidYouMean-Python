@@ -376,6 +376,7 @@ def suggest_memory_friendly_equi(name):
 
 def get_suggestions_for_exception(type_, value, traceback):
     """Get suggestions for an exception."""
+    assert isinstance(value, type_)
     frame = get_last_frame(traceback)
     error_types = {
         NameError: get_name_error_sugg,
@@ -426,6 +427,7 @@ def get_last_frame(traceback):
 def add_suggestions_to_exception(type_, value, traceback):
     """Add suggestion to an exception.
     Arguments are such as provided by sys.exc_info()."""
+    assert isinstance(value, type_)
     add_string_to_exception(
         value,
         get_suggestion_string(
