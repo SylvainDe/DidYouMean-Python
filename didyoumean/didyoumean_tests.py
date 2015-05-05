@@ -1363,7 +1363,6 @@ def get_code_with_decorator(code):
 
 def get_code_with_contextmanager(code):
     """ Wraps code so that is uses the context manager. """
-    return "@" + didyoumean.__name__ + "\n" + code
     return "with " + didyoumean_contextmanager.__name__ + "():\n\t" + \
         "\t".join(code.splitlines(True))
 
