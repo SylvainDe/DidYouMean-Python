@@ -9,14 +9,12 @@ python:
   - "pypy"
   - "pypy3"
 
-before_install:
-  - pip install codecov
-
 install:
   - pip install pep8
   - pip install --upgrade pyflakes
   - pip install unittest2
   - pip install coveralls
+  - pip install codecov
 
 before_script:
  - pep8 *.py */*.py
@@ -26,5 +24,5 @@ script:
  - python didyoumean/readme_examples.py
 
 after_success:
-  coveralls
-  codecov
+ - coveralls
+ - codecov
