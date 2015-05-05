@@ -981,6 +981,26 @@ class ValueErrorTests(AbstractTests):
         self.runs(new_code, from_version(version))
 
 
+class AnyErrorTests(AbstractTests):
+    """ Class for tests not related to an error type in particular. """
+
+    def test_wrong_except(self):
+        """ Common mistake : "except Exc1, Exc2" doesn't catch Exc2 .
+        Adding parenthesis solves the issue. """
+        version = (3, 0)
+        raised_exc, other_exc = KeyError, TypeError
+        raised, other = raised_exc.__name__, other_exc.__name__
+        code = "try:\n\traise %s()\nexcept {0}:\n\tpass" % raised
+        typo = "%s, %s" % (other, raised)
+        sugg = "(%s)" % typo
+        bad1, bad2, good1, good2 = format_str(code, typo, other, sugg, raised)
+        self.throws(bad1, (raised_exc, None), [], up_to_version(version))
+        self.throws(bad1, INVALIDSYNTAX, [], from_version(version))
+        self.throws(bad2, (raised_exc, None))
+        self.runs(good1)
+        self.runs(good2)
+
+
 class RegexTests(unittest2.TestCase):
     """Tests to check that error messages match the regexps."""
 
