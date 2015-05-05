@@ -1,6 +1,5 @@
 # -*- coding: utf-8
 """Context manager to add suggestions to exceptions."""
-import sys
 from didyoumean import add_suggestions_to_exception
 
 
