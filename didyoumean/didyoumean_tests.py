@@ -1304,7 +1304,7 @@ class AddStringToExcTest(unittest2.TestCase, TestWithStringFunction):
     def test_add_empty_string(self):
         """ Empty string added to NameError. """
         string = ""
-        code = func_gen(param='babar', body='baba', args='0')
+        code = 'babar = 0\nbaba'
         str1, repr1, str2, repr2 = self.get_exc_as_str_before_and_after(
             code, NameError, string)
         self.assertStringAdded(string, str1, str2)
@@ -1313,7 +1313,7 @@ class AddStringToExcTest(unittest2.TestCase, TestWithStringFunction):
     def test_add_string(self):
         """ Non-empty string added to NameError. """
         string = "ABCDEF"
-        code = func_gen(param='babar', body='baba', args='0')
+        code = 'babar = 0\nbaba'
         str1, repr1, str2, repr2 = self.get_exc_as_str_before_and_after(
             code, NameError, string)
         self.assertStringAdded(string, str1, str2)
@@ -1359,9 +1359,17 @@ class AddStringToExcTest(unittest2.TestCase, TestWithStringFunction):
 class ApiTest(TestWithStringFunction):
     """ Tests about the didyoumean APIs. """
 
-    def get_code_with_api(self, code):
-        """ Wrap code to use tested API. """
+    def run_with_api(self, code):
+        """ Abstract method to run code with tested API."""
         raise NotImplementedError()
+
+    def get_exc_with_api(self, code):
+        """ Get exception raised with running code with tested API."""
+        try:
+            self.run_with_api(code)
+        except:
+            return sys.exc_info()
+        assert False, "No exception thrown"
 
     def get_exc_as_str(self, code, type_arg):
         """ Retrieve string representations of exceptions raised by code
@@ -1370,7 +1378,7 @@ class ApiTest(TestWithStringFunction):
         self.assertTrue(isinstance(value1, type1))
         self.assertEqual(type_arg, type1)
         str1, repr1 = str(value1), repr(value1)
-        type2, value2, _ = get_exception(self.get_code_with_api(code))
+        type2, value2, _ = self.get_exc_with_api(code)
         self.assertTrue(isinstance(value2, type2))
         self.assertEqual(type_arg, type2)
         str2, repr2 = str(value2), repr(value2)
@@ -1378,15 +1386,15 @@ class ApiTest(TestWithStringFunction):
 
     def test_api_no_exception(self):
         """Check the case with no exception."""
-        code = func_gen(param='babar', body='babar', args='0')
+        code = 'babar = 0\nbabar'
         no_exception(code)
-        no_exception(self.get_code_with_api(code))
+        self.run_with_api(code)
 
     def test_api_suggestion(self):
         """Check the case with a suggestion."""
         type_ = NameError
         sugg = ". Did you mean 'babar' (local)?"
-        code = func_gen(param='babar', body='baba', args='0')
+        code = 'babar = 0\nbaba'
         str1, repr1, str2, repr2 = self.get_exc_as_str(
             code, type_)
         self.assertStringAdded(sugg, str1, str2)
@@ -1395,7 +1403,7 @@ class ApiTest(TestWithStringFunction):
     def test_api_no_suggestion(self):
         """Check the case with no suggestion."""
         type_ = NameError
-        code = func_gen(param='babar', body='fdjhflsdsqfjlkqs', args='0')
+        code = 'babar = 0\nfdjhflsdsqfjlkqs'
         str1, repr1, str2, repr2 = self.get_exc_as_str(
             code, type_)
         self.assertStringAdded("", str1, str2)
@@ -1405,7 +1413,7 @@ class ApiTest(TestWithStringFunction):
         """Check the case with syntax error suggestion."""
         type_ = SyntaxError
         sugg = ". Did you mean to indent it, 'sys.exit([arg])'?"
-        code = func_gen(body='exec("return")', args='')
+        code = 'return'
         str1, repr1, str2, repr2 = self.get_exc_as_str(
             code, type_)
         self.assertStringAdded(sugg, str1, str2, False)
@@ -1415,20 +1423,21 @@ class ApiTest(TestWithStringFunction):
 class DecoratorTest(unittest2.TestCase, ApiTest):
     """ Tests about the didyoumean decorator. """
 
-    def get_code_with_api(self, code):
-        """ Wrap code to use tested API. """
-        """ Wraps code so that is uses the decorator. """
-        return "@" + didyoumean.__name__ + "\n" + code
+    def run_with_api(self, code):
+        """ Run code with didyoumean decorator."""
+        @didyoumean
+        def my_func():
+            exec(code)
+        my_func()
 
 
 class ContextManagerTest(unittest2.TestCase, ApiTest):
     """ Tests about the didyoumean context manager. """
 
-    def get_code_with_api(self, code):
-        """ Wraps code so that is uses the context manager. """
-        return "with " + didyoumean_contextmanager.__name__ + "():\n\t" + \
-            "\t".join(code.splitlines(True))
-
+    def run_with_api(self, code):
+        """ Run code with didyoumean context manager."""
+        with didyoumean_contextmanager():
+            exec(code)
 
 if __name__ == '__main__':
     print(sys.version_info)
