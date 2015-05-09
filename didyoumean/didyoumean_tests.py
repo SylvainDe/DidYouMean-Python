@@ -1427,7 +1427,7 @@ class DecoratorTest(unittest2.TestCase, ApiTest):
         """ Run code with didyoumean decorator."""
         @didyoumean
         def my_func():
-            exec(code)
+            exec(code) in globals(), locals()
         my_func()
 
 
