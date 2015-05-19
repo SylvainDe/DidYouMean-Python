@@ -8,7 +8,7 @@ from collections import namedtuple
 from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     ATTRIBUTEERROR_RE, UNSUBSCRIBTABLE_RE, UNEXPECTED_KEYWORDARG_RE,\
     NOMODULE_RE, CANNOTIMPORT_RE, INVALID_COMP_RE, OUTSIDE_FUNCTION_RE,\
-    FUTURE_FEATURE_NOT_DEF_RE, RESULT_TOO_MANY_ITEMS, ZERO_LEN_FIELD_RE
+    FUTURE_FEATURE_NOT_DEF_RE, RESULT_TOO_MANY_ITEMS_RE, ZERO_LEN_FIELD_RE
 
 #: Standard modules we'll consider while searching for undefined values
 # To be completed
@@ -360,7 +360,7 @@ def get_overflow_error_sugg(value, frame):
     assert isinstance(value, OverflowError)
     objs = get_objects_in_frame(frame)
     error_msg = value.args[0]
-    match = re.match(RESULT_TOO_MANY_ITEMS, error_msg)
+    match = re.match(RESULT_TOO_MANY_ITEMS_RE, error_msg)
     if match:
         func, = match.groups()
         for sugg in suggest_memory_friendly_equi(func):

@@ -32,4 +32,11 @@ EXPECTED_LENGTH_RE = r"^expected length (\d+), got (\d+)$"
 FUTURE_FIRST_RE = r"^(?:from )?__future__ (?:imports|statements) must " \
     r"(?:occur|appear) at (?:the )?beginning of (?:the )?file$"
 FUTURE_FEATURE_NOT_DEF_RE = r"^future feature (\w+) is not defined$"
-RESULT_TOO_MANY_ITEMS = r"^(\w+)\(\) result has too many items$"
+RESULT_TOO_MANY_ITEMS_RE = r"^(\w+)\(\) result has too many items$"
+UNQUALIFIED_EXEC_RE = r"unqualified exec is not allowed in function '\w+' it" \
+    r" (?:is a nested function|" \
+    r"contains a nested function with free variables)$"
+IMPORTSTAR_RE = r"import \* (?:only allowed at module level|" \
+    r"is not allowed in function '\w+' because it (?:is )?" \
+    r"(?:is a nested function|" \
+    r"(?:)contains a nested function with free variables))$"

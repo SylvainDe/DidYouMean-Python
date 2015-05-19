@@ -9,7 +9,7 @@ from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     NEED_MORE_VALUES_RE, UNHASHABLE_RE, MISSING_PARENT_RE, INVALID_LITERAL_RE,\
     NB_ARG_RE, INVALID_SYNTAX_RE, EXPECTED_LENGTH_RE, INVALID_COMP_RE,\
     MISSING_POS_ARG_RE, FUTURE_FIRST_RE, FUTURE_FEATURE_NOT_DEF_RE,\
-    RESULT_TOO_MANY_ITEMS
+    RESULT_TOO_MANY_ITEMS_RE, UNQUALIFIED_EXEC_RE, IMPORTSTAR_RE
 from didyoumean_decorator import didyoumean
 from didyoumean_contextmanager import didyoumean_contextmanager
 import unittest2
@@ -154,7 +154,8 @@ class AbstractTests(unittest2.TestCase):
             self.assertTrue(isinstance(value, type_caught))
             self.assertTrue(
                 issubclass(error_type, type_caught),
-                "%s not a subclass of %s" % (error_type, type_caught))
+                "%s (%s) not a subclass of %s"
+                % (error_type, value, type_caught))
             if error_msg is not None:
                 msg = value.args[0] if value.args else ''
                 self.assertRegexpMatches(msg, error_msg)
@@ -201,9 +202,11 @@ MISSINGPARENT = (SyntaxError, MISSING_PARENT_RE)
 INVALIDCOMP = (SyntaxError, INVALID_COMP_RE)
 FUTUREFIRST = (SyntaxError, FUTURE_FIRST_RE)
 FUTFEATNOTDEF = (SyntaxError, FUTURE_FEATURE_NOT_DEF_RE)
+UNQUALIFIED_EXEC = (SyntaxError, UNQUALIFIED_EXEC_RE)
+IMPORTSTAR = (SyntaxError, IMPORTSTAR_RE)
 # MemoryError and OverflowError for MemoryErrorTests
 MEMORYERROR = (MemoryError, '')
-OVERFLOWERR = (OverflowError, RESULT_TOO_MANY_ITEMS)
+OVERFLOWERR = (OverflowError, RESULT_TOO_MANY_ITEMS_RE)
 
 
 class NameErrorTests(AbstractTests):
@@ -911,6 +914,31 @@ class SyntaxErrorTests(AbstractTests):
         self.throws(bad_code, FUTFEATNOTDEF, "'" + sugg + "'")
         self.runs(good_code)
 
+    def test_unqualified_exec(self):
+        """ Exec in nested functions. """
+        version = (3, 0)
+        codes = [
+            "def func1():\n\tbar='1'\n\tdef func2():"
+            "\n\t\texec(bar)\n\tfunc2()\nfunc1()",
+            "def func1():\n\texec('1')\n\tdef func2():"
+            "\n\t\tTrue",
+        ]
+        for code in codes:
+            self.throws(code, UNQUALIFIED_EXEC, [], up_to_version(version))
+            self.runs(code, from_version(version))
+
+    def test_import_star(self):
+        """ 'import *' in nested functions. """
+        version = (3, 0)
+        codes = [
+            "def func1():\n\tbar='1'\n\tdef func2():"
+            "\n\t\tfrom math import *\n\t\tTrue\n\tfunc2()\nfunc1()",
+            "def func1():\n\tfrom math import *"
+            "\n\tdef func2():\n\t\tTrue",
+        ]
+        for code in codes:
+            self.throws(code, IMPORTSTAR, [])
+
 
 class MemoryErrorTests(AbstractTests):
     """Class for tests related to MemoryError."""
@@ -1237,10 +1265,44 @@ class RegexTests(unittest2.TestCase):
         self.regex_matches(msg, FUTURE_FEATURE_NOT_DEF_RE, ('divisio',))
 
     def test_result_has_too_many_items(self):
-        """ Test RESULT_TOO_MANY_ITEMS. """
+        """ Test RESULT_TOO_MANY_ITEMS_RE. """
         # Python 2.6
         msg = "range() result has too many items"
-        self.regex_matches(msg, RESULT_TOO_MANY_ITEMS, ('range',))
+        self.regex_matches(msg, RESULT_TOO_MANY_ITEMS_RE, ('range',))
+
+    def test_unqualified_exec(self):
+        """ Test UNQUALIFIED_EXEC_RE. """
+        msgs = [
+            # Python 2.6/2.7
+            "unqualified exec is not allowed in function 'func_name' "
+            "it is a nested function",
+            # Python 2.6
+            "unqualified exec is not allowed in function 'func_name' "
+            "it contains a nested function with free variables",
+        ]
+        for msg in msgs:
+            self.regex_matches(msg, UNQUALIFIED_EXEC_RE, ())
+
+    def test_import_star(self):
+        """ Test IMPORTSTAR_RE. """
+        msgs = [
+            # Python 2.6
+            "import * is not allowed in function 'func_name' because it "
+            "is contains a nested function with free variables",
+            # Python 2.7
+            "import * is not allowed in function 'func_name' because it "
+            "contains a nested function with free variables",
+            # Python 2.6
+            "import * is not allowed in function 'func_name' because it "
+            "is is a nested function",
+            # Python 2.7
+            "import * is not allowed in function 'func_name' because it "
+            "is a nested function",
+            # Python 3
+            "import * only allowed at module level"
+        ]
+        for msg in msgs:
+            self.regex_matches(msg, IMPORTSTAR_RE, ())
 
 
 class GetSuggStringTests(unittest2.TestCase):
