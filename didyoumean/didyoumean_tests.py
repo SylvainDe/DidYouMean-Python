@@ -1273,12 +1273,18 @@ class RegexTests(unittest2.TestCase):
     def test_unqualified_exec(self):
         """ Test UNQUALIFIED_EXEC_RE. """
         msgs = [
-            # Python 2.6/2.7
+            # Python 2.6
             "unqualified exec is not allowed in function 'func_name' "
             "it is a nested function",
+            # Python 2.7
+            "unqualified exec is not allowed in function 'func_name' "
+            "because it is a nested function",
             # Python 2.6
             "unqualified exec is not allowed in function 'func_name' "
             "it contains a nested function with free variables",
+            # Python 2.7
+            "unqualified exec is not allowed in function 'func_name' "
+            "because it contains a nested function with free variables",
         ]
         for msg in msgs:
             self.regex_matches(msg, UNQUALIFIED_EXEC_RE, ())

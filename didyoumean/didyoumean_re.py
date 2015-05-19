@@ -33,7 +33,8 @@ FUTURE_FIRST_RE = r"^(?:from )?__future__ (?:imports|statements) must " \
     r"(?:occur|appear) at (?:the )?beginning of (?:the )?file$"
 FUTURE_FEATURE_NOT_DEF_RE = r"^future feature (\w+) is not defined$"
 RESULT_TOO_MANY_ITEMS_RE = r"^(\w+)\(\) result has too many items$"
-UNQUALIFIED_EXEC_RE = r"unqualified exec is not allowed in function '\w+' it" \
+UNQUALIFIED_EXEC_RE = r"unqualified exec is not allowed in function '\w+' " \
+    r"(?:because )?it" \
     r" (?:is a nested function|" \
     r"contains a nested function with free variables)$"
 IMPORTSTAR_RE = r"import \* (?:only allowed at module level|" \
