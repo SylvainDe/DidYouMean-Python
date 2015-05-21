@@ -14,7 +14,7 @@ from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
 # To be completed
 STAND_MODULES = set(['string', 'os', 'sys', 're', 'math', 'random',
                      'datetime', 'timeit', 'unittest', 'itertools',
-                     'functools', 'collections', '__future__'])
+                     'functools', 'collections', 'html', '__future__'])
 
 #: Almost synonyms methods that can be confused from one type to another
 # To be completed

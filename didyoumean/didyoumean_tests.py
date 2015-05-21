@@ -380,7 +380,7 @@ class NameErrorTests(GetSuggestionsTests):
 
     def test_import_sugg(self):
         """Should import module first."""
-        module = 'collections'
+        module = 'html'
         self.assertFalse(module in locals())
         self.assertFalse(module in globals())
         self.throws(module, NAMEERROR, 'to import %s first' % module)
