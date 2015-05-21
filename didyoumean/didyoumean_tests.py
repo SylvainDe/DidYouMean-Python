@@ -128,42 +128,6 @@ def get_exception(code):
     assert False, "No exception thrown"
 
 
-# Tests
-class AbstractTests(unittest2.TestCase):
-    """Generic class to test get_suggestions_for_exception."""
-
-    def runs(self, code, version_range=None, interpreters=None):
-        """Helper function to run code."""
-        interpreters = listify(interpreters, INTERPRETERS)
-        if version_range is None:
-            version_range = ALL_VERSIONS
-        if version_in_range(version_range) and interpreter_in(interpreters):
-            no_exception(code)
-
-    def throws(self, code, error_info,
-               sugg=None, version_range=None, interpreters=None):
-        """Helper function to run code and check what it throws
-        that what we have expected suggestions."""
-        if version_range is None:
-            version_range = ALL_VERSIONS
-        interpreters = listify(interpreters, INTERPRETERS)
-        sugg = listify(sugg, [])
-        if version_in_range(version_range) and interpreter_in(interpreters):
-            error_type, error_msg = error_info
-            type_caught, value, traceback = get_exception(code)
-            self.assertTrue(isinstance(value, type_caught))
-            self.assertTrue(
-                issubclass(error_type, type_caught),
-                "%s (%s) not a subclass of %s"
-                % (error_type, value, type_caught))
-            if error_msg is not None:
-                msg = value.args[0] if value.args else ''
-                self.assertRegexpMatches(msg, error_msg)
-            suggestions = sorted(
-                get_suggestions_for_exception(value, traceback))
-            self.assertEqual(suggestions, sugg)
-
-
 # NameError for NameErrorTests
 NAMEERROR = (NameError, NAMENOTDEFINED_RE)
 UNKNOWN_NAMEERROR = (NameError, None)
@@ -209,7 +173,47 @@ MEMORYERROR = (MemoryError, '')
 OVERFLOWERR = (OverflowError, RESULT_TOO_MANY_ITEMS_RE)
 
 
-class NameErrorTests(AbstractTests):
+class GetSuggestionsTests(unittest2.TestCase):
+    """Generic class to test get_suggestions_for_exception.
+
+    Many tests do not correspond to any handled exceptions but are
+    kept because it is quite convenient to have a large panel of example.
+    Also, some correspond to example where suggestions could be added, those
+    are flagged with a NICE_TO_HAVE comment. """
+
+    def runs(self, code, version_range=None, interpreters=None):
+        """Helper function to run code."""
+        interpreters = listify(interpreters, INTERPRETERS)
+        if version_range is None:
+            version_range = ALL_VERSIONS
+        if version_in_range(version_range) and interpreter_in(interpreters):
+            no_exception(code)
+
+    def throws(self, code, error_info,
+               sugg=None, version_range=None, interpreters=None):
+        """Helper function to run code and check what it throws
+        that what we have expected suggestions."""
+        if version_range is None:
+            version_range = ALL_VERSIONS
+        interpreters = listify(interpreters, INTERPRETERS)
+        sugg = listify(sugg, [])
+        if version_in_range(version_range) and interpreter_in(interpreters):
+            error_type, error_msg = error_info
+            type_caught, value, traceback = get_exception(code)
+            self.assertTrue(isinstance(value, type_caught))
+            self.assertTrue(
+                issubclass(error_type, type_caught),
+                "%s (%s) not a subclass of %s"
+                % (error_type, value, type_caught))
+            if error_msg is not None:
+                msg = value.args[0] if value.args else ''
+                self.assertRegexpMatches(msg, error_msg)
+            suggestions = sorted(
+                get_suggestions_for_exception(value, traceback))
+            self.assertEqual(suggestions, sugg)
+
+
+class NameErrorTests(GetSuggestionsTests):
     """Class for tests related to NameError."""
 
     def test_local(self):
@@ -256,16 +260,16 @@ class NameErrorTests(AbstractTests):
         self.runs(sugg)
 
     def test_import(self):
-        """Should be math.pi."""
-        code = 'import math\n{0}.pi'
+        """Should be math."""
+        code = 'import math\n{0}'
         typo, sugg = 'maths', 'math'
         bad_code, good_code = format_str(code, typo, sugg)
         self.throws(bad_code, NAMEERROR, "'" + sugg + "' (local)")
         self.runs(good_code)
 
     def test_import2(self):
-        """Should be  (local)my_imported_math.pi."""
-        code = 'import math as my_imported_math\n{0}.pi'
+        """Should be my_imported_math."""
+        code = 'import math as my_imported_math\n{0}'
         typo, sugg = 'my_imported_maths', 'my_imported_math'
         bad_code, good_code = format_str(code, typo, sugg)
         self.throws(bad_code, NAMEERROR, "'" + sugg + "' (local)")
@@ -302,6 +306,7 @@ class NameErrorTests(AbstractTests):
 
     def test_removed_cmp(self):
         """Builtin cmp is removed."""
+        # NICE_TO_HAVE
         code = 'cmp(1, 2)'
         version = (3, 0, 1)
         self.runs(code, up_to_version(version))
@@ -322,6 +327,7 @@ class NameErrorTests(AbstractTests):
 
     def test_removed_apply(self):
         """Builtin apply is removed."""
+        # NICE_TO_HAVE
         code = 'apply(sum, [[1, 2, 3]])'
         version = (3, 0)
         self.runs(code, up_to_version(version))
@@ -330,6 +336,7 @@ class NameErrorTests(AbstractTests):
     def test_removed_reload(self):
         """Builtin reload is removed
         Moved to importlib.reload or imp.reload depending on version."""
+        # NICE_TO_HAVE
         code = 'reload(math)'
         version = (3, 0)
         self.runs(code, up_to_version(version))
@@ -349,6 +356,7 @@ class NameErrorTests(AbstractTests):
 
     def test_removed_execfile(self):
         """Builtin execfile is removed - use exec() and compile()."""
+        # NICE_TO_HAVE
         code = 'execfile("some_filename")'
         version = (3, 0)
         # self.runs(code, up_to_version(version))
@@ -364,23 +372,25 @@ class NameErrorTests(AbstractTests):
 
     def test_removed_buffer(self):
         """Builtin buffer is removed - use memoryview instead."""
+        # NICE_TO_HAVE
         code = 'buffer("abc")'
         version = (3, 0)
         self.runs(code, up_to_version(version))
         self.throws(code, NAMEERROR, [], from_version(version))
 
     def test_import_sugg(self):
-        """Should import functools first."""
-        sugg = ['to import functools first']
-        # re.functools is sometimes suggested :-/
-        if version_in_range(((3, 2), (3, 4))):
-            sugg.insert(0, "'re.functools'")
-        self.throws('w = functools.wraps', NAMEERROR, sugg)
+        """Should import module first."""
+        module = 'collections'
+        self.assertFalse(module in locals())
+        self.assertFalse(module in globals())
+        self.throws(module, NAMEERROR, 'to import %s first' % module)
 
     def test_attribute_hidden(self):
         """Should be math.pi but module math is hidden."""
-        math.pi  # just a way to say that math module is needed in globals
-        code = 'math = ""\np = pi'
+        math  # just a way to say that math module is needed in globals
+        self.assertFalse('math' in locals())
+        self.assertTrue('math' in globals())
+        code = 'math = ""\npi'
         self.throws(code, NAMEERROR, "'math.pi' (global hidden by local)")
 
     def test_self(self):
@@ -403,6 +413,7 @@ class NameErrorTests(AbstractTests):
 
     def test_main(self):
         """Should be '__main__'."""
+        # NICE_TO_HAVE
         self.throws('__main_', NAMEERROR)
 
     def test_complex_numbers(self):
@@ -422,7 +433,7 @@ class NameErrorTests(AbstractTests):
             UNKNOWN_NAMEERROR)
 
 
-class UnboundLocalErrorTests(AbstractTests):
+class UnboundLocalErrorTests(GetSuggestionsTests):
     """Class for tests related to UnboundLocalError."""
 
     def test_unbound_typo(self):
@@ -435,6 +446,7 @@ class UnboundLocalErrorTests(AbstractTests):
 
     def test_unbound_global(self):
         """Should be global nb."""
+        # NICE_TO_HAVE
         code = 'nb = 0\ndef func():\n\t{0}nb +=1\nfunc()'
         sugg = 'global nb'
         bad_code, good_code = format_str(code, "", sugg + "\n\t")
@@ -448,12 +460,13 @@ class UnboundLocalErrorTests(AbstractTests):
             UNKNOWN_UNBOUNDLOCAL)
 
 
-class AttributeErrorTests(AbstractTests):
+class AttributeErrorTests(GetSuggestionsTests):
     """Class for tests related to AttributeError."""
 
     def test_nonetype(self):
         """In-place methods like sort returns None.
         Might also happen if the functions misses a return."""
+        # NICE_TO_HAVE
         code = '[].sort().append(4)'
         self.throws(code, ATTRIBUTEERROR)
 
@@ -501,7 +514,7 @@ class AttributeErrorTests(AbstractTests):
 
     def test_hidden(self):
         """Accessing wrong string object."""
-        # To be improved
+        # NICE_TO_HAVE
         code = 'import string\nstring = "a"\nascii = string.ascii_letters'
         self.throws(code, ATTRIBUTEERROR)
 
@@ -547,6 +560,7 @@ class AttributeErrorTests(AbstractTests):
 
     def test_removed_xreadlines(self):
         """Method xreadlines is removed."""
+        # NICE_TO_HAVE
         code = "import os\nwith open(os.path.realpath(__file__)) as f:" \
             "\n\tfor l in f.xreadlines():\n\t\tpass"
         version = (3, 0)
@@ -555,6 +569,7 @@ class AttributeErrorTests(AbstractTests):
 
     def test_removed_function_attributes(self):
         """Some functions attributes are removed."""
+        # NICE_TO_HAVE
         version = (3, 0)
         code = func_gen() + 'some_func.{0}'
         attributes = [('func_name', '__name__'),
@@ -572,7 +587,7 @@ class AttributeErrorTests(AbstractTests):
 
     def test_removed_method_attributes(self):
         """Some methods attributes are removed."""
-        version = (3, 0)
+        # NICE_TO_HAVE
         version = (3, 0)
         code = 'FoobarClass().some_method.{0}'
         attributes = [('im_func', '__func__'),
@@ -586,8 +601,25 @@ class AttributeErrorTests(AbstractTests):
 
     def test_join(self):
         """This can be frustrating, a suggestion could be nice."""
+        # NICE_TO_HAVE
         code = "['a', 'b'].join('-')"
         self.throws(code, ATTRIBUTEERROR)
+
+    def test_set_dict_comprehension(self):
+        """ {} creates a dict and not an empty set leading to errors. """
+        # NICE_TO_HAVE
+        version = (2, 7)
+        for method in set(dir(set)) - set(dir(dict)):
+            if not method.startswith('__'):  # boring suggestions
+                code = "a = {0}\na." + method
+                typo, dict1, dict2, sugg, set1 = format_str(
+                    code, "{}", "dict()", "{0: 0}", "set()", "{0}")
+                self.throws(typo, ATTRIBUTEERROR)
+                self.throws(dict1, ATTRIBUTEERROR)
+                self.throws(dict2, ATTRIBUTEERROR)
+                self.runs(sugg)
+                self.throws(set1, INVALIDSYNTAX, [], up_to_version(version))
+                self.runs(set1, from_version(version))
 
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""
@@ -598,7 +630,7 @@ class AttributeErrorTests(AbstractTests):
     # TODO: Add sugg for situation where self/cls is the missing parameter
 
 
-class TypeErrorTests(AbstractTests):
+class TypeErrorTests(GetSuggestionsTests):
     """Class for tests related to TypeError."""
 
     def test_unhashable(self):
@@ -679,6 +711,7 @@ class TypeErrorTests(AbstractTests):
 
     def test_no_implicit_str_conv(self):
         """ Trying to concatenate a non-string value to a string."""
+        # NICE_TO_HAVE
         code = '{0} + " things"'
         typo, sugg = '12', 'str(12)'
         bad_code, good_code = format_str(code, typo, sugg)
@@ -689,6 +722,7 @@ class TypeErrorTests(AbstractTests):
 
     def test_no_implicit_str_conv2(self):
         """ Trying to concatenate a non-string value to a string."""
+        # NICE_TO_HAVE
         code = '"things " + {0}'
         typo, sugg = '12', 'str(12)'
         bad_code, good_code = format_str(code, typo, sugg)
@@ -697,6 +731,7 @@ class TypeErrorTests(AbstractTests):
 
     def test_assignment_to_range(self):
         """ Trying to assign to range works on list, not on range."""
+        # NICE_TO_HAVE
         # FIXME
         code = '{0}[2] = 1'
         typo, sugg = 'range(4)', 'list(range(4))'
@@ -707,7 +742,7 @@ class TypeErrorTests(AbstractTests):
         self.runs(good_code)
 
 
-class ImportErrorTests(AbstractTests):
+class ImportErrorTests(GetSuggestionsTests):
     """Class for tests related to ImportError."""
 
     def test_no_module_no_sugg(self):
@@ -797,7 +832,7 @@ class ImportErrorTests(AbstractTests):
             UNKNOWN_IMPORTERROR)
 
 
-class LookupErrorTests(AbstractTests):
+class LookupErrorTests(GetSuggestionsTests):
     """Class for tests related to LookupError."""
 
 
@@ -817,7 +852,7 @@ class IndexErrorTests(LookupErrorTests):
         self.throws('list()[2]', OUTOFRANGE)
 
 
-class SyntaxErrorTests(AbstractTests):
+class SyntaxErrorTests(GetSuggestionsTests):
     """Class for tests related to SyntaxError."""
 
     def test_no_error(self):
@@ -832,6 +867,7 @@ class SyntaxErrorTests(AbstractTests):
 
     def test_print(self):
         """ print is a functions now and needs parenthesis."""
+        # NICE_TO_HAVE
         code, new_code = 'print ""', 'print("")'
         version = (3, 0)
         version2 = (3, 4)
@@ -842,6 +878,7 @@ class SyntaxErrorTests(AbstractTests):
 
     def test_exec(self):
         """ exec is a functions now and needs parenthesis."""
+        # NICE_TO_HAVE
         code, new_code = 'exec "1"', 'exec("1")'
         version = (3, 0)
         version2 = (3, 4)
@@ -873,6 +910,7 @@ class SyntaxErrorTests(AbstractTests):
 
     def test_missing_colon(self):
         """ Missing colon is a classic mistake."""
+        # NICE_TO_HAVE
         code = "if True{0}\n\tpass"
         bad_code, good_code = format_str(code, "", ":")
         self.throws(bad_code, INVALIDSYNTAX)
@@ -880,6 +918,7 @@ class SyntaxErrorTests(AbstractTests):
 
     def test_simple_equal(self):
         """ '=' for comparison is a classic mistake."""
+        # NICE_TO_HAVE
         code = "if 2 {0} 3:\n\tpass"
         bad_code, good_code = format_str(code, "=", "==")
         self.throws(bad_code, INVALIDSYNTAX)
@@ -887,6 +926,7 @@ class SyntaxErrorTests(AbstractTests):
 
     def test_keyword_as_identifier(self):
         """ Using a keyword as a variable name. """
+        # NICE_TO_HAVE
         code = '{0} = 1'
         bad_code, good_code = format_str(code, "from", "from_")
         self.throws(bad_code, INVALIDSYNTAX)
@@ -894,6 +934,7 @@ class SyntaxErrorTests(AbstractTests):
 
     def test_increment(self):
         """ Trying to use '++' or '--'. """
+        # NICE_TO_HAVE
         code = 'a = 0\na{0}'
         for op in ('-', '+'):
             typo, sugg = 2 * op, op + '=1'
@@ -916,6 +957,7 @@ class SyntaxErrorTests(AbstractTests):
 
     def test_unqualified_exec(self):
         """ Exec in nested functions. """
+        # NICE_TO_HAVE
         version = (3, 0)
         codes = [
             "def func1():\n\tbar='1'\n\tdef func2():"
@@ -929,6 +971,7 @@ class SyntaxErrorTests(AbstractTests):
 
     def test_import_star(self):
         """ 'import *' in nested functions. """
+        # NICE_TO_HAVE
         version = (3, 0)
         codes = [
             "def func1():\n\tbar='1'\n\tdef func2():"
@@ -940,7 +983,7 @@ class SyntaxErrorTests(AbstractTests):
             self.throws(code, IMPORTSTAR, [])
 
 
-class MemoryErrorTests(AbstractTests):
+class MemoryErrorTests(GetSuggestionsTests):
     """Class for tests related to MemoryError."""
 
     def test_out_of_memory(self):
@@ -970,7 +1013,7 @@ class MemoryErrorTests(AbstractTests):
         self.runs(bad_code, from_version(version2), 'cython')
 
 
-class ValueErrorTests(AbstractTests):
+class ValueErrorTests(GetSuggestionsTests):
     """Class for tests related to ValueError."""
 
     def test_too_many_values(self):
@@ -1009,12 +1052,13 @@ class ValueErrorTests(AbstractTests):
         self.runs(new_code, from_version(version))
 
 
-class AnyErrorTests(AbstractTests):
+class AnyErrorTests(GetSuggestionsTests):
     """ Class for tests not related to an error type in particular. """
 
     def test_wrong_except(self):
         """ Common mistake : "except Exc1, Exc2" doesn't catch Exc2 .
         Adding parenthesis solves the issue. """
+        # NICE_TO_HAVE
         version = (3, 0)
         raised_exc, other_exc = KeyError, TypeError
         raised, other = raised_exc.__name__, other_exc.__name__
