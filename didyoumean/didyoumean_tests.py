@@ -1,7 +1,7 @@
 # -*- coding: utf-8
 """Unit tests for code in didyoumean.py."""
 from didyoumean import get_suggestions_for_exception, get_suggestion_string,\
-    add_string_to_exception
+    add_string_to_exception, STAND_MODULES
 from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     ATTRIBUTEERROR_RE, UNSUBSCRIBTABLE_RE, UNEXPECTED_KEYWORDARG_RE,\
     NOMODULE_RE, CANNOTIMPORT_RE, INDEXOUTOFRANGE_RE, ZERO_LEN_FIELD_RE,\
@@ -177,9 +177,12 @@ class GetSuggestionsTests(unittest2.TestCase):
     """Generic class to test get_suggestions_for_exception.
 
     Many tests do not correspond to any handled exceptions but are
-    kept because it is quite convenient to have a large panel of example.
+    kept because it is quite convenient to have a large panel of examples.
     Also, some correspond to example where suggestions could be added, those
-    are flagged with a NICE_TO_HAVE comment. """
+    are flagged with a NICE_TO_HAVE comment.
+    Finally, whenever it is easily possible, the code with the suggestions
+    taken into account is usually tested too to ensure that the suggestion does
+    work."""
 
     def runs(self, code, version_range=None, interpreters=None):
         """Helper function to run code."""
@@ -295,6 +298,9 @@ class NameErrorTests(GetSuggestionsTests):
         """Should be os.getenv after importing os"""
         # This test assumes that `module` is not imported
         module, attr = 'os', 'getenv'
+        self.assertFalse(module in locals())
+        self.assertFalse(module in globals())
+        self.assertTrue(module in STAND_MODULES)
         bad_code = attr
         good_code = 'from %s import %s\n' % (module, attr) + bad_code
         self.runs(good_code)
@@ -380,10 +386,19 @@ class NameErrorTests(GetSuggestionsTests):
 
     def test_import_sugg(self):
         """Should import module first."""
-        module = 'html'
+        module = 'collections'
+        sugg = 'import %s' % module
+        typo, good_code = module, sugg + '\n' + module
         self.assertFalse(module in locals())
         self.assertFalse(module in globals())
-        self.throws(module, NAMEERROR, 'to import %s first' % module)
+        self.assertTrue(module in STAND_MODULES)
+        suggestions = (
+            # module.module is suggested on Python 3.3 :-/
+            ["'%s' from %s (not imported)" % (module, module)]
+            if version_in_range(((3, 3), (3, 4))) else []) + \
+            ['to %s first' % sugg]
+        self.throws(typo, NAMEERROR, suggestions)
+        self.runs(good_code)
 
     def test_attribute_hidden(self):
         """Should be math.pi but module math is hidden."""
@@ -753,6 +768,7 @@ class ImportErrorTests(GetSuggestionsTests):
         """Should be 'math'."""
         code = 'import {0}'
         typo, sugg = 'maths', 'math'
+        self.assertTrue(sugg in STAND_MODULES)
         bad_code, good_code = format_str(code, typo, sugg)
         self.throws(bad_code, NOMODULE, "'" + sugg + "'")
         self.runs(good_code)
@@ -761,6 +777,7 @@ class ImportErrorTests(GetSuggestionsTests):
         """Should be 'math'."""
         code = 'from {0} import pi'
         typo, sugg = 'maths', 'math'
+        self.assertTrue(sugg in STAND_MODULES)
         bad_code, good_code = format_str(code, typo, sugg)
         self.throws(bad_code, NOMODULE, "'" + sugg + "'")
         self.runs(good_code)
@@ -769,6 +786,7 @@ class ImportErrorTests(GetSuggestionsTests):
         """Should be 'math'."""
         code = 'import {0} as my_imported_math'
         typo, sugg = 'maths', 'math'
+        self.assertTrue(sugg in STAND_MODULES)
         bad_code, good_code = format_str(code, typo, sugg)
         self.throws(bad_code, NOMODULE, "'" + sugg + "'")
         self.runs(good_code)
@@ -777,6 +795,7 @@ class ImportErrorTests(GetSuggestionsTests):
         """Should be 'math'."""
         code = 'from {0} import pi as three_something'
         typo, sugg = 'maths', 'math'
+        self.assertTrue(sugg in STAND_MODULES)
         bad_code, good_code = format_str(code, typo, sugg)
         self.throws(bad_code, NOMODULE, "'" + sugg + "'")
         self.runs(good_code)
@@ -785,6 +804,7 @@ class ImportErrorTests(GetSuggestionsTests):
         """ Should be '__future__' ."""
         code = 'import {0}'
         typo, sugg = '__future_', '__future__'
+        self.assertTrue(sugg in STAND_MODULES)
         bad_code, good_code = format_str(code, typo, sugg)
         self.throws(bad_code, NOMODULE, "'" + sugg + "'")
         self.runs(good_code)
@@ -797,6 +817,7 @@ class ImportErrorTests(GetSuggestionsTests):
         """Should be 'math'."""
         code = 'from {0} import pi'
         typo, sugg = 'itertools', 'math'
+        self.assertTrue(sugg in STAND_MODULES)
         bad_code, good_code = format_str(code, typo, sugg)
         self.throws(bad_code, CANNOTIMPORT, "'" + good_code + "'")
         self.runs(good_code)
@@ -1391,7 +1412,7 @@ class TestWithStringFunction(object):
         `adj` is used as an adjustment when comparing string lengths."""
         if string:
             self.assertNotEqual(before, after)
-            self.assertTrue(string not in before, before)
+            self.assertFalse(string in before, before)
             self.assertTrue(string in after, after)
             self.assertEqual(len(after), len(before) + len(string) + adj)
             if concat:
