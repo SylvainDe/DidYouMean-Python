@@ -9,7 +9,9 @@ from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     NEED_MORE_VALUES_RE, UNHASHABLE_RE, MISSING_PARENT_RE, INVALID_LITERAL_RE,\
     NB_ARG_RE, INVALID_SYNTAX_RE, EXPECTED_LENGTH_RE, INVALID_COMP_RE,\
     MISSING_POS_ARG_RE, FUTURE_FIRST_RE, FUTURE_FEATURE_NOT_DEF_RE,\
-    RESULT_TOO_MANY_ITEMS_RE, UNQUALIFIED_EXEC_RE, IMPORTSTAR_RE
+    RESULT_TOO_MANY_ITEMS_RE, UNQUALIFIED_EXEC_RE, IMPORTSTAR_RE,\
+    UNSUPPORTED_OP_RE, OBJ_DOES_NOT_SUPPORT_RE, CANNOT_CONCAT_RE,\
+    CANT_CONVERT_RE
 from didyoumean_decorator import didyoumean
 from didyoumean_contextmanager import didyoumean_contextmanager
 import unittest2
@@ -140,6 +142,10 @@ MISSINGPOSERROR = (TypeError, MISSING_POS_ARG_RE)
 UNHASHABLE = (TypeError, UNHASHABLE_RE)
 UNSUBSCRIBTABLE = (TypeError, UNSUBSCRIBTABLE_RE)
 UNEXPECTEDKWARG = (TypeError, UNEXPECTED_KEYWORDARG_RE)
+UNSUPPORTEDOPERAND = (TypeError, UNSUPPORTED_OP_RE)
+OBJECTDOESNOTSUPPORT = (TypeError, OBJ_DOES_NOT_SUPPORT_RE)
+CANNOTCONCAT = (TypeError, CANNOT_CONCAT_RE)
+CANTCONVERT = (TypeError, CANT_CONVERT_RE)
 UNKNOWN_TYPEERROR = (TypeError, None)
 # ImportError for ImportErrorTests
 NOMODULE = (ImportError, NOMODULE_RE)
@@ -673,7 +679,7 @@ class TypeErrorTests(GetSuggestionsTests):
         typo, sugg = '1', ''
         code = func_gen(param='', args='{0}')
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, UNKNOWN_TYPEERROR)  # FIXME
+        self.throws(bad_code, NBARGERROR)
         self.runs(good_code)
 
     def test_nb_args2(self):
@@ -681,7 +687,7 @@ class TypeErrorTests(GetSuggestionsTests):
         typo, sugg = '', '1'
         code = func_gen(param='a', args='{0}')
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, UNKNOWN_TYPEERROR)  # FIXME
+        self.throws(bad_code, NBARGERROR)
         self.runs(good_code)
 
     def test_nb_args3(self):
@@ -689,7 +695,7 @@ class TypeErrorTests(GetSuggestionsTests):
         typo, sugg = '1', '1, 2, 3'
         code = func_gen(param='so, much, args', args='{0}')
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, UNKNOWN_TYPEERROR)  # FIXME
+        self.throws(bad_code, NBARGERROR)
         self.runs(good_code)
 
     def test_nb_args4(self):
@@ -697,7 +703,7 @@ class TypeErrorTests(GetSuggestionsTests):
         typo, sugg = '', '1, 2, 3'
         code = func_gen(param='so, much, args', args='{0}')
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, UNKNOWN_TYPEERROR)  # FIXME
+        self.throws(bad_code, NBARGERROR)
         self.runs(good_code)
 
     def test_nb_args5(self):
@@ -705,7 +711,7 @@ class TypeErrorTests(GetSuggestionsTests):
         typo, sugg = '1, 2', '1, 2, 3'
         code = func_gen(param='so, much, args', args='{0}')
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, UNKNOWN_TYPEERROR)  # FIXME
+        self.throws(bad_code, NBARGERROR)
         self.runs(good_code)
 
     def test_keyword_args(self):
@@ -730,10 +736,8 @@ class TypeErrorTests(GetSuggestionsTests):
         code = '{0} + " things"'
         typo, sugg = '12', 'str(12)'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, UNKNOWN_TYPEERROR)  # FIXME
+        self.throws(bad_code, UNSUPPORTEDOPERAND)
         self.runs(good_code)
-        # Python 2.6/2.7/3.2/3.3/3.4/PyPy/PyPy3
-        # "unsupported operand type(s) for +: 'int' and 'str'"
 
     def test_no_implicit_str_conv2(self):
         """ Trying to concatenate a non-string value to a string."""
@@ -741,20 +745,27 @@ class TypeErrorTests(GetSuggestionsTests):
         code = '"things " + {0}'
         typo, sugg = '12', 'str(12)'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, UNKNOWN_TYPEERROR)  # FIXME
+        version = (3, 0)
+        self.throws(bad_code, CANNOTCONCAT, [], up_to_version(version))
+        self.throws(bad_code, CANTCONVERT, [], from_version(version))
         self.runs(good_code)
 
     def test_assignment_to_range(self):
         """ Trying to assign to range works on list, not on range."""
         # NICE_TO_HAVE
-        # FIXME
         code = '{0}[2] = 1'
         typo, sugg = 'range(4)', 'list(range(4))'
         version = (3, 0)
         bad_code, good_code = format_str(code, typo, sugg)
         self.runs(bad_code, up_to_version(version))
-        self.throws(bad_code, UNKNOWN_TYPEERROR, [], from_version(version))
+        self.throws(bad_code, OBJECTDOESNOTSUPPORT, [], from_version(version))
         self.runs(good_code)
+
+    def test_unmatched_msg(self):
+        """Test that arbitrary strings are supported."""
+        self.throws(
+            'raise TypeError("unmatched TYPEERROR")',
+            UNKNOWN_TYPEERROR)
 
 
 class ImportErrorTests(GetSuggestionsTests):
@@ -1374,6 +1385,26 @@ class RegexTests(unittest2.TestCase):
         ]
         for msg in msgs:
             self.regex_matches(msg, IMPORTSTAR_RE, ())
+
+    def test_does_not_support(self):
+        """ Test OBJ_DOES_NOT_SUPPORT_RE. """
+        msg = "'range' object does not support item assignment"
+        self.regex_matches(msg, OBJ_DOES_NOT_SUPPORT_RE, ('range',))
+
+    def test_cant_convert(self):
+        """ Test CANT_CONVERT_RE. """
+        msg = "Can't convert 'int' object to str implicitly"
+        self.regex_matches(msg, CANT_CONVERT_RE, ('int', 'str'))
+
+    def test_cannot_concat(self):
+        """ Test CANNOT_CONCAT_RE. """
+        msg = "cannot concatenate 'str' and 'int' objects"
+        self.regex_matches(msg, CANNOT_CONCAT_RE, ('str', 'int'))
+
+    def test_unsupported_operand(self):
+        """ Test UNSUPPORTED_OP_RE. """
+        msg = "unsupported operand type(s) for +: 'int' and 'str'"
+        self.regex_matches(msg, UNSUPPORTED_OP_RE, ('+', 'int', 'str'))
 
 
 class GetSuggStringTests(unittest2.TestCase):

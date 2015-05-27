@@ -33,11 +33,17 @@ FUTURE_FIRST_RE = r"^(?:from )?__future__ (?:imports|statements) must " \
     r"(?:occur|appear) at (?:the )?beginning of (?:the )?file$"
 FUTURE_FEATURE_NOT_DEF_RE = r"^future feature (\w+) is not defined$"
 RESULT_TOO_MANY_ITEMS_RE = r"^(\w+)\(\) result has too many items$"
-UNQUALIFIED_EXEC_RE = r"unqualified exec is not allowed in function '\w+' " \
+UNQUALIFIED_EXEC_RE = r"^unqualified exec is not allowed in function '\w+' " \
     r"(?:because )?it" \
     r" (?:is a nested function|" \
     r"contains a nested function with free variables)$"
-IMPORTSTAR_RE = r"import \* (?:only allowed at module level|" \
+IMPORTSTAR_RE = r"^import \* (?:only allowed at module level|" \
     r"is not allowed in function '\w+' because it (?:is )?" \
     r"(?:is a nested function|" \
     r"(?:)contains a nested function with free variables))$"
+UNSUPPORTED_OP_RE = r"^unsupported operand type\(s\) for (.*): " \
+    r"'(\w+)' and '(\w+)'$"
+OBJ_DOES_NOT_SUPPORT_RE = r"^\'(\w+)\' object does not support " \
+    r"item assignment$"
+CANNOT_CONCAT_RE = r"^cannot concatenate '(\w+)' and '(\w+)' objects$"
+CANT_CONVERT_RE = r"Can't convert '(\w+)' object to (\w+) implicitly$"
