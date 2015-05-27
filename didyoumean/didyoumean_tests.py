@@ -685,33 +685,41 @@ class TypeErrorTests(GetSuggestionsTests):
     def test_nb_args2(self):
         """Should have 1 arg."""
         typo, sugg = '', '1'
+        version = (3, 3)
         code = func_gen(param='a', args='{0}')
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NBARGERROR)
+        self.throws(bad_code, NBARGERROR, [], up_to_version(version))
+        self.throws(bad_code, MISSINGPOSERROR, [], from_version(version))
         self.runs(good_code)
 
     def test_nb_args3(self):
         """Should have 3 args."""
         typo, sugg = '1', '1, 2, 3'
+        version = (3, 3)
         code = func_gen(param='so, much, args', args='{0}')
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NBARGERROR)
+        self.throws(bad_code, NBARGERROR, [], up_to_version(version))
+        self.throws(bad_code, MISSINGPOSERROR, [], from_version(version))
         self.runs(good_code)
 
     def test_nb_args4(self):
         """Should have 3 args."""
         typo, sugg = '', '1, 2, 3'
+        version = (3, 3)
         code = func_gen(param='so, much, args', args='{0}')
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NBARGERROR)
+        self.throws(bad_code, NBARGERROR, [], up_to_version(version))
+        self.throws(bad_code, MISSINGPOSERROR, [], from_version(version))
         self.runs(good_code)
 
     def test_nb_args5(self):
         """Should have 3 args."""
         typo, sugg = '1, 2', '1, 2, 3'
+        version = (3, 3)
         code = func_gen(param='so, much, args', args='{0}')
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NBARGERROR)
+        self.throws(bad_code, NBARGERROR, [], up_to_version(version))
+        self.throws(bad_code, MISSINGPOSERROR, [], from_version(version))
         self.runs(good_code)
 
     def test_keyword_args(self):
@@ -746,8 +754,12 @@ class TypeErrorTests(GetSuggestionsTests):
         typo, sugg = '12', 'str(12)'
         bad_code, good_code = format_str(code, typo, sugg)
         version = (3, 0)
-        self.throws(bad_code, CANNOTCONCAT, [], up_to_version(version))
-        self.throws(bad_code, CANTCONVERT, [], from_version(version))
+        self.throws(
+            bad_code, CANNOTCONCAT, [], up_to_version(version), 'cython')
+        self.throws(
+            bad_code, CANTCONVERT, [], from_version(version), 'cython')
+        self.throws(
+            bad_code, UNSUPPORTEDOPERAND, [], ALL_VERSIONS, 'pypy')
         self.runs(good_code)
 
     def test_assignment_to_range(self):
