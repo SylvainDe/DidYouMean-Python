@@ -71,6 +71,10 @@ class FoobarClass():
         """Method for testing purposes."""
         pass
 
+    def __some_private_method(self):
+        """Method for testing purposes."""
+        pass
+
 
 # Logic to be able to have different tests on various version of Python
 FIRST_VERSION = (0, 0)
@@ -567,6 +571,18 @@ class AttributeErrorTests(GetSuggestionsTests):
         self.throws(bad_code, ATTRIBUTEERROR, "'" + sugg + "'")
         self.runs(good_code)
 
+    def test_private_attr(self):
+        """Sometimes 'private' members are suggested but it's not ideal."""
+        code = 'FoobarClass().{0}'
+        method = '__some_private_method'
+        typo, sugg = method, '_FoobarClass' + method
+        bad_code, bad_sugg = format_str(code, typo, sugg)
+        self.throws(
+            bad_code,
+            ATTRIBUTEERROR,
+            "'%s' (but it is supposed to be private)" % sugg)
+        self.runs(bad_sugg)
+
     def test_removed_has_key(self):
         """Method has_key is removed from dict."""
         code = 'dict().has_key(1)'
@@ -665,6 +681,16 @@ class TypeErrorTests(GetSuggestionsTests):
         bad_code, good_code = format_str(code, typo, sugg)
         self.throws(bad_code, UNSUBSCRIBTABLE, "'function(value)'")
         self.runs(good_code)
+
+    def test_set_add(self):
+        """ set + set doesn't work. A suggestion would be nice."""
+        # NICE_TO_HAVE
+        code1 = 'set() + set()'
+        code2 = 'set() | set()'
+        code3 = 'set().union(set())'
+        self.throws(code1, UNSUPPORTEDOPERAND)
+        self.runs(code2)
+        self.runs(code3)
 
     def test_nb_args(self):
         """Should have 1 arg."""

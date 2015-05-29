@@ -233,7 +233,11 @@ def suggest_attribute_as_typo(attribute, attributes):
     """Suggest the attribute could be a typo.
     Example: 'a.do_baf()' -> 'a.do_bar()'."""
     for n in get_close_matches(attribute, attributes):
-        yield quote(n)
+        # This is somewhat approximative.
+        if n.startswith('_') and '__' in n:
+            yield quote(n) + ' (but it is supposed to be private)'
+        else:
+            yield quote(n)
 
 
 # Functions related to ImportError
