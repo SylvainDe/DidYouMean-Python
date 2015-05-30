@@ -19,7 +19,7 @@ import math
 import sys
 import re
 
-this_is_a_global_list = [1, 2]
+this_is_a_global_list = [1, 2]  # Please don't change the value
 
 
 def func_gen(name='some_func', param='', body='pass', args=None):
@@ -190,13 +190,17 @@ class InspectionTests(unittest2.TestCase):
 
     Tested functions are : get_objects_in_frame."""
 
-    def name_corresponds_to(self, name, frame, expected=[]):
+    def name_corresponds_to(self, name, expected):
         """ Helper functions to test get_objects_in_frame.
 
         Check that the name corresponds to the expected objects (and their
-        scope) in the frame. None an be used to match any object as it can
-        be hard to describe an object when it is hidden by something in a
-        closer scope."""
+        scope) in the frame of calling function.
+        None can be used to match any object as it can be hard to describe
+        an object when it is hidden by something in a closer scope.
+        Also, extra care is to be taken when calling the function because
+        giving value by names might affect the result (adding in local
+        scope.)"""
+        frame = sys._getframe(1)  # frame of calling function
         lst = get_objects_in_frame(frame).get(name, [])
         self.assertEqual(len(lst), len(expected))
         for scopedobj, exp in zip(lst, expected):
@@ -210,36 +214,32 @@ class InspectionTests(unittest2.TestCase):
         """ Test with builtin. """
         builtin = len
         name = builtin.__name__
-        self.name_corresponds_to(
-            name, sys._getframe(0), [(builtin, 'builtin')])
+        self.name_corresponds_to(name, [(builtin, 'builtin')])
 
     def test_global(self):
         """ Test with global. """
         name = 'this_is_a_global_list'
-        self.name_corresponds_to(
-            name, sys._getframe(0), [(this_is_a_global_list, 'global')])
+        self.name_corresponds_to(name, [([1, 2], 'global')])
 
     def test_local(self):
         """ Test with local. """
         name = 'toto'
-        self.name_corresponds_to(name, sys._getframe(0), [])
+        self.name_corresponds_to(name, [])
         toto = 0
-        self.name_corresponds_to(name, sys._getframe(0), [(toto, 'local')])
+        self.name_corresponds_to(name, [(0, 'local')])
 
     def test_local_and_global(self):
         """ Test with local hiding a global. """
         name = 'this_is_a_global_list'
+        self.name_corresponds_to(name, [([1, 2], 'global')])
         this_is_a_global_list = [3, 4]
-        self.name_corresponds_to(
-            name, sys._getframe(0),
-            [(this_is_a_global_list, 'local'), (None, 'global')])
+        self.name_corresponds_to(name, [([3, 4], 'local'), ([1, 2], 'global')])
 
     def test_global_keword(self):
         """ Test with global keyword. """
         name = 'this_is_a_global_list'
-        this_is_a_global_list = [3, 4]
-        self.name_corresponds_to(
-            name, sys._getframe(0), [(this_is_a_global_list, 'global')])
+        this_is_a_global_list = [1, 2]  # value is unchanged
+        self.name_corresponds_to(name, [([1, 2], 'global')])
         global this_is_a_global_list  # has an effect even at the end
 
     def test_enclosing(self):
@@ -249,16 +249,29 @@ class InspectionTests(unittest2.TestCase):
 
         def nested_func(foo, baz):
             qux = 5
-            self.name_corresponds_to('qux', sys._getframe(0), [(qux, 'local')])
-            self.name_corresponds_to('baz', sys._getframe(0), [(baz, 'local')])
-            self.name_corresponds_to('bar', sys._getframe(0), [])
-            self.name_corresponds_to('foo', sys._getframe(0), [(foo, 'local')])
+            self.name_corresponds_to('qux', [(5, 'local')])
+            self.name_corresponds_to('baz', [(4, 'local')])
+            self.name_corresponds_to('foo', [(3, 'local')])
+            self.name_corresponds_to('bar', [])
+            self.name_corresponds_to(
+                'this_is_a_global_list', [([1, 2], 'global')])
+
+        def nested_func2():
+            self.name_corresponds_to('bar', [])
+            bar = 3
+            self.name_corresponds_to('bar', [(3, 'local')])
+
+        def nested_func3():
+            self.name_corresponds_to('bar', [(2, 'local')])
+            tmp = bar
+            self.name_corresponds_to('bar', [(2, 'local')])
 
         nested_func(3, 4)
-        self.name_corresponds_to(
-            'nested_func', sys._getframe(0), [(nested_func, 'local')])
-        self.name_corresponds_to('foo', sys._getframe(0), [(foo, 'local')])
-        self.name_corresponds_to('baz', sys._getframe(0), [])
+        nested_func2()
+        nested_func3()
+        self.name_corresponds_to('nested_func', [(nested_func, 'local')])
+        self.name_corresponds_to('foo', [(1, 'local')])
+        self.name_corresponds_to('baz', [])
 
 
 class GetSuggestionsTests(unittest2.TestCase):
