@@ -1,7 +1,7 @@
 # -*- coding: utf-8
 """Unit tests for code in didyoumean.py."""
 from didyoumean import get_suggestions_for_exception, get_suggestion_string,\
-    add_string_to_exception, STAND_MODULES
+    add_string_to_exception, get_objects_in_frame, STAND_MODULES
 from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     ATTRIBUTEERROR_RE, UNSUBSCRIBTABLE_RE, UNEXPECTED_KEYWORDARG_RE,\
     NOMODULE_RE, CANNOTIMPORT_RE, INDEXOUTOFRANGE_RE, ZERO_LEN_FIELD_RE,\
@@ -18,8 +18,6 @@ import unittest2
 import math
 import sys
 import re
-
-# Following code is bad on purpose - please do not fix ;-)
 
 this_is_a_global_list = [1, 2]
 
@@ -68,6 +66,10 @@ class FoobarClass():
         return this_is_cls_mthd
 
     def some_method(self):
+        """Method for testing purposes."""
+        pass
+
+    def _some_semi_private_method(self):
         """Method for testing purposes."""
         pass
 
@@ -183,6 +185,82 @@ MEMORYERROR = (MemoryError, '')
 OVERFLOWERR = (OverflowError, RESULT_TOO_MANY_ITEMS_RE)
 
 
+class InspectionTests(unittest2.TestCase):
+    """ Class for tests related to frame/backtrace/etc inspection.
+
+    Tested functions are : get_objects_in_frame."""
+
+    def name_corresponds_to(self, name, frame, expected=[]):
+        """ Helper functions to test get_objects_in_frame.
+
+        Check that the name corresponds to the expected objects (and their
+        scope) in the frame. None an be used to match any object as it can
+        be hard to describe an object when it is hidden by something in a
+        closer scope."""
+        lst = get_objects_in_frame(frame).get(name, [])
+        self.assertEqual(len(lst), len(expected))
+        for scopedobj, exp in zip(lst, expected):
+            obj, scope = scopedobj
+            expobj, expscope = exp
+            self.assertEqual(scope, expscope)
+            if expobj is not None:
+                self.assertEqual(obj, expobj)
+
+    def test_builtin(self):
+        """ Test with builtin. """
+        builtin = len
+        name = builtin.__name__
+        self.name_corresponds_to(
+            name, sys._getframe(0), [(builtin, 'builtin')])
+
+    def test_global(self):
+        """ Test with global. """
+        name = 'this_is_a_global_list'
+        self.name_corresponds_to(
+            name, sys._getframe(0), [(this_is_a_global_list, 'global')])
+
+    def test_local(self):
+        """ Test with local. """
+        name = 'toto'
+        self.name_corresponds_to(name, sys._getframe(0), [])
+        toto = 0
+        self.name_corresponds_to(name, sys._getframe(0), [(toto, 'local')])
+
+    def test_local_and_global(self):
+        """ Test with local hiding a global. """
+        name = 'this_is_a_global_list'
+        this_is_a_global_list = [3, 4]
+        self.name_corresponds_to(
+            name, sys._getframe(0),
+            [(this_is_a_global_list, 'local'), (None, 'global')])
+
+    def test_global_keword(self):
+        """ Test with global keyword. """
+        name = 'this_is_a_global_list'
+        this_is_a_global_list = [3, 4]
+        self.name_corresponds_to(
+            name, sys._getframe(0), [(this_is_a_global_list, 'global')])
+        global this_is_a_global_list  # has an effect even at the end
+
+    def test_enclosing(self):
+        """ Test with nested functions. To be improved. """
+        foo = 1
+        bar = 2
+
+        def nested_func(foo, baz):
+            qux = 5
+            self.name_corresponds_to('qux', sys._getframe(0), [(qux, 'local')])
+            self.name_corresponds_to('baz', sys._getframe(0), [(baz, 'local')])
+            self.name_corresponds_to('bar', sys._getframe(0), [])
+            self.name_corresponds_to('foo', sys._getframe(0), [(foo, 'local')])
+
+        nested_func(3, 4)
+        self.name_corresponds_to(
+            'nested_func', sys._getframe(0), [(nested_func, 'local')])
+        self.name_corresponds_to('foo', sys._getframe(0), [(foo, 'local')])
+        self.name_corresponds_to('baz', sys._getframe(0), [])
+
+
 class GetSuggestionsTests(unittest2.TestCase):
     """Generic class to test get_suggestions_for_exception.
 
@@ -269,6 +347,10 @@ class NameErrorTests(GetSuggestionsTests):
     def test_global(self):
         """Should be this_is_a_global_list."""
         typo, sugg = 'this_is_a_global_lis', 'this_is_a_global_list'
+        # just a way to say that this_is_a_global_list is needed in globals
+        this_is_a_global_list
+        self.assertFalse(sugg in locals())
+        self.assertTrue(sugg in globals())
         self.throws(typo, NAMEERROR, "'" + sugg + "' (global)")
         self.runs(sugg)
 
@@ -575,13 +657,16 @@ class AttributeErrorTests(GetSuggestionsTests):
         """Sometimes 'private' members are suggested but it's not ideal."""
         code = 'FoobarClass().{0}'
         method = '__some_private_method'
-        typo, sugg = method, '_FoobarClass' + method
-        bad_code, bad_sugg = format_str(code, typo, sugg)
+        method2 = '_some_semi_private_method'
+        typo, sugg, sugg2 = method, '_FoobarClass' + method, method2
+        bad_code, bad_sugg, good_sugg = format_str(code, typo, sugg, sugg2)
         self.throws(
             bad_code,
             ATTRIBUTEERROR,
-            "'%s' (but it is supposed to be private)" % sugg)
+            ["'%s' (but it is supposed to be private)" % sugg,
+                "'%s'" % sugg2])
         self.runs(bad_sugg)
+        self.runs(good_sugg)
 
     def test_removed_has_key(self):
         """Method has_key is removed from dict."""
