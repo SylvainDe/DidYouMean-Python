@@ -47,3 +47,4 @@ OBJ_DOES_NOT_SUPPORT_RE = r"^\'(\w+)\' object does not support " \
     r"item assignment$"
 CANNOT_CONCAT_RE = r"^cannot concatenate '(\w+)' and '(\w+)' objects$"
 CANT_CONVERT_RE = r"Can't convert '(\w+)' object to (\w+) implicitly$"
+NOT_CALLABLE_RE = r"^'(\w+)' object is not callable$"

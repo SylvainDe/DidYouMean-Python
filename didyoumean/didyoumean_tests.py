@@ -11,7 +11,7 @@ from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     MISSING_POS_ARG_RE, FUTURE_FIRST_RE, FUTURE_FEATURE_NOT_DEF_RE,\
     RESULT_TOO_MANY_ITEMS_RE, UNQUALIFIED_EXEC_RE, IMPORTSTAR_RE,\
     UNSUPPORTED_OP_RE, OBJ_DOES_NOT_SUPPORT_RE, CANNOT_CONCAT_RE,\
-    CANT_CONVERT_RE
+    CANT_CONVERT_RE, NOT_CALLABLE_RE
 from didyoumean_decorator import didyoumean
 from didyoumean_contextmanager import didyoumean_contextmanager
 import unittest2
@@ -152,6 +152,7 @@ UNSUPPORTEDOPERAND = (TypeError, UNSUPPORTED_OP_RE)
 OBJECTDOESNOTSUPPORT = (TypeError, OBJ_DOES_NOT_SUPPORT_RE)
 CANNOTCONCAT = (TypeError, CANNOT_CONCAT_RE)
 CANTCONVERT = (TypeError, CANT_CONVERT_RE)
+NOTCALLABLE = (TypeError, NOT_CALLABLE_RE)
 UNKNOWN_TYPEERROR = (TypeError, None)
 # ImportError for ImportErrorTests
 NOMODULE = (ImportError, NOMODULE_RE)
@@ -897,6 +898,16 @@ class TypeErrorTests(GetSuggestionsTests):
         self.throws(bad_code, OBJECTDOESNOTSUPPORT, [], from_version(version))
         self.runs(good_code)
 
+    def test_not_callable(self):
+        """ Sometimes, one uses parenthesis instead of brackets. """
+        # NICE_TO_HAVE
+        typo, sugg = '(0)', '[0]'
+        for ex in ['[0]', '{0: 0}', '"a"']:
+            self.throws(ex + typo, NOTCALLABLE)
+            self.runs(ex + sugg)
+        for ex in ['1', 'set()']:
+            self.throws(ex + typo, NOTCALLABLE)
+
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""
         self.throws(
@@ -1541,6 +1552,11 @@ class RegexTests(unittest2.TestCase):
         """ Test UNSUPPORTED_OP_RE. """
         msg = "unsupported operand type(s) for +: 'int' and 'str'"
         self.regex_matches(msg, UNSUPPORTED_OP_RE, ('+', 'int', 'str'))
+
+    def test_not_callable(self):
+        """ Test NOT_CALLABLE_RE. """
+        msg = "'list' object is not callable"
+        self.regex_matches(msg, NOT_CALLABLE_RE, ('list',))
 
 
 class GetSuggStringTests(unittest2.TestCase):
