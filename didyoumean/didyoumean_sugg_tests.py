@@ -702,7 +702,8 @@ class TypeErrorTests(GetSuggestionsTests):
                 ('0 in list{0}', ARGNOTITERABLE)]:
             bad_code, good_code = format_str(code, '', '()')
             self.runs(good_code)
-            self.throws(bad_code, error)
+            self.throws(bad_code, error, [], ALL_VERSIONS, 'cython')
+            self.throws(bad_code, UNKNOWN_TYPEERROR, [], ALL_VERSIONS, 'pypy')
 
     def test_set_add(self):
         """ set + set doesn't work. A suggestion would be nice."""
