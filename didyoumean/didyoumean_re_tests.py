@@ -9,7 +9,8 @@ from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     MISSING_POS_ARG_RE, FUTURE_FIRST_RE, FUTURE_FEATURE_NOT_DEF_RE,\
     RESULT_TOO_MANY_ITEMS_RE, UNQUALIFIED_EXEC_RE, IMPORTSTAR_RE,\
     UNSUPPORTED_OP_RE, OBJ_DOES_NOT_SUPPORT_RE, CANNOT_CONCAT_RE,\
-    CANT_CONVERT_RE, NOT_CALLABLE_RE
+    CANT_CONVERT_RE, NOT_CALLABLE_RE, DESCRIPT_REQUIRES_TYPE_RE,\
+    ARG_NOT_ITERABLE_RE
 import unittest2
 import re
 import sys
@@ -321,6 +322,16 @@ class RegexTests(unittest2.TestCase):
         msg = "'list' object is not callable"
         self.regex_matches(msg, NOT_CALLABLE_RE, ('list',))
 
+    def test_descriptor_requires(self):
+        """ Test DESCRIPT_REQUIRES_TYPE_RE ."""
+        msg = "descriptor 'add' requires a 'set' object but received a 'int'"
+        self.regex_matches(
+            msg, DESCRIPT_REQUIRES_TYPE_RE, ('add', 'set', 'int'))
+
+    def test_argument_not_iterable(self):
+        """ Test ARG_NOT_ITERABLE_RE ."""
+        msg = "argument of type 'type' is not iterable"
+        self.regex_matches(msg, ARG_NOT_ITERABLE_RE, ('type',))
 
 if __name__ == '__main__':
     print(sys.version_info)

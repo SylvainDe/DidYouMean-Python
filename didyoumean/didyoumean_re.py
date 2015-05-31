@@ -48,3 +48,6 @@ OBJ_DOES_NOT_SUPPORT_RE = r"^\'(\w+)\' object does not support " \
 CANNOT_CONCAT_RE = r"^cannot concatenate '(\w+)' and '(\w+)' objects$"
 CANT_CONVERT_RE = r"Can't convert '(\w+)' object to (\w+) implicitly$"
 NOT_CALLABLE_RE = r"^'(\w+)' object is not callable$"
+DESCRIPT_REQUIRES_TYPE_RE = r"^descriptor '(\w+)' requires a '(\w+)' " \
+    r"object but received a '(\w+)'$"
+ARG_NOT_ITERABLE_RE = r"^argument of type '(\w+)' is not iterable$"

@@ -11,7 +11,8 @@ from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     MISSING_POS_ARG_RE, FUTURE_FIRST_RE, FUTURE_FEATURE_NOT_DEF_RE,\
     RESULT_TOO_MANY_ITEMS_RE, UNQUALIFIED_EXEC_RE, IMPORTSTAR_RE,\
     UNSUPPORTED_OP_RE, OBJ_DOES_NOT_SUPPORT_RE, CANNOT_CONCAT_RE,\
-    CANT_CONVERT_RE, NOT_CALLABLE_RE
+    CANT_CONVERT_RE, NOT_CALLABLE_RE, DESCRIPT_REQUIRES_TYPE_RE,\
+    ARG_NOT_ITERABLE_RE
 import sys
 import math
 
@@ -150,6 +151,8 @@ OBJECTDOESNOTSUPPORT = (TypeError, OBJ_DOES_NOT_SUPPORT_RE)
 CANNOTCONCAT = (TypeError, CANNOT_CONCAT_RE)
 CANTCONVERT = (TypeError, CANT_CONVERT_RE)
 NOTCALLABLE = (TypeError, NOT_CALLABLE_RE)
+DESCREXPECT = (TypeError, DESCRIPT_REQUIRES_TYPE_RE)
+ARGNOTITERABLE = (TypeError, ARG_NOT_ITERABLE_RE)
 UNKNOWN_TYPEERROR = (TypeError, None)
 # ImportError for ImportErrorTests
 NOMODULE = (ImportError, NOMODULE_RE)
@@ -688,6 +691,18 @@ class TypeErrorTests(GetSuggestionsTests):
         bad_code, good_code = format_str(code, typo, sugg)
         self.throws(bad_code, UNSUBSCRIBTABLE, "'function(value)'")
         self.runs(good_code)
+
+    def test_method_called_on_class(self):
+        # NICE_TO_HAVE
+        """Forgetting parenthesis makes the difference between using an
+        instance and using a type."""
+        for code, error in [
+                ('set{0}.add(0)', DESCREXPECT),
+                ('list{0}.append(0)', DESCREXPECT),
+                ('0 in list{0}', ARGNOTITERABLE)]:
+            bad_code, good_code = format_str(code, '', '()')
+            self.runs(good_code)
+            self.throws(bad_code, error)
 
     def test_set_add(self):
         """ set + set doesn't work. A suggestion would be nice."""
