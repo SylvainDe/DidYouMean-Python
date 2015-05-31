@@ -244,7 +244,7 @@ class InspectionTests(unittest2.TestCase):
         global this_is_a_global_list  # has an effect even at the end
 
     def test_enclosing(self):
-        """ Test with nested functions. To be improved. """
+        """ Test with nested functions. """
         foo = 1
         bar = 2
 
@@ -256,23 +256,66 @@ class InspectionTests(unittest2.TestCase):
             self.name_corresponds_to('bar', [])
             self.name_corresponds_to(
                 'this_is_a_global_list', [([1, 2], 'global')])
+        nested_func(3, 4)
+        self.name_corresponds_to('nested_func', [(nested_func, 'local')])
+        self.name_corresponds_to('foo', [(1, 'local')])
+        self.name_corresponds_to('baz', [])
 
-        def nested_func2():
+    def test_enclosing2(self):
+        """ Test with nested functions. """
+        bar = 2
+
+        def nested_func():
             self.name_corresponds_to('bar', [])
             bar = 3
             self.name_corresponds_to('bar', [(3, 'local')])
 
-        def nested_func3():
+        nested_func()
+        self.name_corresponds_to('nested_func', [(nested_func, 'local')])
+
+    def test_enclosing3(self):
+        """ Test with nested functions. """
+        bar = 2
+
+        def nested_func():
             self.name_corresponds_to('bar', [(2, 'local')])
             tmp = bar
             self.name_corresponds_to('bar', [(2, 'local')])
 
-        nested_func(3, 4)
-        nested_func2()
-        nested_func3()
+        nested_func()
         self.name_corresponds_to('nested_func', [(nested_func, 'local')])
-        self.name_corresponds_to('foo', [(1, 'local')])
-        self.name_corresponds_to('baz', [])
+
+    def test_enclosing4(self):
+        """ Test with nested functions. """
+        this_is_a_global_list = [3, 4]
+
+        def nested_func():
+            self.name_corresponds_to(
+                'this_is_a_global_list', [([1, 2], 'global')])
+
+        nested_func()
+        self.name_corresponds_to(
+            'this_is_a_global_list', [([3, 4], 'local'), ([1, 2], 'global')])
+
+    def test_enclosing5(self):
+        """ Test with nested functions. """
+        bar = 2
+        foo = 3
+
+        def nested_func():
+            bar = 4
+            baz = 5
+            self.name_corresponds_to('foo', [])
+            self.name_corresponds_to('bar', [(4, 'local')])
+
+            def nested_func2():
+                self.name_corresponds_to('foo', [])
+                self.name_corresponds_to('bar', [])
+
+            nested_func2()
+
+        nested_func()
+        self.name_corresponds_to('nested_func', [(nested_func, 'local')])
 
 
 class GetSuggestionsTests(unittest2.TestCase):
@@ -1151,7 +1194,6 @@ class SyntaxErrorTests(GetSuggestionsTests):
     def test_import_star(self):
         """ 'import *' in nested functions. """
         # NICE_TO_HAVE
-        version = (3, 0)
         codes = [
             "def func1():\n\tbar='1'\n\tdef func2():"
             "\n\t\tfrom math import *\n\t\tTrue\n\tfunc2()\nfunc1()",
