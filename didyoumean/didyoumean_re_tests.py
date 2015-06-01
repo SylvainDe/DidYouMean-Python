@@ -330,8 +330,14 @@ class RegexTests(unittest2.TestCase):
 
     def test_argument_not_iterable(self):
         """ Test ARG_NOT_ITERABLE_RE ."""
-        msg = "argument of type 'type' is not iterable"
-        self.regex_matches(msg, ARG_NOT_ITERABLE_RE, ('type',))
+        msgs = [
+            # Python 2.6/2.7/3.2/3.3/3.4/3.5
+            "argument of type 'type' is not iterable",
+            # PyPy/PyPy3
+            "'type' object is not iterable"
+        ]
+        for msg in msgs:
+            self.regex_matches(msg, ARG_NOT_ITERABLE_RE, ('type',))
 
     def test_must_be_called_with_instance(self):
         """ Test MUST_BE_CALLED_WITH_INST_RE ."""
