@@ -323,6 +323,15 @@ class NameErrorTests(GetSuggestionsTests):
         self.runs(good_code)
         self.throws(bad_code, NAMEERROR, "'getenv' from os (not imported)")
 
+    def test_enclosing_scope(self):
+        """Variables from enclosing scope can be used too."""
+        # NICE_TO_HAVE
+        typo, sugg = 'foob', 'foo'
+        code = 'def f():\n\t%s = 0\n\tdef g():\n\t\t{0}\n\tg()\nf()' % sugg
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, NAMEERROR)
+        self.runs(good_code)
+
     def test_no_sugg(self):
         """No suggestion."""
         self.throws('a = ldkjhfnvdlkjhvgfdhgf', NAMEERROR)
