@@ -10,7 +10,7 @@ from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     RESULT_TOO_MANY_ITEMS_RE, UNQUALIFIED_EXEC_RE, IMPORTSTAR_RE,\
     UNSUPPORTED_OP_RE, OBJ_DOES_NOT_SUPPORT_RE, CANNOT_CONCAT_RE,\
     CANT_CONVERT_RE, NOT_CALLABLE_RE, DESCRIPT_REQUIRES_TYPE_RE,\
-    ARG_NOT_ITERABLE_RE
+    ARG_NOT_ITERABLE_RE, MUST_BE_CALLED_WITH_INST_RE
 import unittest2
 import re
 import sys
@@ -332,6 +332,13 @@ class RegexTests(unittest2.TestCase):
         """ Test ARG_NOT_ITERABLE_RE ."""
         msg = "argument of type 'type' is not iterable"
         self.regex_matches(msg, ARG_NOT_ITERABLE_RE, ('type',))
+
+    def test_must_be_called_with_instance(self):
+        """ Test MUST_BE_CALLED_WITH_INST_RE ."""
+        msg = "unbound method add() must be called with set " \
+              "instance as first argument (got int instance instead)"
+        self.regex_matches(
+            msg, MUST_BE_CALLED_WITH_INST_RE, ('add', 'set', 'int'))
 
 if __name__ == '__main__':
     print(sys.version_info)

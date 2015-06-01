@@ -12,7 +12,7 @@ from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     RESULT_TOO_MANY_ITEMS_RE, UNQUALIFIED_EXEC_RE, IMPORTSTAR_RE,\
     UNSUPPORTED_OP_RE, OBJ_DOES_NOT_SUPPORT_RE, CANNOT_CONCAT_RE,\
     CANT_CONVERT_RE, NOT_CALLABLE_RE, DESCRIPT_REQUIRES_TYPE_RE,\
-    ARG_NOT_ITERABLE_RE
+    ARG_NOT_ITERABLE_RE, MUST_BE_CALLED_WITH_INST_RE
 import sys
 import math
 
@@ -153,6 +153,7 @@ CANTCONVERT = (TypeError, CANT_CONVERT_RE)
 NOTCALLABLE = (TypeError, NOT_CALLABLE_RE)
 DESCREXPECT = (TypeError, DESCRIPT_REQUIRES_TYPE_RE)
 ARGNOTITERABLE = (TypeError, ARG_NOT_ITERABLE_RE)
+MUSTCALLWITHINST = (TypeError, MUST_BE_CALLED_WITH_INST_RE)
 UNKNOWN_TYPEERROR = (TypeError, None)
 # ImportError for ImportErrorTests
 NOMODULE = (ImportError, NOMODULE_RE)
@@ -712,7 +713,7 @@ class TypeErrorTests(GetSuggestionsTests):
             bad_code, good_code = format_str(code, '', '()')
             self.runs(good_code)
             self.throws(bad_code, error, [], ALL_VERSIONS, 'cython')
-            self.throws(bad_code, UNKNOWN_TYPEERROR, [], ALL_VERSIONS, 'pypy')
+            self.throws(bad_code, MUSTCALLWITHINST, [], ALL_VERSIONS, 'pypy')
 
     def test_set_add(self):
         """ set + set doesn't work. A suggestion would be nice."""
