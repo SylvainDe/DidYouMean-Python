@@ -706,16 +706,18 @@ class TypeErrorTests(GetSuggestionsTests):
         # NICE_TO_HAVE
         """Forgetting parenthesis makes the difference between using an
         instance and using a type."""
-        wrong_type = (DESCREXPECT, MUSTCALLWITHINST)
-        not_iterable = (ARGNOTITERABLE, ARGNOTITERABLE)
-        for code, (err_cy, err_pyp) in [
+        wrong_type = (DESCREXPECT, MUSTCALLWITHINST, NBARGERROR)
+        not_iterable = (ARGNOTITERABLE, ARGNOTITERABLE, ARGNOTITERABLE)
+        version = (3, 0)
+        for code, (err_cy, err_pyp, err_pyp3) in [
                 ('set{0}.add(0)', wrong_type),
                 ('list{0}.append(0)', wrong_type),
                 ('0 in list{0}', not_iterable)]:
             bad_code, good_code = format_str(code, '', '()')
             self.runs(good_code)
             self.throws(bad_code, err_cy, [], ALL_VERSIONS, 'cython')
-            self.throws(bad_code, err_pyp, [], ALL_VERSIONS, 'pypy')
+            self.throws(bad_code, err_pyp, [], up_to_version(version), 'pypy')
+            self.throws(bad_code, err_pyp3, [], from_version(version), 'pypy')
 
     def test_set_add(self):
         """ set + set doesn't work. A suggestion would be nice."""
