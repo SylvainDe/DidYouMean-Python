@@ -1,7 +1,9 @@
 # -*- coding: utf-8
 """Unit tests for code in didyoumean.py."""
 from didyoumean import get_suggestion_string, add_string_to_exception,\
-    get_objects_in_frame
+    get_objects_in_frame, get_subclasses, get_types_for_str,\
+    get_types_for_str_using_inheritance,\
+    get_types_for_str_using_names
 from didyoumean_common_tests import TestWithStringFunction,\
     get_exception
 import unittest2
@@ -11,7 +13,7 @@ import sys
 global_var = 42  # Please don't change the value
 
 
-class InspectionTests(unittest2.TestCase):
+class GetObjectInFrameTests(unittest2.TestCase):
     """ Class for tests related to frame/backtrace/etc inspection.
 
     Tested functions are : get_objects_in_frame."""
@@ -42,6 +44,11 @@ class InspectionTests(unittest2.TestCase):
         name = builtin.__name__
         self.name_corresponds_to(name, [(builtin, 'builtin')])
 
+    def test_builtin2(self):
+        """ Test with builtin. """
+        name = 'True'
+        self.name_corresponds_to(name, [(bool(1), 'builtin')])
+
     def test_global(self):
         """ Test with global. """
         name = 'global_var'
@@ -67,6 +74,24 @@ class InspectionTests(unittest2.TestCase):
         global_var = 42  # value is unchanged
         self.name_corresponds_to(name, [(42, 'global')])
         global global_var  # has an effect even at the end
+
+    def test_del_local(self):
+        """ Test with deleted local. """
+        name = 'toto'
+        self.name_corresponds_to(name, [])
+        toto = 0
+        self.name_corresponds_to(name, [(0, 'local')])
+        del toto
+        self.name_corresponds_to(name, [])
+
+    def test_del_local_hiding_global(self):
+        """ Test with deleted local hiding a global. """
+        name = 'global_var'
+        self.name_corresponds_to(name, [(42, 'global')])
+        global_var = 1
+        self.name_corresponds_to(name, [(1, 'local'), (42, 'global')])
+        del global_var
+        self.name_corresponds_to(name, [(42, 'global')])
 
     def test_enclosing(self):
         """ Test with nested functions. """
@@ -141,6 +166,123 @@ class InspectionTests(unittest2.TestCase):
         self.name_corresponds_to('nested_func', [(nested_func, 'local')])
 
 
+class OldStyleBaseClass():
+    """ Dummy class for testing purposes."""
+    pass
+
+
+class OldStyleDerivedClass(OldStyleBaseClass):
+    """ Dummy class for testing purposes."""
+    pass
+
+
+class NewStyleBaseClass(object):
+    """ Dummy class for testing purposes."""
+    pass
+
+
+class NewStyleDerivedClass(NewStyleBaseClass):
+    """ Dummy class for testing purposes."""
+    pass
+
+
+def a_function():
+    """ Dummy function for testing purposes."""
+    pass
+
+def a_generator():
+    """ Dummy generator for testing purposes."""
+    yield 1
+
+
+NEW_STYLE_CLASSES = [bool, int, float, str, tuple, list, set, dict, object,
+                     NewStyleBaseClass, NewStyleDerivedClass,
+                     type(a_function), type(a_generator),
+                     type(len), type(None), type(type(None)),
+                     type(object), type(sys), type(range),
+                     type(NewStyleBaseClass), type(NewStyleDerivedClass),
+                     type(OldStyleBaseClass), type(OldStyleDerivedClass)]
+OLD_STYLE_CLASSES = [OldStyleBaseClass, OldStyleDerivedClass]
+CLASSES = [(c, True) for c in NEW_STYLE_CLASSES] + \
+    [(c, False) for c in OLD_STYLE_CLASSES]
+
+
+class GetTypesForStrTests(unittest2.TestCase):
+    """Tests about get_types_for_str."""
+
+    def test_get_subclasses(self):
+        """Tests for the get_subclasses function.
+
+        All types are found when looking for subclasses of object, except
+        for the old style classes on Python 2.x."""
+        all_classes = get_subclasses(object)
+        old_class_support = sys.version_info >= (3, 0)
+        for typ, new in CLASSES:
+            self.assertTrue(typ in get_subclasses(typ))
+            if new or old_class_support:
+                self.assertTrue(typ in all_classes)
+            else:
+                self.assertFalse(typ in all_classes)
+        self.assertFalse(0 in all_classes)
+
+    def test_get_types_for_str_using_inheritance(self):
+        """Tests for the get_types_for_str_using_inheritance function.
+
+        All types are found when looking for subclasses of object, except
+        for the old style classes on Python 2.x.
+
+        Also, it seems like the returns is (almost) always precise as the
+        returned set contains only the expected type and nothing else."""
+        old_class_support = sys.version_info >= (3, 0)
+        for typ, new in CLASSES:
+            types = get_types_for_str_using_inheritance(typ.__name__)
+            if new or old_class_support:
+                self.assertEqual(types, set([typ]))
+            else:
+                self.assertEqual(types, set())
+
+        self.assertFalse(get_types_for_str_using_inheritance('faketype'))
+
+    def get_types_using_names(self, type_str):
+        """Wrapper around the get_types_using_names function."""
+        return get_types_for_str_using_names(type_str, sys._getframe(1))
+
+    def test_get_types_for_str_using_names(self):
+        """Tests for the get_types_using_names function.
+
+        Old style classes are retrieved even on Python 2.x.
+        However, a few builtin types are not in the names so can't be found.
+        """
+        for typ in OLD_STYLE_CLASSES:
+            types = self.get_types_using_names(typ.__name__)
+            self.assertEqual(types, set([typ]))
+        for n in ['generator', 'module', 'NoneType', 'function', 'faketype']:
+            self.assertEqual(self.get_types_using_names(n), set())
+
+    def get_types_for_str(self, type_str):
+        """Wrapper around the get_types_for_str function."""
+        return get_types_for_str(type_str, sys._getframe(1))
+
+    def test_get_types_for_str(self):
+        """Tests for the get_types_for_str.
+
+        Checks that for all tested types, the proper type is retrieved."""
+        for typ, _ in CLASSES:
+            types = self.get_types_for_str(typ.__name__)
+            self.assertEqual(types, set([typ]))
+        self.assertEqual(self.get_types_for_str('faketype'), set())
+
+    def test_get_types_for_str2(self):
+        """Tests for the get_types_for_str.
+
+        Checks that for all tested strings, a single type is retrived.
+        This is useful to ensure that we are using the right names."""
+        for n in ['generator', 'module', 'NoneType', 'function',
+                  'NewStyleBaseClass', 'NewStyleDerivedClass',
+                  'OldStyleBaseClass', 'OldStyleDerivedClass']:
+            self.assertEqual(len(self.get_types_for_str(n)), 1)
+
+
 class GetSuggStringTests(unittest2.TestCase):
     """ Tests about get_suggestion_string. """
 
@@ -150,7 +292,6 @@ class GetSuggStringTests(unittest2.TestCase):
 
     def test_one_sugg(self):
         """ Single suggestion. """
-        self.assertEqual(get_suggestion_string(()), "")
         self.assertEqual(get_suggestion_string(('0',)), ". Did you mean 0?")
 
     def test_same_sugg(self):

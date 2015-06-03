@@ -619,7 +619,7 @@ class AttributeErrorTests(GetSuggestionsTests):
         """Method xreadlines is removed."""
         # NICE_TO_HAVE
         code = "import os\nwith open(os.path.realpath(__file__)) as f:" \
-            "\n\tfor l in f.xreadlines():\n\t\tpass"
+            "\n\tf.xreadlines()"
         version = (3, 0)
         self.runs(code, up_to_version(version))
         self.throws(code, ATTRIBUTEERROR, [], from_version(version))
@@ -629,17 +629,17 @@ class AttributeErrorTests(GetSuggestionsTests):
         # NICE_TO_HAVE
         version = (3, 0)
         code = func_gen() + 'some_func.{0}'
-        attributes = [('func_name', '__name__'),
-                      ('func_doc', '__doc__'),
-                      ('func_defaults', '__defaults__'),
-                      ('func_dict', '__dict__'),
-                      ('func_closure', '__closure__'),
-                      ('func_globals', '__globals__'),
-                      ('func_code', '__code__')]
-        for (old_att, new_att) in attributes:
+        attributes = [('func_name', '__name__', []),
+                      ('func_doc', '__doc__', []),
+                      ('func_defaults', '__defaults__', ["'__defaults__'"]),
+                      ('func_dict', '__dict__', []),
+                      ('func_closure', '__closure__', []),
+                      ('func_globals', '__globals__', []),
+                      ('func_code', '__code__', [])]
+        for (old_att, new_att, sugg) in attributes:
             old_code, new_code = format_str(code, old_att, new_att)
             self.runs(old_code, up_to_version(version))
-            self.throws(old_code, ATTRIBUTEERROR, [], from_version(version))
+            self.throws(old_code, ATTRIBUTEERROR, sugg, from_version(version))
             self.runs(new_code)
 
     def test_removed_method_attributes(self):
@@ -647,13 +647,13 @@ class AttributeErrorTests(GetSuggestionsTests):
         # NICE_TO_HAVE
         version = (3, 0)
         code = 'FoobarClass().some_method.{0}'
-        attributes = [('im_func', '__func__'),
-                      ('im_self', '__self__'),
-                      ('im_class', '__self__.__class__')]
-        for (old_att, new_att) in attributes:
+        attributes = [('im_func', '__func__', []),
+                      ('im_self', '__self__', []),
+                      ('im_class', '__self__.__class__', ["'__class__'"])]
+        for (old_att, new_att, sugg) in attributes:
             old_code, new_code = format_str(code, old_att, new_att)
             self.runs(old_code, up_to_version(version))
-            self.throws(old_code, ATTRIBUTEERROR, [], from_version(version))
+            self.throws(old_code, ATTRIBUTEERROR, sugg, from_version(version))
             self.runs(new_code)
 
     def test_join(self):

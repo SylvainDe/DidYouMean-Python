@@ -4,11 +4,17 @@ import keyword
 import difflib
 import re
 import itertools
+import inspect
 from collections import namedtuple
 from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     ATTRIBUTEERROR_RE, UNSUBSCRIBTABLE_RE, UNEXPECTED_KEYWORDARG_RE,\
     NOMODULE_RE, CANNOTIMPORT_RE, INVALID_COMP_RE, OUTSIDE_FUNCTION_RE,\
-    FUTURE_FEATURE_NOT_DEF_RE, RESULT_TOO_MANY_ITEMS_RE, ZERO_LEN_FIELD_RE
+    FUTURE_FEATURE_NOT_DEF_RE, RESULT_TOO_MANY_ITEMS_RE, ZERO_LEN_FIELD_RE, \
+    NB_ARG_RE, MISSING_POS_ARG_RE, UNHASHABLE_RE, UNSUPPORTED_OP_RE, \
+    OBJ_DOES_NOT_SUPPORT_RE, CANNOT_CONCAT_RE, CANT_CONVERT_RE, \
+    NOT_CALLABLE_RE, DESCRIPT_REQUIRES_TYPE_RE, ARG_NOT_ITERABLE_RE, \
+    MUST_BE_CALLED_WITH_INST_RE
+
 
 #: Standard modules we'll consider while searching for undefined values
 # To be completed
@@ -40,6 +46,59 @@ def get_suggestion_string(sugg):
 
 
 # Helper functions for code introspection
+def get_subclasses(klass):
+    """Get the set of direct/indirect subclasses of a class
+    including itself."""
+    try:
+        subclasses = set(klass.__subclasses__())
+    except TypeError:
+        subclasses = set(klass.__subclasses__(klass))
+    except AttributeError:
+        subclasses = set()
+    for derived in set(subclasses):
+        subclasses.update(get_subclasses(derived))
+    subclasses.add(klass)
+    return subclasses
+
+
+def get_types_for_str_using_inheritance(type_str):
+    """Get types corresponding to a string type_str.
+
+    This goes through all defined classes. Therefore, it :
+     - does not include old style classes on Python 2.x
+     - is to be called as late as possible to ensure wanted type is defined."""
+    return set(c for c in get_subclasses(object) if c.__name__ == type_str)
+
+
+def get_types_for_str_using_names(type_str, frame):
+    """Get types corresponding to a string type_str using names in frame.
+
+    This does not find everything as builtin types for instance may not
+    be in the names."""
+    return set(obj
+               for obj, _ in get_objects_in_frame(frame).get(type_str, [])
+               if inspect.isclass(obj) and obj.__name__ == type_str)
+
+
+def get_types_for_str(type_str, frame):
+    """Get a list of candidate types for a string name. Returns types are
+    such that type.__name__ == type_str as __name__ as this seems to be the
+    name used in error messages.
+
+    Lookup uses both class hierarchy and name lookup as the first may miss
+    old style classes on Python 2 and second does find them.
+    Just like get_types_for_str_using_inheritance, this needs to be called
+    as late as possible but because it requires a frame, there is not much
+    choice anyway."""
+    res = set.union(
+        get_types_for_str_using_inheritance(type_str),
+        get_types_for_str_using_names(type_str, frame))
+    assert all(inspect.isclass(t) and t.__name__ == type_str for t in res)
+    if len(res) != 1:
+        print(type_str, res)
+    return res
+
+
 def merge_dict(*dicts):
     """Merge dicts and return a dictionnary mapping key to list of values.
     Order of the values corresponds to the order of the original dicts."""
@@ -185,20 +244,22 @@ def get_attribute_error_sugg(value, frame):
 
 def get_attribute_suggestions(type_str, attribute, frame):
     """Get the suggestions closest to the attribute name for a given type."""
-    objs = get_objects_in_frame(frame)
+    types = get_types_for_str(type_str, frame)
+    attributes = set(a for t in types for a in dir(t))
     if type_str == 'module':
-        # For module, we want to get the actual name of the module
+        # For module, we manage to get the corresponding 'module' type
+        # but the type doesn't bring much information about its content.
+        # A hacky way to do so is to assume that the exception was something
+        # like 'module_name.attribute' so that we can actually find the module
+        # based on the name. Eventually, we check that the found object is a
+        # module indeed. This is not failproof but it brings a whole lot of
+        # interesting suggestions and the (minimal) risk is to have invalid
+        # suggestions.
         module_name = frame.f_code.co_names[0]
+        objs = get_objects_in_frame(frame)
         mod = objs[module_name][0].obj
-        attributes = set(dir(mod))
-    elif type_str in objs:
-        # it kind of sucks that we retrieve the representation of the
-        # type (as in 'str(type(whatever))' which might not be a known
-        # name.
-        obj = objs[type_str][0].obj
-        attributes = set(dir(obj))
-    else:  # could/should be more precise
-        attributes = set()
+        if set([type(mod)]) == types:
+            attributes = set(dir(mod))
 
     return itertools.chain(
         suggest_attribute_as_builtin(attribute, type_str, frame),
@@ -233,8 +294,8 @@ def suggest_attribute_as_typo(attribute, attributes):
     """Suggest the attribute could be a typo.
     Example: 'a.do_baf()' -> 'a.do_bar()'."""
     for n in get_close_matches(attribute, attributes):
-        # This is somewhat approximative.
-        if n.startswith('_') and '__' in n:
+        # Handle Private name mangling
+        if n.startswith('_') and '__' in n and not n.endswith('__'):
             yield quote(n) + ' (but it is supposed to be private)'
         else:
             yield quote(n)
@@ -308,6 +369,61 @@ def get_type_error_sugg(value, frame):
             args = func.__code__.co_varnames
             for n in get_close_matches(kw_arg, args):
                 yield quote(n)
+
+    match = re.match(NB_ARG_RE, error_msg)
+    if match:
+        func_name, = match.groups()
+    match = re.match(MISSING_POS_ARG_RE, error_msg)
+    if match:
+        func_name, = match.groups()
+    match = re.match(UNHASHABLE_RE, error_msg)
+    if match:
+        type_str, = match.groups()
+        types = get_types_for_str(type_str, frame)
+    match = re.match(UNSUBSCRIBTABLE_RE, error_msg)
+    if match:
+        type_str, = match.groups()
+        types = get_types_for_str(type_str, frame)
+    match = re.match(UNEXPECTED_KEYWORDARG_RE, error_msg)
+    if match:
+        func_name, kw_arg = match.groups()
+    match = re.match(UNSUPPORTED_OP_RE, error_msg)
+    if match:
+        op, type_str1, type_str2 = match.groups()
+        types1 = get_types_for_str(type_str1, frame)
+        types2 = get_types_for_str(type_str2, frame)
+    match = re.match(OBJ_DOES_NOT_SUPPORT_RE, error_msg)
+    if match:
+        type_str, = match.groups()
+        types = get_types_for_str(type_str, frame)
+    match = re.match(CANNOT_CONCAT_RE, error_msg)
+    if match:
+        type_str1, type_str2 = match.groups()
+        types1 = get_types_for_str(type_str1, frame)
+        types2 = get_types_for_str(type_str2, frame)
+    match = re.match(CANT_CONVERT_RE, error_msg)
+    if match:
+        type_str1, type_str2 = match.groups()
+        types1 = get_types_for_str(type_str1, frame)
+        types2 = get_types_for_str(type_str2, frame)
+    match = re.match(NOT_CALLABLE_RE, error_msg)
+    if match:
+        type_str, = match.groups()
+        types = get_types_for_str(type_str, frame)
+    match = re.match(DESCRIPT_REQUIRES_TYPE_RE, error_msg)
+    if match:
+        op, type_str1, type_str2 = match.groups()
+        types1 = get_types_for_str(type_str1, frame)
+        types2 = get_types_for_str(type_str2, frame)
+    match = re.match(ARG_NOT_ITERABLE_RE, error_msg)
+    if match:
+        type_str, = match.groups()
+        types = get_types_for_str(type_str, frame)
+    match = re.match(MUST_BE_CALLED_WITH_INST_RE, error_msg)
+    if match:
+        op, type_str1, type_str2 = match.groups()
+        types1 = get_types_for_str(type_str1, frame)
+        types2 = get_types_for_str(type_str2, frame)
 
 
 # Functions related to ValueError
