@@ -17,6 +17,26 @@ def get_exception(code):
     assert False, "No exception thrown"
 
 
+class CommonTestOldStyleClass:
+    """ Dummy class for testing purposes."""
+    pass
+
+
+class CommonTestOldStyleClass2:
+    """ Dummy class for testing purposes."""
+    pass
+
+
+class CommonTestNewStyleClass(object):
+    """ Dummy class for testing purposes."""
+    pass
+
+
+class CommonTestNewStyleClass2(object):
+    """ Dummy class for testing purposes."""
+    pass
+
+
 class TestWithStringFunction(object):
     """ Unit test class with an helper method. """
 

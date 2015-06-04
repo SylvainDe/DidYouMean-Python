@@ -61,41 +61,43 @@ def get_subclasses(klass):
     return subclasses
 
 
-def get_types_for_str_using_inheritance(type_str):
-    """Get types corresponding to a string type_str.
+def get_types_for_str_using_inheritance(name):
+    """Get types corresponding to a string name.
 
     This goes through all defined classes. Therefore, it :
      - does not include old style classes on Python 2.x
      - is to be called as late as possible to ensure wanted type is defined."""
-    return set(c for c in get_subclasses(object) if c.__name__ == type_str)
+    return set(c for c in get_subclasses(object) if c.__name__ == name)
 
 
-def get_types_for_str_using_names(type_str, frame):
-    """Get types corresponding to a string type_str using names in frame.
+def get_types_for_str_using_names(name, frame):
+    """Get types corresponding to a string name using names in frame.
 
     This does not find everything as builtin types for instance may not
     be in the names."""
     return set(obj
-               for obj, _ in get_objects_in_frame(frame).get(type_str, [])
-               if inspect.isclass(obj) and obj.__name__ == type_str)
+               for obj, _ in get_objects_in_frame(frame).get(name, [])
+               if inspect.isclass(obj) and obj.__name__ == name)
 
 
-def get_types_for_str(type_str, frame):
-    """Get a list of candidate types for a string name. Returns types are
-    such that type.__name__ == type_str as __name__ as this seems to be the
-    name used in error messages.
+def get_types_for_str(tp_name, frame):
+    """Get a list of candidate types from a string.
+    String corresponds to the tp_name as described in :
+    https://docs.python.org/2/c-api/typeobj.html#c.PyTypeObject.tp_name
+    as it is the name used in exception messages. It may include full path
+    with module, subpackage, package but this is just removed in current
+    implementation to search only based on the type name.
 
     Lookup uses both class hierarchy and name lookup as the first may miss
     old style classes on Python 2 and second does find them.
     Just like get_types_for_str_using_inheritance, this needs to be called
     as late as possible but because it requires a frame, there is not much
     choice anyway."""
+    name = tp_name.split('.')[-1]
     res = set.union(
-        get_types_for_str_using_inheritance(type_str),
-        get_types_for_str_using_names(type_str, frame))
-    assert all(inspect.isclass(t) and t.__name__ == type_str for t in res)
-    if len(res) != 1:
-        print(type_str, res)
+        get_types_for_str_using_inheritance(name),
+        get_types_for_str_using_names(name, frame))
+    assert all(inspect.isclass(t) and t.__name__ == name for t in res)
     return res
 
 
@@ -356,20 +358,19 @@ def get_type_error_sugg(value, frame):
     assert len(value.args) == 1
     error_msg, = value.args
     match = re.match(UNSUBSCRIBTABLE_RE, error_msg)
-    if match:  # It could be cool to extract relevant info from the trace
+    if match:
         type_str, = match.groups()
-        if type_str == 'function':
+        types = get_types_for_str(type_str, frame)
+        if any(hasattr(t, '__call__') for t in types):
             yield quote(type_str + '(value)')
-    else:
-        match = re.match(UNEXPECTED_KEYWORDARG_RE, error_msg)
-        if match:
-            func_name, kw_arg = match.groups()
-            objs = get_objects_in_frame(frame)
-            func = objs[func_name][0].obj
-            args = func.__code__.co_varnames
-            for n in get_close_matches(kw_arg, args):
-                yield quote(n)
-
+    match = re.match(UNEXPECTED_KEYWORDARG_RE, error_msg)
+    if match:
+        func_name, kw_arg = match.groups()
+        objs = get_objects_in_frame(frame)
+        func = objs[func_name][0].obj
+        args = func.__code__.co_varnames
+        for n in get_close_matches(kw_arg, args):
+            yield quote(n)
     match = re.match(NB_ARG_RE, error_msg)
     if match:
         func_name, = match.groups()
@@ -379,51 +380,44 @@ def get_type_error_sugg(value, frame):
     match = re.match(UNHASHABLE_RE, error_msg)
     if match:
         type_str, = match.groups()
-        types = get_types_for_str(type_str, frame)
-    match = re.match(UNSUBSCRIBTABLE_RE, error_msg)
-    if match:
-        type_str, = match.groups()
-        types = get_types_for_str(type_str, frame)
-    match = re.match(UNEXPECTED_KEYWORDARG_RE, error_msg)
-    if match:
-        func_name, kw_arg = match.groups()
+        _ = get_types_for_str(type_str, frame)
     match = re.match(UNSUPPORTED_OP_RE, error_msg)
     if match:
         op, type_str1, type_str2 = match.groups()
-        types1 = get_types_for_str(type_str1, frame)
-        types2 = get_types_for_str(type_str2, frame)
+        _ = get_types_for_str(type_str1, frame)
+        _ = get_types_for_str(type_str2, frame)
     match = re.match(OBJ_DOES_NOT_SUPPORT_RE, error_msg)
     if match:
         type_str, = match.groups()
-        types = get_types_for_str(type_str, frame)
+        _ = get_types_for_str(type_str, frame)
     match = re.match(CANNOT_CONCAT_RE, error_msg)
     if match:
         type_str1, type_str2 = match.groups()
-        types1 = get_types_for_str(type_str1, frame)
-        types2 = get_types_for_str(type_str2, frame)
+        _ = get_types_for_str(type_str1, frame)
+        _ = get_types_for_str(type_str2, frame)
     match = re.match(CANT_CONVERT_RE, error_msg)
     if match:
         type_str1, type_str2 = match.groups()
-        types1 = get_types_for_str(type_str1, frame)
-        types2 = get_types_for_str(type_str2, frame)
+        _ = get_types_for_str(type_str1, frame)
+        _ = get_types_for_str(type_str2, frame)
     match = re.match(NOT_CALLABLE_RE, error_msg)
     if match:
         type_str, = match.groups()
-        types = get_types_for_str(type_str, frame)
+        _ = get_types_for_str(type_str, frame)
     match = re.match(DESCRIPT_REQUIRES_TYPE_RE, error_msg)
     if match:
-        op, type_str1, type_str2 = match.groups()
-        types1 = get_types_for_str(type_str1, frame)
-        types2 = get_types_for_str(type_str2, frame)
+        _, expect_type, received_type = match.groups()
+        _ = get_types_for_str(expect_type, frame)
+        _ = get_types_for_str(received_type, frame)
     match = re.match(ARG_NOT_ITERABLE_RE, error_msg)
     if match:
         type_str, = match.groups()
-        types = get_types_for_str(type_str, frame)
+        _ = get_types_for_str(type_str, frame)
     match = re.match(MUST_BE_CALLED_WITH_INST_RE, error_msg)
     if match:
-        op, type_str1, type_str2 = match.groups()
-        types1 = get_types_for_str(type_str1, frame)
-        types2 = get_types_for_str(type_str2, frame)
+        _, type_str1, type_str2 = match.groups()
+        _ = get_types_for_str(type_str1, frame)
+        _ = get_types_for_str(type_str2, frame)
 
 
 # Functions related to ValueError

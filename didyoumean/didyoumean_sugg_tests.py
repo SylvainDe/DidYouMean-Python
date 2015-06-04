@@ -619,10 +619,18 @@ class AttributeErrorTests(GetSuggestionsTests):
         """Method xreadlines is removed."""
         # NICE_TO_HAVE
         code = "import os\nwith open(os.path.realpath(__file__)) as f:" \
-            "\n\tf.xreadlines()"
+            "\n\tf.{0}"
+        old, sugg1, sugg2 = 'xreadlines', 'readline', 'readlines'
+        old_code, new_code1, new_code2 = format_str(code, old, sugg1, sugg2)
         version = (3, 0)
-        self.runs(code, up_to_version(version))
-        self.throws(code, ATTRIBUTEERROR, [], from_version(version))
+        self.runs(old_code, up_to_version(version))
+        self.throws(
+            old_code,
+            ATTRIBUTEERROR,
+            ["'" + sugg1 + "'", "'" + sugg2 + "'", "'writelines'"],
+            from_version(version))
+        self.runs(new_code1)
+        self.runs(new_code2)
 
     def test_removed_function_attributes(self):
         """Some functions attributes are removed."""

@@ -4,8 +4,9 @@ from didyoumean import get_suggestion_string, add_string_to_exception,\
     get_objects_in_frame, get_subclasses, get_types_for_str,\
     get_types_for_str_using_inheritance,\
     get_types_for_str_using_names
-from didyoumean_common_tests import TestWithStringFunction,\
-    get_exception
+import didyoumean_common_tests as common
+from didyoumean_common_tests import CommonTestOldStyleClass2,\
+    CommonTestNewStyleClass2  # to have these 2 in defined names
 import unittest2
 import sys
 
@@ -166,7 +167,7 @@ class GetObjectInFrameTests(unittest2.TestCase):
         self.name_corresponds_to('nested_func', [(nested_func, 'local')])
 
 
-class OldStyleBaseClass():
+class OldStyleBaseClass:
     """ Dummy class for testing purposes."""
     pass
 
@@ -190,6 +191,7 @@ def a_function():
     """ Dummy function for testing purposes."""
     pass
 
+
 def a_generator():
     """ Dummy generator for testing purposes."""
     yield 1
@@ -197,14 +199,18 @@ def a_generator():
 
 NEW_STYLE_CLASSES = [bool, int, float, str, tuple, list, set, dict, object,
                      NewStyleBaseClass, NewStyleDerivedClass,
+                     common.CommonTestNewStyleClass,
+                     common.CommonTestNewStyleClass2,
                      type(a_function), type(a_generator),
                      type(len), type(None), type(type(None)),
                      type(object), type(sys), type(range),
                      type(NewStyleBaseClass), type(NewStyleDerivedClass),
                      type(OldStyleBaseClass), type(OldStyleDerivedClass)]
-OLD_STYLE_CLASSES = [OldStyleBaseClass, OldStyleDerivedClass]
+OLD_STYLE_CLASSES = [OldStyleBaseClass, OldStyleDerivedClass,
+    CommonTestOldStyleClass2]
 CLASSES = [(c, True) for c in NEW_STYLE_CLASSES] + \
     [(c, False) for c in OLD_STYLE_CLASSES]
+OLD_CLASS_SUPPORT = sys.version_info >= (3, 0)
 
 
 class GetTypesForStrTests(unittest2.TestCase):
@@ -216,10 +222,9 @@ class GetTypesForStrTests(unittest2.TestCase):
         All types are found when looking for subclasses of object, except
         for the old style classes on Python 2.x."""
         all_classes = get_subclasses(object)
-        old_class_support = sys.version_info >= (3, 0)
         for typ, new in CLASSES:
             self.assertTrue(typ in get_subclasses(typ))
-            if new or old_class_support:
+            if new or OLD_CLASS_SUPPORT:
                 self.assertTrue(typ in all_classes)
             else:
                 self.assertFalse(typ in all_classes)
@@ -233,10 +238,9 @@ class GetTypesForStrTests(unittest2.TestCase):
 
         Also, it seems like the returns is (almost) always precise as the
         returned set contains only the expected type and nothing else."""
-        old_class_support = sys.version_info >= (3, 0)
         for typ, new in CLASSES:
             types = get_types_for_str_using_inheritance(typ.__name__)
-            if new or old_class_support:
+            if new or OLD_CLASS_SUPPORT:
                 self.assertEqual(types, set([typ]))
             else:
                 self.assertEqual(types, set())
@@ -270,6 +274,7 @@ class GetTypesForStrTests(unittest2.TestCase):
         for typ, _ in CLASSES:
             types = self.get_types_for_str(typ.__name__)
             self.assertEqual(types, set([typ]))
+
         self.assertEqual(self.get_types_for_str('faketype'), set())
 
     def test_get_types_for_str2(self):
@@ -281,6 +286,19 @@ class GetTypesForStrTests(unittest2.TestCase):
                   'NewStyleBaseClass', 'NewStyleDerivedClass',
                   'OldStyleBaseClass', 'OldStyleDerivedClass']:
             self.assertEqual(len(self.get_types_for_str(n)), 1)
+
+    def test_old_class_not_in_namespace(self):
+        # FIXME: At the moment, CommonTestOldStyleClass is not found
+        # because it is not in the namespace.
+        typ = common.CommonTestOldStyleClass
+        expect_with_inherit = set([typ]) if OLD_CLASS_SUPPORT else set()
+        name = typ.__name__
+        types1 = get_types_for_str_using_inheritance(name)
+        types2 = self.get_types_using_names(name)
+        types3 = self.get_types_for_str(name)
+        self.assertEqual(types1, expect_with_inherit)
+        self.assertEqual(types2, set())
+        self.assertEqual(types3, expect_with_inherit)
 
 
 class GetSuggStringTests(unittest2.TestCase):
@@ -305,13 +323,14 @@ class GetSuggStringTests(unittest2.TestCase):
             get_suggestion_string(('0', '1')), ". Did you mean 0, 1?")
 
 
-class AddStringToExcTest(unittest2.TestCase, TestWithStringFunction):
+class AddStringToExcTest(
+        unittest2.TestCase, common.TestWithStringFunction):
     """ Tests about add_string_to_exception. """
 
     def get_exc_as_str_before_and_after(self, code, type_arg, string):
         """ Retrieve string representations of exceptions raised by code
         before and after calling add_string_to_exception. """
-        type_, value, _ = get_exception(code)
+        type_, value, _ = common.get_exception(code)
         self.assertEqual(type_arg, type_)
         str1, repr1 = str(value), repr(value)
         add_string_to_exception(value, string)
