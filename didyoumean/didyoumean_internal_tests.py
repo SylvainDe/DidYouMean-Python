@@ -207,7 +207,7 @@ NEW_STYLE_CLASSES = [bool, int, float, str, tuple, list, set, dict, object,
                      type(NewStyleBaseClass), type(NewStyleDerivedClass),
                      type(OldStyleBaseClass), type(OldStyleDerivedClass)]
 OLD_STYLE_CLASSES = [OldStyleBaseClass, OldStyleDerivedClass,
-    CommonTestOldStyleClass2]
+                     CommonTestOldStyleClass2]
 CLASSES = [(c, True) for c in NEW_STYLE_CLASSES] + \
     [(c, False) for c in OLD_STYLE_CLASSES]
 OLD_CLASS_SUPPORT = sys.version_info >= (3, 0)
