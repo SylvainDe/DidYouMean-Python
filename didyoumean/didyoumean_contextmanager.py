@@ -6,12 +6,14 @@ from didyoumean import add_suggestions_to_exception
 class didyoumean_contextmanager(object):
     """ Context manager to add suggestions to exceptions. """
 
-    def __enter__(self):
+    @staticmethod
+    def __enter__():
         """ Method called when entering the context manager.
         Not relevant here (does not do anything). """
         pass
 
-    def __exit__(self, type_, value, traceback):
+    @staticmethod
+    def __exit__(type_, value, traceback):
         """ Method called when exiting the context manager.
         Add suggestions to the exception (if any). """
         assert (type_ is None) == (value is None)

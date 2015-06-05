@@ -12,6 +12,8 @@ DidYouMean-Python
 
 [![Code Climate](https://codeclimate.com/github/SylvainDe/DidYouMean-Python/badges/gpa.svg)](https://codeclimate.com/github/SylvainDe/DidYouMean-Python)
 
+[![Code Issues](http://www.quantifiedcode.com/api/v1/project/34c9b3f27db24a1ba944fcf3d69a9d2a/badge.svg)](http://www.quantifiedcode.com/app/project/34c9b3f27db24a1ba944fcf3d69a9d2a)
+
 Logic to have various kind of suggestions in case of errors (NameError, AttributeError, ImportError, TypeError, ValueError, SyntaxError, MemoryError, OverflowError). Can be used via a simple import or a dedicated decorator (and other ways to be defined soon).
 
 Inspired by "Did you mean" for Ruby ([Explanation](http://www.yukinishijima.net/2014/10/21/did-you-mean-experience-in-ruby.html), [Github Page](https://github.com/yuki24/did_you_mean)), this is a simple implementation for/in Python. I wanted to see if I could mess around and create something similar in Python and it seems to be possible.
@@ -46,11 +48,9 @@ my_func(1, 2)
 #>>> After: NameError("global name 'foob' is not defined. Did you mean 'foo' (local)?",)
 ```
 ```python
-def my_func(lst):
-	return leng(foo)
-my_func([0])
-#>>> Before: NameError("global name 'leng' is not defined",)
-#>>> After: NameError("global name 'leng' is not defined. Did you mean 'len' (builtin)?",)
+leng([0])
+#>>> Before: NameError("name 'leng' is not defined",)
+#>>> After: NameError("name 'leng' is not defined. Did you mean 'len' (builtin)?",)
 ```
 ```python
 import math
@@ -59,11 +59,9 @@ maths.pi
 #>>> After: NameError("name 'maths' is not defined. Did you mean 'math' (local)?",)
 ```
 ```python
-def my_func():
-	passs
-my_func()
-#>>> Before: NameError("global name 'passs' is not defined",)
-#>>> After: NameError("global name 'passs' is not defined. Did you mean 'pass' (keyword)?",)
+passs
+#>>> Before: NameError("name 'passs' is not defined",)
+#>>> After: NameError("name 'passs' is not defined. Did you mean 'pass' (keyword)?",)
 ```
 ```python
 def my_func():
