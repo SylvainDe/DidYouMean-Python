@@ -733,15 +733,31 @@ class TypeErrorTests(GetSuggestionsTests):
             self.throws(bad_code, err_pyp, [], up_to_version(version), 'pypy')
             self.throws(bad_code, err_pyp3, [], from_version(version), 'pypy')
 
-    def test_set_add(self):
-        """ set + set doesn't work. A suggestion would be nice."""
+    def test_set_operations(self):
+        """ +, +=, etc doesn't work on sets. A suggestion would be nice."""
         # NICE_TO_HAVE
-        code1 = 'set() + set()'
-        code2 = 'set() | set()'
-        code3 = 'set().union(set())'
-        self.throws(code1, UNSUPPORTEDOPERAND)
+        typo1 = 'set() + set()'
+        typo2 = 's = set()\ns += set()'
+        code1 = 'set() | set()'
+        code2 = 'set().union(set())'
+        code3 = 'set().update(set())'
+        self.throws(typo1, UNSUPPORTEDOPERAND)
+        self.throws(typo2, UNSUPPORTEDOPERAND)
+        self.runs(code1)
         self.runs(code2)
         self.runs(code3)
+
+    def test_dict_operations(self):
+        """ +, +=, etc doesn't work on dicts. A suggestion would be nice."""
+        # NICE_TO_HAVE
+        typo1 = 'dict() + dict()'
+        typo2 = 'd = dict()\nd += dict()'
+        typo3 = 'dict() & dict()'
+        self.throws(typo1, UNSUPPORTEDOPERAND)
+        self.throws(typo2, UNSUPPORTEDOPERAND)
+        self.throws(typo3, UNSUPPORTEDOPERAND)
+        code1 = 'dict().update(dict())'
+        self.runs(code1)
 
     def test_nb_args(self):
         """Should have 1 arg."""
