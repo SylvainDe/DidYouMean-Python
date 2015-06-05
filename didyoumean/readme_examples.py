@@ -24,9 +24,9 @@ def main():
             (1, "Fuzzy matches on existing names "
                 "(local, builtin, keywords, modules, etc)"): [
                 "def my_func(foo, bar):\n\treturn foob\nmy_func(1, 2)",
-                "def my_func(lst):\n\treturn leng(foo)\nmy_func([0])",
+                "leng([0])",
                 "import math\nmaths.pi",
-                "def my_func():\n\tpasss\nmy_func()",
+                "passs",
                 "def my_func():\n\tfoo = 1\n\tfoob +=1\nmy_func()"
             ],
             (2, "Checking if name is the attribute of a defined object"): [
@@ -116,7 +116,8 @@ def main():
                         before = str_func(value)
                         add_suggestions_to_exception(type_, value, traceback)
                         after = str_func(value)
-                        assert before != after
+                        if before == after:
+                            after += " (unchanged on this version of Python)"
                 print("""```python
 %s
 #>>> Before: %s
