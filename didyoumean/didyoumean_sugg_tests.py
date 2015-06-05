@@ -852,11 +852,14 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_not_callable(self):
         """ Sometimes, one uses parenthesis instead of brackets. """
-        # NICE_TO_HAVE
-        typo, sugg = '(0)', '[0]'
-        for ex in ['[0]', '{0: 0}', '"a"']:
-            self.throws(ex + typo, NOTCALLABLE)
-            self.runs(ex + sugg)
+        typo, getitem = '(0)', '[0]'
+        for ex, sugg in {
+            '[0]': "'list[value]'",
+            '{0: 0}': "'dict[value]'",
+            '"a"': "str[value]",
+        }.items():
+            self.throws(ex + typo, NOTCALLABLE, sugg)
+            self.runs(ex + getitem)
         for ex in ['1', 'set()']:
             self.throws(ex + typo, NOTCALLABLE)
 

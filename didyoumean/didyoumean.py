@@ -356,53 +356,12 @@ def get_type_error_sugg(value, frame):
         args = func.__code__.co_varnames
         for n in get_close_matches(kw_arg, args):
             yield quote(n)
-    match = re.match(NB_ARG_RE, error_msg)
-    if match:
-        func_name, = match.groups()
-    match = re.match(MISSING_POS_ARG_RE, error_msg)
-    if match:
-        func_name, = match.groups()
-    match = re.match(UNHASHABLE_RE, error_msg)
-    if match:
-        type_str, = match.groups()
-        _ = get_types_for_str(type_str, frame)
-    match = re.match(UNSUPPORTED_OP_RE, error_msg)
-    if match:
-        op, type_str1, type_str2 = match.groups()
-        _ = get_types_for_str(type_str1, frame)
-        _ = get_types_for_str(type_str2, frame)
-    match = re.match(OBJ_DOES_NOT_SUPPORT_RE, error_msg)
-    if match:
-        type_str, = match.groups()
-        _ = get_types_for_str(type_str, frame)
-    match = re.match(CANNOT_CONCAT_RE, error_msg)
-    if match:
-        type_str1, type_str2 = match.groups()
-        _ = get_types_for_str(type_str1, frame)
-        _ = get_types_for_str(type_str2, frame)
-    match = re.match(CANT_CONVERT_RE, error_msg)
-    if match:
-        type_str1, type_str2 = match.groups()
-        _ = get_types_for_str(type_str1, frame)
-        _ = get_types_for_str(type_str2, frame)
     match = re.match(NOT_CALLABLE_RE, error_msg)
     if match:
         type_str, = match.groups()
-        _ = get_types_for_str(type_str, frame)
-    match = re.match(DESCRIPT_REQUIRES_TYPE_RE, error_msg)
-    if match:
-        _, expect_type, received_type = match.groups()
-        _ = get_types_for_str(expect_type, frame)
-        _ = get_types_for_str(received_type, frame)
-    match = re.match(ARG_NOT_ITERABLE_RE, error_msg)
-    if match:
-        type_str, = match.groups()
-        _ = get_types_for_str(type_str, frame)
-    match = re.match(MUST_BE_CALLED_WITH_INST_RE, error_msg)
-    if match:
-        _, type_str1, type_str2 = match.groups()
-        _ = get_types_for_str(type_str1, frame)
-        _ = get_types_for_str(type_str2, frame)
+        types = get_types_for_str(type_str, frame)
+        if any(hasattr(t, '__getitem__') for t in types):
+            yield quote(type_str + '[value]')
 
 
 # Functions related to ValueError
