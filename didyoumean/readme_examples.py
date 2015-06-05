@@ -71,6 +71,10 @@ def main():
             (1, "Fuzzy matches on keyword arguments"): [
                 "def my_func(abcde):\n\tpass\nmy_func(abcdf=1)",
             ],
+            (2, "Confusion between brackets and parenthesis"): [
+                "lst = [1, 2, 3]\nlst(0)",
+                "def my_func(a):\n\tpass\nmy_func[1]",
+            ],
         },
         (5, ValueError): {
             (1, "Special cases"): [

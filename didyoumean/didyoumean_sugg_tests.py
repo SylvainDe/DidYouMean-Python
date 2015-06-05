@@ -856,7 +856,7 @@ class TypeErrorTests(GetSuggestionsTests):
         for ex, sugg in {
             '[0]': "'list[value]'",
             '{0: 0}': "'dict[value]'",
-            '"a"': "str[value]",
+            '"a"': "'str[value]'",
         }.items():
             self.throws(ex + typo, NOTCALLABLE, sugg)
             self.runs(ex + getitem)

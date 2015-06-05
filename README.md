@@ -176,6 +176,21 @@ my_func(abcdf=1)
 #>>> Before: TypeError("my_func() got an unexpected keyword argument 'abcdf'",)
 #>>> After: TypeError("my_func() got an unexpected keyword argument 'abcdf'. Did you mean 'abcde'?",)
 ```
+##### Confusion between brackets and parenthesis
+
+```python
+lst = [1, 2, 3]
+lst(0)
+#>>> Before: TypeError("'list' object is not callable",)
+#>>> After: TypeError("'list' object is not callable. Did you mean 'list[value]'?",)
+```
+```python
+def my_func(a):
+    pass
+my_func[1]
+#>>> Before: TypeError("'function' object has no attribute '__getitem__'",)
+#>>> After: TypeError("'function' object has no attribute '__getitem__'. Did you mean 'function(value)'?",)
+```
 ### ValueError
 
 ##### Special cases
