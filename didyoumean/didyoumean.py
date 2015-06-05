@@ -264,8 +264,6 @@ def get_attribute_suggestions(type_str, attribute, frame):
         module_name = frame.f_code.co_names[0]
         objs = get_objects_in_frame(frame)
         mod = objs[module_name][0].obj
-        if set([type(mod)]) == types:
-            print(mod, type(mod), types)
         attributes = set(dir(mod))
 
     return itertools.chain(

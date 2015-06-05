@@ -568,8 +568,14 @@ class AttributeErrorTests(GetSuggestionsTests):
         """Should be math.pi."""
         code = 'import math\nmath.{0}'
         typo, sugg = 'pie', 'pi'
+        version = (3, 5)
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, ATTRIBUTEERROR, "'" + sugg + "'")
+        self.throws(
+            bad_code, ATTRIBUTEERROR, "'" + sugg + "'", up_to_version(version))
+        # FIXME: On Python 3.5, message is more precise "module 'math' ..." so
+        # we retrieve to retrieve module 'math'... and fail >_<
+        self.throws(
+            bad_code, ATTRIBUTEERROR, [], from_version(version))
         self.runs(good_code)
 
     def test_from_class(self):

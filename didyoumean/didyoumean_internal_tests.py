@@ -13,7 +13,6 @@ import sys
 
 OLD_CLASS_SUPPORT = sys.version_info >= (3, 0)
 IS_PYPY = hasattr(sys, "pypy_translation_info")
-NO_DEL_SUPPORT = IS_PYPY and sys.version_info < (3, 0)
 global_var = 42  # Please don't change the value
 
 
@@ -86,8 +85,7 @@ class GetObjectInFrameTests(unittest2.TestCase):
         toto = 0
         self.name_corresponds_to(name, [(0, 'local')])
         del toto
-        self.name_corresponds_to(
-            name, [(0, 'local')] if NO_DEL_SUPPORT else [])
+        self.name_corresponds_to(name, [])
 
     def test_del_local_hiding_global(self):
         """ Test with deleted local hiding a global. """
@@ -98,8 +96,7 @@ class GetObjectInFrameTests(unittest2.TestCase):
         global_var = 1
         self.name_corresponds_to(name, local_desc + glob_desc)
         del global_var
-        self.name_corresponds_to(
-            name, (local_desc if NO_DEL_SUPPORT else []) + glob_desc)
+        self.name_corresponds_to(name, glob_desc)
 
     def test_enclosing(self):
         """ Test with nested functions. """
