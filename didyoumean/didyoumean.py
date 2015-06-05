@@ -140,24 +140,6 @@ def import_from_frame(module_name, frame):
         frame.f_locals)
 
 
-# Debug functions
-def debug_traceback(traceback):
-    """Print information from the traceback for debugging purposes."""
-    while traceback:
-        frame = traceback.tb_frame
-        if not traceback.tb_next:
-            assert traceback.tb_lineno == frame.f_lineno
-            assert traceback.tb_lasti == frame.f_lasti
-        print(traceback,
-              traceback.tb_lasti,
-              frame.f_lasti,
-              traceback.tb_lineno,
-              frame.f_lineno,
-              frame.f_code.co_name,
-              frame.f_code.co_names)
-        traceback = traceback.tb_next
-
-
 # Functions related to NameError
 def get_name_error_sugg(value, frame):
     """Get suggestions for NameError exception."""
@@ -533,8 +515,6 @@ def add_string_to_exception(value, string):
 
 def get_last_frame(traceback):
     """Extract last frame from a traceback."""
-    if traceback is None:
-        return None
     while traceback.tb_next:
         traceback = traceback.tb_next
     return traceback.tb_frame
