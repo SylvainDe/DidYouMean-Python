@@ -49,11 +49,15 @@ def get_suggestion_string(sugg):
 def get_subclasses(klass):
     """Get the set of direct/indirect subclasses of a class
     including itself."""
-    try:
-        subclasses = set(klass.__subclasses__())
-    except TypeError:
-        subclasses = set(klass.__subclasses__(klass))
-    except AttributeError:
+    if hasattr(klass, '__subclasses__'):
+        try:
+            subclasses = set(klass.__subclasses__())
+        except TypeError:
+            try:
+                subclasses = set(klass.__subclasses__(klass))
+            except TypeError:
+                subclasses = set()
+    else:
         subclasses = set()
     for derived in set(subclasses):
         subclasses.update(get_subclasses(derived))
@@ -261,7 +265,8 @@ def get_attribute_suggestions(type_str, attribute, frame):
         objs = get_objects_in_frame(frame)
         mod = objs[module_name][0].obj
         if set([type(mod)]) == types:
-            attributes = set(dir(mod))
+            print(mod, type(mod), types)
+        attributes = set(dir(mod))
 
     return itertools.chain(
         suggest_attribute_as_builtin(attribute, type_str, frame),

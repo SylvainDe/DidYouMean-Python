@@ -11,6 +11,9 @@ import unittest2
 import sys
 
 
+OLD_CLASS_SUPPORT = sys.version_info >= (3, 0)
+IS_PYPY = hasattr(sys, "pypy_translation_info")
+NO_DEL_SUPPORT = IS_PYPY and sys.version_info < (3, 0)
 global_var = 42  # Please don't change the value
 
 
@@ -35,9 +38,9 @@ class GetObjectInFrameTests(unittest2.TestCase):
         for scopedobj, exp in zip(lst, expected):
             obj, scope = scopedobj
             expobj, expscope = exp
-            self.assertEqual(scope, expscope)
+            self.assertEqual(scope, expscope, name)
             if expobj is not None:
-                self.assertEqual(obj, expobj)
+                self.assertEqual(obj, expobj, name)
 
     def test_builtin(self):
         """ Test with builtin. """
@@ -83,16 +86,20 @@ class GetObjectInFrameTests(unittest2.TestCase):
         toto = 0
         self.name_corresponds_to(name, [(0, 'local')])
         del toto
-        self.name_corresponds_to(name, [])
+        self.name_corresponds_to(
+            name, [(0, 'local')] if NO_DEL_SUPPORT else [])
 
     def test_del_local_hiding_global(self):
         """ Test with deleted local hiding a global. """
         name = 'global_var'
-        self.name_corresponds_to(name, [(42, 'global')])
+        glob_desc = [(42, 'global')]
+        local_desc = [(1, 'local')]
+        self.name_corresponds_to(name, glob_desc)
         global_var = 1
-        self.name_corresponds_to(name, [(1, 'local'), (42, 'global')])
+        self.name_corresponds_to(name, local_desc + glob_desc)
         del global_var
-        self.name_corresponds_to(name, [(42, 'global')])
+        self.name_corresponds_to(
+            name, (local_desc if NO_DEL_SUPPORT else []) + glob_desc)
 
     def test_enclosing(self):
         """ Test with nested functions. """
@@ -210,7 +217,6 @@ OLD_STYLE_CLASSES = [OldStyleBaseClass, OldStyleDerivedClass,
                      CommonTestOldStyleClass2]
 CLASSES = [(c, True) for c in NEW_STYLE_CLASSES] + \
     [(c, False) for c in OLD_STYLE_CLASSES]
-OLD_CLASS_SUPPORT = sys.version_info >= (3, 0)
 
 
 class GetTypesForStrTests(unittest2.TestCase):
@@ -241,9 +247,9 @@ class GetTypesForStrTests(unittest2.TestCase):
         for typ, new in CLASSES:
             types = get_types_for_str_using_inheritance(typ.__name__)
             if new or OLD_CLASS_SUPPORT:
-                self.assertEqual(types, set([typ]))
+                self.assertEqual(types, set([typ]), typ)
             else:
-                self.assertEqual(types, set())
+                self.assertEqual(types, set(), typ)
 
         self.assertFalse(get_types_for_str_using_inheritance('faketype'))
 
@@ -259,9 +265,14 @@ class GetTypesForStrTests(unittest2.TestCase):
         """
         for typ in OLD_STYLE_CLASSES:
             types = self.get_types_using_names(typ.__name__)
-            self.assertEqual(types, set([typ]))
-        for n in ['generator', 'module', 'NoneType', 'function', 'faketype']:
-            self.assertEqual(self.get_types_using_names(n), set())
+            self.assertEqual(types, set([typ]), typ)
+        for n in ['generator', 'module', 'function', 'faketype']:
+            self.assertEqual(self.get_types_using_names(n), set(), n)
+        n = 'NoneType'
+        if IS_PYPY:
+            self.assertEqual(len(self.get_types_using_names(n)), 1, n)
+        else:
+            self.assertEqual(self.get_types_using_names(n), set(), n)
 
     def get_types_for_str(self, type_str):
         """Wrapper around the get_types_for_str function."""
@@ -273,7 +284,7 @@ class GetTypesForStrTests(unittest2.TestCase):
         Checks that for all tested types, the proper type is retrieved."""
         for typ, _ in CLASSES:
             types = self.get_types_for_str(typ.__name__)
-            self.assertEqual(types, set([typ]))
+            self.assertEqual(types, set([typ]), typ)
 
         self.assertEqual(self.get_types_for_str('faketype'), set())
 
@@ -282,10 +293,14 @@ class GetTypesForStrTests(unittest2.TestCase):
 
         Checks that for all tested strings, a single type is retrived.
         This is useful to ensure that we are using the right names."""
-        for n in ['generator', 'module', 'NoneType', 'function',
+        for n in ['module', 'NoneType', 'function',
                   'NewStyleBaseClass', 'NewStyleDerivedClass',
                   'OldStyleBaseClass', 'OldStyleDerivedClass']:
-            self.assertEqual(len(self.get_types_for_str(n)), 1)
+            types = self.get_types_for_str(n)
+            self.assertEqual(len(types), 1, n)
+        for n in ['generator']:  # FIXME: with pypy, we find an additional type
+            types = self.get_types_for_str(n)
+            self.assertEqual(len(types), 2 if IS_PYPY else 1, n)
 
     def test_old_class_not_in_namespace(self):
         # FIXME: At the moment, CommonTestOldStyleClass is not found
