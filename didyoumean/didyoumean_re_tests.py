@@ -10,7 +10,8 @@ from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     RESULT_TOO_MANY_ITEMS_RE, UNQUALIFIED_EXEC_RE, IMPORTSTAR_RE,\
     UNSUPPORTED_OP_RE, OBJ_DOES_NOT_SUPPORT_RE, CANNOT_CONCAT_RE,\
     CANT_CONVERT_RE, NOT_CALLABLE_RE, DESCRIPT_REQUIRES_TYPE_RE,\
-    ARG_NOT_ITERABLE_RE, MUST_BE_CALLED_WITH_INST_RE
+    ARG_NOT_ITERABLE_RE, MUST_BE_CALLED_WITH_INST_RE,\
+    MODULEHASNOATTRIBUTE_RE
 import unittest2
 import re
 import sys
@@ -59,14 +60,17 @@ class RegexTests(unittest2.TestCase):
                 # Python 3.2/3.3/3.4/3.5
                 "type object 'SomeClass' has no attribute 'attri'",
             ],
-            ('some_module', 'attri'): [
-                # Python 3.5
-                "module 'some_module' has no attribute 'attri'",
-            ]
         }
         for group, msgs in group_msg.items():
             for msg in msgs:
                 self.regex_matches(msg, ATTRIBUTEERROR_RE, group)
+
+    def test_module_attribute_error(self):
+        """ Test MODULEHASNOATTRIBUTE_RE ."""
+        # Python 3.5
+        msg = "module 'some_module' has no attribute 'attri'"
+        group = ('some_module', 'attri')
+        self.regex_matches(msg, MODULEHASNOATTRIBUTE_RE, group)
 
     def test_cannot_import(self):
         """ Test CANNOTIMPORT_RE ."""

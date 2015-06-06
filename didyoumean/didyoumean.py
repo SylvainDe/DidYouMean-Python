@@ -10,7 +10,7 @@ from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     ATTRIBUTEERROR_RE, UNSUBSCRIBTABLE_RE, UNEXPECTED_KEYWORDARG_RE,\
     NOMODULE_RE, CANNOTIMPORT_RE, INVALID_COMP_RE, OUTSIDE_FUNCTION_RE,\
     FUTURE_FEATURE_NOT_DEF_RE, RESULT_TOO_MANY_ITEMS_RE, ZERO_LEN_FIELD_RE, \
-    NOT_CALLABLE_RE
+    NOT_CALLABLE_RE, MODULEHASNOATTRIBUTE_RE
 
 
 #: Standard modules we'll consider while searching for undefined values
@@ -224,6 +224,10 @@ def get_attribute_error_sugg(value, frame):
     if match:
         type_str, attr = match.groups()
         return get_attribute_suggestions(type_str, attr, frame)
+    match = re.match(MODULEHASNOATTRIBUTE_RE, error_msg)
+    if match:
+        _, attr = match.groups()  # name ignored for the time being
+        return get_attribute_suggestions('module', attr, frame)
     return []
 
 

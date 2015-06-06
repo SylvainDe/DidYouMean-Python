@@ -12,7 +12,7 @@ from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
     RESULT_TOO_MANY_ITEMS_RE, UNQUALIFIED_EXEC_RE, IMPORTSTAR_RE,\
     UNSUPPORTED_OP_RE, OBJ_DOES_NOT_SUPPORT_RE, CANNOT_CONCAT_RE,\
     CANT_CONVERT_RE, NOT_CALLABLE_RE, DESCRIPT_REQUIRES_TYPE_RE,\
-    ARG_NOT_ITERABLE_RE, MUST_BE_CALLED_WITH_INST_RE
+    ARG_NOT_ITERABLE_RE, MUST_BE_CALLED_WITH_INST_RE, MODULEHASNOATTRIBUTE_RE
 import sys
 import math
 
@@ -172,6 +172,7 @@ ZEROLENERROR = (ValueError, ZERO_LEN_FIELD_RE)
 INVALIDLITERAL = (ValueError, INVALID_LITERAL_RE)
 # AttributeError for AttributeErrorTests
 ATTRIBUTEERROR = (AttributeError, ATTRIBUTEERROR_RE)
+MODATTRIBUTEERROR = (AttributeError, MODULEHASNOATTRIBUTE_RE)
 UNKNOWN_ATTRIBUTEERROR = (AttributeError, None)
 # SyntaxError for SyntaxErrorTests
 INVALIDSYNTAX = (SyntaxError, INVALID_SYNTAX_RE)
@@ -570,12 +571,22 @@ class AttributeErrorTests(GetSuggestionsTests):
         typo, sugg = 'pie', 'pi'
         version = (3, 5)
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(
-            bad_code, ATTRIBUTEERROR, "'" + sugg + "'", up_to_version(version))
-        # FIXME: On Python 3.5, message is more precise "module 'math' ..." so
-        # we retrieve to retrieve module 'math'... and fail >_<
-        self.throws(
-            bad_code, ATTRIBUTEERROR, [], from_version(version))
+        self.throws(bad_code, ATTRIBUTEERROR, "'" + sugg + "'",
+                    up_to_version(version))
+        self.throws(bad_code, MODATTRIBUTEERROR, "'" + sugg + "'",
+                    from_version(version))
+        self.runs(good_code)
+
+    def test_from_module2(self):
+        """Should be math.pi."""
+        code = 'import math\nm = math\nm.{0}'
+        typo, sugg = 'pie', 'pi'
+        version = (3, 5)
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, ATTRIBUTEERROR, "'" + sugg + "'",
+                    up_to_version(version))
+        self.throws(bad_code, MODATTRIBUTEERROR, "'" + sugg + "'",
+                    from_version(version))
         self.runs(good_code)
 
     def test_from_class(self):
