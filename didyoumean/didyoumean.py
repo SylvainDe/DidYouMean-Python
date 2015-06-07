@@ -2,15 +2,10 @@
 """Logic to add suggestions to exceptions."""
 import keyword
 import difflib
-import re
+import didyoumean_re as re
 import itertools
 import inspect
 from collections import namedtuple
-from didyoumean_re import UNBOUNDERROR_RE, NAMENOTDEFINED_RE,\
-    ATTRIBUTEERROR_RE, UNSUBSCRIBTABLE_RE, UNEXPECTED_KEYWORDARG_RE,\
-    NOMODULE_RE, CANNOTIMPORT_RE, INVALID_COMP_RE, OUTSIDE_FUNCTION_RE,\
-    FUTURE_FEATURE_NOT_DEF_RE, RESULT_TOO_MANY_ITEMS_RE, ZERO_LEN_FIELD_RE, \
-    NOT_CALLABLE_RE, MODULEHASNOATTRIBUTE_RE
 
 
 #: Standard modules we'll consider while searching for undefined values
@@ -143,8 +138,8 @@ def get_name_error_sugg(value, frame):
     assert isinstance(value, NameError)
     assert len(value.args) == 1
     error_msg, = value.args
-    error_re = UNBOUNDERROR_RE if isinstance(value, UnboundLocalError) \
-        else NAMENOTDEFINED_RE
+    error_re = re.UNBOUNDERROR_RE if isinstance(value, UnboundLocalError) \
+        else re.NAMENOTDEFINED_RE
     match = re.match(error_re, error_msg)
     if match:
         name, = match.groups()
@@ -220,11 +215,11 @@ def get_attribute_error_sugg(value, frame):
     assert isinstance(value, AttributeError)
     assert len(value.args) == 1
     error_msg, = value.args
-    match = re.match(ATTRIBUTEERROR_RE, error_msg)
+    match = re.match(re.ATTRIBUTEERROR_RE, error_msg)
     if match:
         type_str, attr = match.groups()
         return get_attribute_suggestions(type_str, attr, frame)
-    match = re.match(MODULEHASNOATTRIBUTE_RE, error_msg)
+    match = re.match(re.MODULEHASNOATTRIBUTE_RE, error_msg)
     if match:
         _, attr = match.groups()  # name ignored for the time being
         return get_attribute_suggestions('module', attr, frame)
@@ -295,11 +290,11 @@ def get_import_error_sugg(value, frame):
     assert isinstance(value, ImportError)
     assert len(value.args) == 1
     error_msg, = value.args
-    match = re.match(NOMODULE_RE, error_msg)
+    match = re.match(re.NOMODULE_RE, error_msg)
     if match:
         module_str, = match.groups()
         return get_module_name_suggestion(module_str)
-    match = re.match(CANNOTIMPORT_RE, error_msg)
+    match = re.match(re.CANNOTIMPORT_RE, error_msg)
     if match:
         imported_name, = match.groups()
         return get_imported_name_suggestion(imported_name, frame)
@@ -343,13 +338,13 @@ def get_type_error_sugg(value, frame):
     assert isinstance(value, TypeError)
     assert len(value.args) == 1
     error_msg, = value.args
-    match = re.match(UNSUBSCRIBTABLE_RE, error_msg)
+    match = re.match(re.UNSUBSCRIBTABLE_RE, error_msg)
     if match:
         type_str, = match.groups()
         types = get_types_for_str(type_str, frame)
         if any(hasattr(t, '__call__') for t in types):
             yield quote(type_str + '(value)')
-    match = re.match(UNEXPECTED_KEYWORDARG_RE, error_msg)
+    match = re.match(re.UNEXPECTED_KEYWORDARG_RE, error_msg)
     if match:
         func_name, kw_arg = match.groups()
         objs = get_objects_in_frame(frame)
@@ -357,7 +352,7 @@ def get_type_error_sugg(value, frame):
         args = func.__code__.co_varnames
         for n in get_close_matches(kw_arg, args):
             yield quote(n)
-    match = re.match(NOT_CALLABLE_RE, error_msg)
+    match = re.match(re.NOT_CALLABLE_RE, error_msg)
     if match:
         type_str, = match.groups()
         types = get_types_for_str(type_str, frame)
@@ -371,7 +366,7 @@ def get_value_error_sugg(value, _):
     assert isinstance(value, ValueError)
     assert len(value.args) == 1
     error_msg, = value.args
-    match = re.match(ZERO_LEN_FIELD_RE, error_msg)
+    match = re.match(re.ZERO_LEN_FIELD_RE, error_msg)
     if match:
         yield '{0}'
 
@@ -381,18 +376,18 @@ def get_syntax_error_sugg(value, frame):
     """Get suggestions for SyntaxError exception."""
     assert isinstance(value, SyntaxError)
     error_msg = value.args[0]
-    match = re.match(OUTSIDE_FUNCTION_RE, error_msg)
+    match = re.match(re.OUTSIDE_FUNCTION_RE, error_msg)
     if match:
         yield "to indent it"
         word, = match.groups()
         if word == 'return':
             yield "'sys.exit([arg])'"
-    match = re.match(FUTURE_FEATURE_NOT_DEF_RE, error_msg)
+    match = re.match(re.FUTURE_FEATURE_NOT_DEF_RE, error_msg)
     if match:
         feature, = match.groups()
         for m in suggest_imported_name_as_typo(feature, '__future__', frame):
             yield m
-    match = re.match(INVALID_COMP_RE, error_msg)
+    match = re.match(re.INVALID_COMP_RE, error_msg)
     if match:
         yield quote('!=')
     offset = value.offset
@@ -419,7 +414,7 @@ def get_overflow_error_sugg(value, frame):
     assert isinstance(value, OverflowError)
     objs = get_objects_in_frame(frame)
     error_msg = value.args[0]
-    match = re.match(RESULT_TOO_MANY_ITEMS_RE, error_msg)
+    match = re.match(re.RESULT_TOO_MANY_ITEMS_RE, error_msg)
     if match:
         func, = match.groups()
         for sugg in suggest_memory_friendly_equi(func):

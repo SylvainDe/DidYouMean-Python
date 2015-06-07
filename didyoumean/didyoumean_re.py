@@ -1,8 +1,11 @@
 # -*- coding: utf-8
 """Regular expressions to parse error messages."""
+import re
 
-UNBOUNDERROR_RE = r"^local variable '(\w+)' referenced before assignment$"
-NAMENOTDEFINED_RE = r"^(?:global )?name '(\w+)' is not defined$"
+
+UNBOUNDERROR_RE = r"^local variable '(?P<name>\w+)' " \
+    r"referenced before assignment$"
+NAMENOTDEFINED_RE = r"^(?:global )?name '(?P<name>\w+)' is not defined$"
 ATTRIBUTEERROR_RE = r"^(?:class |type object )?'?([\w\.]+)'? " \
     r"(?:object |instance )?has no attribute '(\w+)'$"
 MODULEHASNOATTRIBUTE_RE = r"^module '?([\w\.]+)' has no attribute '(\w+)'$"
@@ -55,3 +58,9 @@ ARG_NOT_ITERABLE_RE = r"^(?:argument of type )?'(\w+)'" \
     r"(?: object)? is not iterable$"
 MUST_BE_CALLED_WITH_INST_RE = r"^unbound method (\w+)\(\) must be called " \
     r"with (\w+) instance as first argument \(got (\w+) instance instead\)$"
+
+
+def match(pattern, string):
+    """ Wrapper around re.match to be able to import this module as re
+    without having name collisions."""
+    return re.match(pattern, string)
