@@ -1,6 +1,6 @@
 # -*- coding: utf-8
 """Unit tests for code in didyoumean_internal.py."""
-from didyoumean_internal import get_suggestion_string,
+from didyoumean_internal import get_suggestion_string,\
     add_string_to_exception,\
     get_objects_in_frame, get_subclasses, get_types_for_str,\
     get_types_for_str_using_inheritance,\
