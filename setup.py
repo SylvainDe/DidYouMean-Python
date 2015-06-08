@@ -7,7 +7,7 @@ except ImportError:
 setup(
     name='didyoumean-suggestions',
     packages=['didyoumean'],
-    version='0.2',
+    version='0.4',
     description=('Logic to have suggestions in case of errors '
                  '(NameError, AttributeError, ImportError, TypeError, etc).'),
     author='Sylvain Desodt',

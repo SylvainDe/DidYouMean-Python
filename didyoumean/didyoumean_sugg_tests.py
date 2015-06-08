@@ -1,6 +1,6 @@
 # -*- coding: utf-8
 """Unit tests for get_suggestions_for_exception."""
-from didyoumean import get_suggestions_for_exception, STAND_MODULES
+from didyoumean_internal import get_suggestions_for_exception, STAND_MODULES
 import unittest2
 import didyoumean_re as re
 import sys

@@ -1,6 +1,6 @@
 # -*- coding: utf-8
 """Decorator to add suggestions to exceptions."""
-from didyoumean import add_suggestions_to_exception
+from didyoumean_internal import add_suggestions_to_exception
 import functools
 import sys
 

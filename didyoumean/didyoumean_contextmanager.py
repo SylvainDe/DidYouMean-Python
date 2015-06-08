@@ -1,6 +1,6 @@
 # -*- coding: utf-8
 """Context manager to add suggestions to exceptions."""
-from didyoumean import add_suggestions_to_exception
+from didyoumean_internal import add_suggestions_to_exception
 
 
 class didyoumean_contextmanager(object):
