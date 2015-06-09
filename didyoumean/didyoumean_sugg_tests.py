@@ -24,8 +24,8 @@ def func_gen(name='some_func', param='', body='pass', args=None):
 def my_generator():
     """This is my generator.
     This is my generator, baby."""
-    while True:
-        yield 1
+    for i in range(5):
+        yield i
 
 
 class FoobarClass():
@@ -144,6 +144,7 @@ NOTCALLABLE = (TypeError, re.NOT_CALLABLE_RE)
 DESCREXPECT = (TypeError, re.DESCRIPT_REQUIRES_TYPE_RE)
 ARGNOTITERABLE = (TypeError, re.ARG_NOT_ITERABLE_RE)
 MUSTCALLWITHINST = (TypeError, re.MUST_BE_CALLED_WITH_INST_RE)
+OBJECTHASNOFUNC = (TypeError, re.OBJECT_HAS_NO_FUNC_RE)
 UNKNOWN_TYPEERROR = (TypeError, None)
 # ImportError for ImportErrorTests
 NOMODULE = (ImportError, re.NOMODULE_RE)
@@ -759,6 +760,13 @@ class TypeErrorTests(GetSuggestionsTests):
         self.throws(typo3, UNSUPPORTEDOPERAND)
         code1 = 'dict().update(dict())'
         self.runs(code1)
+
+    def test_len_on_iterable(self):
+        """ len() can't be called on iterable (weird but understandable)."""
+        code = 'len(my_generator())'
+        sugg = 'len(list(my_generator()))'
+        self.throws(code, OBJECTHASNOFUNC)
+        self.runs(sugg)
 
     def test_nb_args(self):
         """Should have 1 arg."""

@@ -50,7 +50,7 @@ UNSUPPORTED_OP_RE = r"^unsupported operand type\(s\) for (.*): " \
 OBJ_DOES_NOT_SUPPORT_RE = r"^\'(\w+)\' object does not support " \
     r"item assignment$"
 CANNOT_CONCAT_RE = r"^cannot concatenate '(\w+)' and '(\w+)' objects$"
-CANT_CONVERT_RE = r"Can't convert '(\w+)' object to (\w+) implicitly$"
+CANT_CONVERT_RE = r"^Can't convert '(\w+)' object to (\w+) implicitly$"
 NOT_CALLABLE_RE = r"^'(\w+)' object is not callable$"
 DESCRIPT_REQUIRES_TYPE_RE = r"^descriptor '(\w+)' requires a '(\w+)' " \
     r"object but received a '(\w+)'$"
@@ -58,9 +58,16 @@ ARG_NOT_ITERABLE_RE = r"^(?:argument of type )?'(\w+)'" \
     r"(?: object)? is not iterable$"
 MUST_BE_CALLED_WITH_INST_RE = r"^unbound method (\w+)\(\) must be called " \
     r"with (\w+) instance as first argument \(got (\w+) instance instead\)$"
+OBJECT_HAS_NO_FUNC_RE = r"^object of type '(\w+)' has no (\w+)\(\)$"
 
 
 def match(pattern, string):
     """ Wrapper around re.match to be able to import this module as re
     without having name collisions."""
     return re.match(pattern, string)
+
+
+if __name__ == '__main__':
+    for k, v in dict(locals()).items():
+        if k.endswith('_RE') and not (v.startswith('^') and v.endswith('$')):
+            print("Missing ^$ for ", k)

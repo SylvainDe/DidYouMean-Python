@@ -344,6 +344,12 @@ class RegexTests(unittest2.TestCase):
         self.re_matches(
             msg, re.MUST_BE_CALLED_WITH_INST_RE, ('add', 'set', 'int'))
 
+    def test_object_has_no(self):
+        """ Test OBJECT_HAS_NO_FUNC_RE ."""
+        msg = "object of type 'generator' has no len()"
+        self.re_matches(msg, re.OBJECT_HAS_NO_FUNC_RE, ('generator', 'len'))
+
+
 if __name__ == '__main__':
     print(sys.version_info)
     unittest2.main()
