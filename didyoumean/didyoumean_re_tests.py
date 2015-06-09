@@ -8,7 +8,7 @@ import sys
 class RegexTests(unittest2.TestCase):
     """Tests to check that error messages match the regexps."""
 
-    def re_matches(self, text, regexp, groups=None, named_groups=None):
+    def re_matches(self, text, regexp, groups=(), named_groups=dict()):
         """Check that text matches regexp giving groups given values."""
         self.assertRegexpMatches(text, regexp)   # does pretty printing
         match = re.match(regexp, text)
@@ -94,7 +94,7 @@ class RegexTests(unittest2.TestCase):
         """ Test INDEXOUTOFRANGE_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
         msg = "list index out of range"
-        self.re_matches(msg, re.INDEXOUTOFRANGE_RE, ())
+        self.re_matches(msg, re.INDEXOUTOFRANGE_RE)
 
     def test_unsubscriptable(self):
         """ Test UNSUBSCRIBTABLE_RE ."""
@@ -120,13 +120,13 @@ class RegexTests(unittest2.TestCase):
         """ Test ZERO_LEN_FIELD_RE ."""
         # Python 2.6
         msg = "zero length field name in format"
-        self.re_matches(msg, re.ZERO_LEN_FIELD_RE, ())
+        self.re_matches(msg, re.ZERO_LEN_FIELD_RE)
 
     def test_math_domain_error(self):
         """ Test MATH_DOMAIN_ERROR_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
         msg = "math domain error"
-        self.re_matches(msg, re.MATH_DOMAIN_ERROR_RE, ())
+        self.re_matches(msg, re.MATH_DOMAIN_ERROR_RE)
 
     def test_too_many_values(self):
         """ Test TOO_MANY_VALUES_UNPACK_RE ."""
@@ -137,7 +137,7 @@ class RegexTests(unittest2.TestCase):
             "too many values to unpack (expected 3)",
         ]
         for msg in msgs:
-            self.re_matches(msg, re.TOO_MANY_VALUES_UNPACK_RE, ())
+            self.re_matches(msg, re.TOO_MANY_VALUES_UNPACK_RE)
 
     def test_unhashable_type(self):
         """ Test UNHASHABLE_RE ."""
@@ -200,7 +200,7 @@ class RegexTests(unittest2.TestCase):
             "not enough values to unpack (expected 3, got 2)",
         ]
         for msg in msgs:
-            self.re_matches(msg, re.NEED_MORE_VALUES_RE, ())
+            self.re_matches(msg, re.NEED_MORE_VALUES_RE)
 
     def test_missing_parentheses(self):
         """ Test MISSING_PARENT_RE ."""
@@ -218,13 +218,13 @@ class RegexTests(unittest2.TestCase):
         """ Test INVALID_SYNTAX_RE ."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy3
         msg = "invalid syntax"
-        self.re_matches(msg, re.INVALID_SYNTAX_RE, ())
+        self.re_matches(msg, re.INVALID_SYNTAX_RE)
 
     def test_invalid_comp(self):
         """ Test INVALID_COMP_RE ."""
         # PyPy3
         msg = "invalid comparison"
-        self.re_matches(msg, re.INVALID_COMP_RE, ())
+        self.re_matches(msg, re.INVALID_COMP_RE)
 
     def test_expected_length(self):
         """ Test EXPECTED_LENGTH_RE ."""
@@ -241,7 +241,7 @@ class RegexTests(unittest2.TestCase):
             "__future__ statements must appear at beginning of file",
         ]
         for msg in msgs:
-            self.re_matches(msg, re.FUTURE_FIRST_RE, ())
+            self.re_matches(msg, re.FUTURE_FIRST_RE)
 
     def test_future_feature_not_def(self):
         """ Test FUTURE_FEATURE_NOT_DEF_RE. """
@@ -272,7 +272,7 @@ class RegexTests(unittest2.TestCase):
             "because it contains a nested function with free variables",
         ]
         for msg in msgs:
-            self.re_matches(msg, re.UNQUALIFIED_EXEC_RE, ())
+            self.re_matches(msg, re.UNQUALIFIED_EXEC_RE)
 
     def test_import_star(self):
         """ Test IMPORTSTAR_RE. """
@@ -293,7 +293,7 @@ class RegexTests(unittest2.TestCase):
             "import * only allowed at module level"
         ]
         for msg in msgs:
-            self.re_matches(msg, re.IMPORTSTAR_RE, ())
+            self.re_matches(msg, re.IMPORTSTAR_RE)
 
     def test_does_not_support(self):
         """ Test OBJ_DOES_NOT_SUPPORT_RE. """
@@ -346,8 +346,14 @@ class RegexTests(unittest2.TestCase):
 
     def test_object_has_no(self):
         """ Test OBJECT_HAS_NO_FUNC_RE ."""
-        msg = "object of type 'generator' has no len()"
-        self.re_matches(msg, re.OBJECT_HAS_NO_FUNC_RE, ('generator', 'len'))
+        msgs = {
+            # Python 2.6/2.7/3.2/3.3/3.4/3.5
+            'len': "object of type 'generator' has no len()",
+            # PyPy/PyPy3
+            'length': "'generator' has no length",
+        }
+        for name, msg in msgs.items():
+            self.re_matches(msg, re.OBJECT_HAS_NO_FUNC_RE, ('generator', name))
 
 
 if __name__ == '__main__':

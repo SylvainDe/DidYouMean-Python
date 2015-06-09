@@ -58,7 +58,7 @@ ARG_NOT_ITERABLE_RE = r"^(?:argument of type )?'(\w+)'" \
     r"(?: object)? is not iterable$"
 MUST_BE_CALLED_WITH_INST_RE = r"^unbound method (\w+)\(\) must be called " \
     r"with (\w+) instance as first argument \(got (\w+) instance instead\)$"
-OBJECT_HAS_NO_FUNC_RE = r"^object of type '(\w+)' has no (\w+)\(\)$"
+OBJECT_HAS_NO_FUNC_RE = r"^(?:object of type )?'(\w+)' has no (\w+)(?:\(\))?$"
 
 
 def match(pattern, string):
