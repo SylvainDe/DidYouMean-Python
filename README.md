@@ -1,22 +1,27 @@
 DidYouMean-Python
 =================
+
 [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/SylvainDe/DidYouMean-Python?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 [![Build Status](https://travis-ci.org/SylvainDe/DidYouMean-Python.svg)](https://travis-ci.org/SylvainDe/DidYouMean-Python)
-
 [![Coverage Status](https://coveralls.io/repos/SylvainDe/DidYouMean-Python/badge.svg?branch=master)](https://coveralls.io/r/SylvainDe/DidYouMean-Python?branch=master)
-
 [![codecov.io](http://codecov.io/github/SylvainDe/DidYouMean-Python/coverage.svg?branch=master)](http://codecov.io/github/SylvainDe/DidYouMean-Python?branch=master)
-
 [![Code Health](https://landscape.io/github/SylvainDe/DidYouMean-Python/master/landscape.svg?style=flat)](https://landscape.io/github/SylvainDe/DidYouMean-Python/master)
-
 [![Code Climate](https://codeclimate.com/github/SylvainDe/DidYouMean-Python/badges/gpa.svg)](https://codeclimate.com/github/SylvainDe/DidYouMean-Python)
-
 [![Code Issues](http://www.quantifiedcode.com/api/v1/project/34c9b3f27db24a1ba944fcf3d69a9d2a/badge.svg)](http://www.quantifiedcode.com/app/project/34c9b3f27db24a1ba944fcf3d69a9d2a)
 
-Logic to have various kind of suggestions in case of errors (NameError, AttributeError, ImportError, TypeError, ValueError, SyntaxError, MemoryError, OverflowError). Can be used via a simple import or a dedicated decorator (and other ways to be defined soon).
+Logic to have various kind of suggestions in case of errors (NameError, AttributeError, ImportError, TypeError, ValueError, SyntaxError, MemoryError, OverflowError).
 
 Inspired by "Did you mean" for Ruby ([Explanation](http://www.yukinishijima.net/2014/10/21/did-you-mean-experience-in-ruby.html), [Github Page](https://github.com/yuki24/did_you_mean)), this is a simple implementation for/in Python. I wanted to see if I could mess around and create something similar in Python and it seems to be possible.
+
+The logic adding suggestions can be invoked in different ways :
+
+ - a hook on `sys.excepthook`
+
+ - a context manager
+
+ - a post-mortem function for interactive session
+
+ - a context-manager.
 
 
 See also :
@@ -33,7 +38,7 @@ See also :
 Example
 -------
 
-_More examples can be found from the test file `didyoumean/didyoumean_tests.py`._
+_More examples can be found from the test file `didyoumean/didyoumean_sugg_tests.py`._
 
 
 ### NameError
@@ -240,12 +245,13 @@ Usage
 
 I haven't done anything fancy for the installation (yet). You'll have to clone this.
 
-Once you have the code, it can be used in two different ways :
+Once you have the code, it can be used in different ways :
 
  * hook on `sys.excepthook` : just `import didyoumean_hook` and you'll have the suggestions for any exception happening
 
  * decorator : just `import didyoumean_decorator` and add the `@didyoumean` decorator before any function (the `main()` could be a good choice) and you'll have the suggestions for any exception happening through a call to that method.
 
+ * I should complete/fix this once it is actually installable because names will most probably change anyway.
 
 Implementation
 --------------

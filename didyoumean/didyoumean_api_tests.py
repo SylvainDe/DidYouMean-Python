@@ -1,7 +1,7 @@
 # -*- coding: utf-8
 """Unit tests for didyoumean APIs."""
-from didyoumean_decorator import didyoumean
-from didyoumean_contextmanager import didyoumean_contextmanager
+from didyoumean_api import didyoumean_decorator, didyoumean_contextmanager,\
+    didyoumean_postmortem
 from didyoumean_common_tests import TestWithStringFunction,\
     get_exception, no_exception
 import unittest2
@@ -77,7 +77,7 @@ class DecoratorTest(unittest2.TestCase, ApiTest):
 
     def run_with_api(self, code):
         """ Run code with didyoumean decorator."""
-        @didyoumean
+        @didyoumean_decorator
         def my_func():
             exec(code) in globals(), locals()
         my_func()
@@ -91,24 +91,28 @@ class ContextManagerTest(unittest2.TestCase, ApiTest):
         with didyoumean_contextmanager():
             exec(code)
 
-# def didyoumean_hook(type_, value, traceback, prev_hook=sys.excepthook):
-#     """Hook to be substituted to sys.excepthook to enhance exceptions."""
-#     add_suggestions_to_exception(type_, value, traceback)
-#     return prev_hook(type_, value, traceback)
-#
-# class HookTest(unittest2.TestCase, ApiTest):
-#     """ Tests about the didyoumean hook. """
-#
-#     def run_with_api(self, code):
-#         """ Run code with didyoumean context manager."""
-#         print(sys.__excepthook__ == sys.excepthook)
-#         sys.excepthook = didyoumean_hook
-#         print(sys.__excepthook__ == sys.excepthook)
-#         exec(code)
-#         print(sys.__excepthook__ == sys.excepthook)
-#         sys.excepthook = sys.__excepthook__
-#         print(sys.__excepthook__ == sys.excepthook)
-#
+
+class PostMortemTest(unittest2.TestCase, ApiTest):
+    """Tests about the didyoumean post mortem . """
+
+    def run_with_api(self, code):
+        """ Run code with didyoumean post mortem."""
+        # A bit of an ugly way to proceed, in real life scenario
+        # the sys.last_<something> members are set automatically.
+        try:
+            exec(code)
+        except:
+            sys.last_type, sys.last_value, sys.last_traceback = sys.exc_info()
+        ret = didyoumean_postmortem()
+        if ret is not None:
+            raise ret
+
+
+class HookTest(unittest2.TestCase):
+    """ Tests about the didyoumean hook. """
+    pass  # Can't write tests as the hook seems to be ignored.
+
+
 if __name__ == '__main__':
     print(sys.version_info)
     unittest2.main()
