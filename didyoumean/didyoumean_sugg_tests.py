@@ -1140,6 +1140,22 @@ class SyntaxErrorTests(GetSuggestionsTests):
         for code in codes:
             self.throws(code, IMPORTSTAR, [])
 
+    def test_unpack(self):
+        """ Extended tuple unpacking does not work prior to Python 3."""
+        # NICE_TO_HAVE
+        version = (3, 0)
+        code = 'a, *b = (1, 2, 3)'
+        self.throws(code, INVALIDSYNTAX, [], up_to_version(version))
+        self.runs(code, from_version(version))
+
+    def test_unpack2(self):
+        """ Unpacking in function arguments was supported up to Python 3."""
+        # NICE_TO_HAVE
+        version = (3, 0)
+        code = 'def addpoints((x1, y1), (x2, y2)):\n\tpass'
+        self.runs(code, up_to_version(version))
+        self.throws(code, INVALIDSYNTAX, [], from_version(version))
+
 
 class MemoryErrorTests(GetSuggestionsTests):
     """Class for tests related to MemoryError."""
