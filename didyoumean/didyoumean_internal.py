@@ -117,6 +117,11 @@ def add_scope_to_dict(dict_, scope):
 def get_objects_in_frame(frame):
     """Get objects defined in a given frame.
     This includes variable, types, builtins, etc."""
+    # https://www.python.org/dev/peps/pep-0227/ PEP227 Statically Nested Scopes
+    # "Under this proposal, it will not be possible to gain dictionary-style
+    #      access to all visible scopes."
+    # https://www.python.org/dev/peps/pep-3104/ PEP 3104 Access to Names in
+    #      Outer Scopes
     return merge_dict(  # LEGB Rule (missing E atm - not sure if a problem)
         add_scope_to_dict(frame.f_locals, 'local'),
         add_scope_to_dict(frame.f_globals, 'global'),
