@@ -59,6 +59,7 @@ ARG_NOT_ITERABLE_RE = r"^(?:argument of type )?'(\w+)'" \
 MUST_BE_CALLED_WITH_INST_RE = r"^unbound method (\w+)\(\) must be called " \
     r"with (\w+) instance as first argument \(got (\w+) instance instead\)$"
 OBJECT_HAS_NO_FUNC_RE = r"^(?:object of type )?'(\w+)' has no (\w+)(?:\(\))?$"
+NO_BINDING_NONLOCAL_RE = r"^no binding for nonlocal '(\w+)' found$"
 
 
 def match(pattern, string):

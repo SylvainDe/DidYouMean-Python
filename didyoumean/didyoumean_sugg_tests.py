@@ -167,6 +167,7 @@ MODATTRIBUTEERROR = (AttributeError, re.MODULEHASNOATTRIBUTE_RE)
 UNKNOWN_ATTRIBUTEERROR = (AttributeError, None)
 # SyntaxError for SyntaxErrorTests
 INVALIDSYNTAX = (SyntaxError, re.INVALID_SYNTAX_RE)
+NOBINDING = (SyntaxError, re.NO_BINDING_NONLOCAL_RE)
 OUTSIDEFUNC = (SyntaxError, re.OUTSIDE_FUNCTION_RE)
 MISSINGPARENT = (SyntaxError, re.MISSING_PARENT_RE)
 INVALIDCOMP = (SyntaxError, re.INVALID_COMP_RE)
@@ -269,6 +270,12 @@ class NameErrorTests(GetSuggestionsTests):
         this_is_a_global_list
         self.assertFalse(sugg in locals())
         self.assertTrue(sugg in globals())
+        self.throws(typo, NAMEERROR, "'" + sugg + "' (global)")
+        self.runs(sugg)
+
+    def test_name(self):
+        """Should be '__name__'."""
+        typo, sugg = '__name_', '__name__'
         self.throws(typo, NAMEERROR, "'" + sugg + "' (global)")
         self.runs(sugg)
 
@@ -444,11 +451,6 @@ class NameErrorTests(GetSuggestionsTests):
         self.throws(
             'FoobarClass().nameerror_cls()', NAMEERROR,
             ["'FoobarClass.this_is_cls_mthd'", "'cls.this_is_cls_mthd'"])
-
-    def test_main(self):
-        """Should be '__main__'."""
-        # NICE_TO_HAVE
-        self.throws('__main_', NAMEERROR)
 
     def test_complex_numbers(self):
         """ Should be 1j ."""
@@ -1155,6 +1157,30 @@ class SyntaxErrorTests(GetSuggestionsTests):
         code = 'def addpoints((x1, y1), (x2, y2)):\n\tpass'
         self.runs(code, up_to_version(version))
         self.throws(code, INVALIDSYNTAX, [], from_version(version))
+
+    def test_nonlocal(self):
+        """ nonlocal keyword is added in Python 3."""
+        # NICE_TO_HAVE
+        version = (3, 0)
+        code = 'def func():\n\tfoo = 1\n\tdef nested():\n\t\tnonlocal foo'
+        self.runs(code, from_version(version))
+        self.throws(code, INVALIDSYNTAX, [], up_to_version(version))
+
+    def test_nonlocal2(self):
+        """ nonlocal must be used only when binding exists."""
+        # NICE_TO_HAVE
+        version = (3, 0)
+        code = 'def func():\n\tdef nested():\n\t\tnonlocal foo'
+        self.throws(code, NOBINDING, [], from_version(version))
+        self.throws(code, INVALIDSYNTAX, [], up_to_version(version))
+
+    def test_nonlocal3(self):
+        """ nonlocal must be used only when binding to non-global exists."""
+        # NICE_TO_HAVE
+        version = (3, 0)
+        code = 'foo = 1\ndef func():\n\tdef nested():\n\t\tnonlocal foo'
+        self.throws(code, NOBINDING, [], from_version(version))
+        self.throws(code, INVALIDSYNTAX, [], up_to_version(version))
 
 
 class MemoryErrorTests(GetSuggestionsTests):

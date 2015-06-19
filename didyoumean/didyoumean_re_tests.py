@@ -355,6 +355,10 @@ class RegexTests(unittest2.TestCase):
         for name, msg in msgs.items():
             self.re_matches(msg, re.OBJECT_HAS_NO_FUNC_RE, ('generator', name))
 
+    def test_nobinding_nonlocal(self):
+        """ Test NO_BINDING_NONLOCAL_RE ."""
+        msg = "no binding for nonlocal 'foo' found"
+        self.re_matches(msg, re.NO_BINDING_NONLOCAL_RE, ('foo', ))
 
 if __name__ == '__main__':
     print(sys.version_info)

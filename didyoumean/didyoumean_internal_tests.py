@@ -20,7 +20,9 @@ global_var = 42  # Please don't change the value
 class GetObjectInFrameTests(unittest2.TestCase):
     """ Class for tests related to frame/backtrace/etc inspection.
 
-    Tested functions are : get_objects_in_frame."""
+    Tested functions are : get_objects_in_frame.
+    No tests about 'nonlocal' is written because it is only supported
+    from Python 3."""
 
     def name_corresponds_to(self, name, expected):
         """ Helper functions to test get_objects_in_frame.
