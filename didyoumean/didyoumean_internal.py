@@ -395,11 +395,13 @@ def get_syntax_error_sugg(value, frame):
     match = re.match(re.INVALID_COMP_RE, error_msg)
     if match:
         yield quote('!=')
-    offset = value.offset
-    if offset is not None and offset > 2:
-        two_last = value.text[offset - 2:offset]
-        if two_last == '<>':
-            yield quote('!=')
+    match = re.match(re.INVALID_SYNTAX_RE, error_msg)
+    if match:
+        offset = value.offset
+        if offset is not None and offset > 2:
+            two_last = value.text[offset - 2:offset]
+            if two_last == '<>':
+                yield quote('!=')
 
 
 # Functions related to MemoryError
