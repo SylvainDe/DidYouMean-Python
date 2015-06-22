@@ -10,6 +10,13 @@ from collections import namedtuple
 
 #: Standard modules we'll consider while searching for undefined values
 # To be completed
+# Potential candidates :
+#  - sys.builtin_module_names
+# https://docs.python.org/2/library/sys.html#sys.builtin_module_names
+#  - sys.modules
+# https://docs.python.org/2/library/sys.html#sys.modules
+#  - pkgutil.iter_modules
+# https://docs.python.org/2/library/pkgutil.html#pkgutil.iter_modules
 STAND_MODULES = set(['string', 'os', 'sys', 're', 'math', 'random',
                      'datetime', 'timeit', 'unittest', 'itertools',
                      'functools', 'collections', '__future__'])
