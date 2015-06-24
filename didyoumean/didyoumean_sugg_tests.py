@@ -279,6 +279,14 @@ class NameErrorTests(GetSuggestionsTests):
         self.throws(typo, NAMEERROR, "'" + sugg + "' (global)")
         self.runs(sugg)
 
+    def test_decorator(self):
+        """Should be classmethod."""
+        typo, sugg = "class_method", "classmethod"
+        code = "@{0}\n" + func_gen()
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, NAMEERROR, "'" + sugg + "' (builtin)")
+        self.runs(good_code)
+
     def test_import(self):
         """Should be math."""
         code = 'import math\n{0}'
