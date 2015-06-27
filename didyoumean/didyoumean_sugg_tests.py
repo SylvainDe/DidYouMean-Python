@@ -1,6 +1,7 @@
 # -*- coding: utf-8
 """Unit tests for get_suggestions_for_exception."""
 from didyoumean_internal import get_suggestions_for_exception, STAND_MODULES
+from didyoumean_common_tests import NoFileError
 import unittest2
 import didyoumean_re as re
 import sys
@@ -179,7 +180,7 @@ IMPORTSTAR = (SyntaxError, re.IMPORTSTAR_RE)
 MEMORYERROR = (MemoryError, '')
 OVERFLOWERR = (OverflowError, re.RESULT_TOO_MANY_ITEMS_RE)
 # IOError
-NOFILE = (IOError, re.NO_SUCH_FILE_RE)
+NOFILE = (NoFileError, re.NO_SUCH_FILE_RE)
 IOERROR = (IOError, None)
 
 

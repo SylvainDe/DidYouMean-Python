@@ -407,21 +407,21 @@ class AddStringToExcTest(
         self.assertStringAdded(string, str1, str2)
         self.assertStringAdded(string, repr1, repr2, False, 3)
 
-    def test_add_empty_string_to_ioerr(self):
-        """ Empty string added to IOError. """
+    def test_add_empty_string_to_nofileerr(self):
+        """ Empty string added to NoFileError. """
         string = ""
         code = 'open("/does_not_exist")'
         str1, repr1, str2, repr2 = self.get_exc_as_str_before_and_after(
-            code, IOError, string)
+            code, common.NoFileError, string)
         self.assertStringAdded(string, str1, str2)
         self.assertStringAdded(string, repr1, repr2)
 
-    def test_add_string_to_ioerr(self):
-        """ Empty string added to IOError. """
+    def test_add_string_to_nofileerr(self):
+        """ Empty string added to NoFileError. """
         string = "ABCDEF"
         code = 'open("/does_not_exist")'
         str1, repr1, str2, repr2 = self.get_exc_as_str_before_and_after(
-            code, IOError, string)
+            code, common.NoFileError, string)
         self.assertStringAdded(string, str1, str2, False)
         self.assertStringAdded(string, repr1, repr2, False)
 

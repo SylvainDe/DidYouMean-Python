@@ -2,6 +2,11 @@
 """Common logic for unit tests."""
 import sys
 
+try:
+    NoFileError = FileNotFoundError
+except NameError:
+    NoFileError = IOError
+
 
 def no_exception(code):
     """Helper function to run code and check it works."""
