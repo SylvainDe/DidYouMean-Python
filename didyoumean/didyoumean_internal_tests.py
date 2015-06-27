@@ -341,6 +341,7 @@ class GetSuggStringTests(unittest2.TestCase):
 class AddStringToExcTest(
         unittest2.TestCase, common.TestWithStringFunction):
     """ Tests about add_string_to_exception. """
+    # This is getting highly repetitive and probably deserves a refactoring
 
     def get_exc_as_str_before_and_after(self, code, type_arg, string):
         """ Retrieve string representations of exceptions raised by code
@@ -405,6 +406,24 @@ class AddStringToExcTest(
             code, MemoryError, string)
         self.assertStringAdded(string, str1, str2)
         self.assertStringAdded(string, repr1, repr2, False, 3)
+
+    def test_add_empty_string_to_ioerr(self):
+        """ Empty string added to IOError. """
+        string = ""
+        code = 'open("/does_not_exist")'
+        str1, repr1, str2, repr2 = self.get_exc_as_str_before_and_after(
+            code, IOError, string)
+        self.assertStringAdded(string, str1, str2)
+        self.assertStringAdded(string, repr1, repr2)
+
+    def test_add_string_to_ioerr(self):
+        """ Empty string added to IOError. """
+        string = "ABCDEF"
+        code = 'open("/does_not_exist")'
+        str1, repr1, str2, repr2 = self.get_exc_as_str_before_and_after(
+            code, IOError, string)
+        self.assertStringAdded(string, str1, str2, False)
+        self.assertStringAdded(string, repr1, repr2, False)
 
 
 if __name__ == '__main__':

@@ -442,6 +442,13 @@ def suggest_memory_friendly_equi(name):
     return suggs.get(name, [])
 
 
+# Functions related to IOError
+def get_io_error_sugg(value, frame):
+    """Get suggestions for IOError exception."""
+    assert isinstance(value, IOError)
+    return []
+
+
 def get_suggestions_for_exception(value, traceback):
     """Get suggestions for an exception."""
     frame = get_last_frame(traceback)
@@ -454,6 +461,7 @@ def get_suggestions_for_exception(value, traceback):
         SyntaxError: get_syntax_error_sugg,
         MemoryError: get_memory_error_sugg,
         OverflowError: get_overflow_error_sugg,
+        IOError: get_io_error_sugg,
     }
     return itertools.chain.from_iterable(
         func(value, frame)
@@ -467,19 +475,26 @@ def add_string_to_exception(value, string):
     # or converted to string - may it be via `str()`, `repr()` or when the
     # exception is uncaught and displayed (which seems to use `str()`).
     # In an ideal world, one just needs to update `args` but apparently it
-    # is not enough for SyntaxError (and others?) where `msg` is to be
-    # updated too (for `str()`, not for `repr()`). Also, in case of memory
-    # errors (and others?), we don't have any args so we just add one.
+    # is not enough for SyntaxError, IOError (and others?) where other
+    # attributes (like `msg` or `strerror`) are to be updated too (for
+    # str()`, not for `repr()`).
+    # Also, elements in args might not be strings or args might me empty
+    # so we add to the first string and add the element otherwise.
     assert type(value.args) == tuple
-    nb_args = len(value.args)
     if string:
-        if nb_args:
-            value.args = tuple([value.args[0] + string] + list(value.args[1:]))
-            assert len(value.args) == nb_args
-        else:  # adding the string anyway
-            value.args = (string, )
+        lst_args = list(value.args)
+        for i, a in enumerate(lst_args):
+            if isinstance(a, str):
+                lst_args[i] = a + string
+                break
+        else:
+            # if no string arg, add the string anyway
+            lst_args.append(string)
+        value.args = tuple(lst_args)
         if hasattr(value, 'msg'):
             value.msg += string
+        if hasattr(value, 'strerror'):
+            value.strerror += string
 
 
 def get_last_frame(traceback):

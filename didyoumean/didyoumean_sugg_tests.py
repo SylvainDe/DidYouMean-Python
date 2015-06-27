@@ -178,6 +178,9 @@ IMPORTSTAR = (SyntaxError, re.IMPORTSTAR_RE)
 # MemoryError and OverflowError for MemoryErrorTests
 MEMORYERROR = (MemoryError, '')
 OVERFLOWERR = (OverflowError, re.RESULT_TOO_MANY_ITEMS_RE)
+# IOError
+NOFILE = (IOError, re.NO_SUCH_FILE_RE)
+IOERROR = (IOError, None)
 
 
 class GetSuggestionsTests(unittest2.TestCase):
@@ -215,8 +218,8 @@ class GetSuggestionsTests(unittest2.TestCase):
                 issubclass(error_type, type_caught),
                 "%s (%s) not a subclass of %s"
                 % (error_type, value, type_caught))
+            msg = next((a for a in value.args if isinstance(a, str)), '')
             if error_msg is not None:
-                msg = value.args[0] if value.args else ''
                 self.assertRegexpMatches(msg, error_msg)
             suggestions = sorted(
                 get_suggestions_for_exception(value, traceback))
@@ -1258,6 +1261,16 @@ class ValueErrorTests(GetSuggestionsTests):
         self.runs(old_code)
         self.throws(new_code, ZEROLENERROR, '{0}', up_to_version(version))
         self.runs(new_code, from_version(version))
+
+
+class IOError(GetSuggestionsTests):
+    """ Class for tests related to IOError ."""
+
+    def test_no_such_file(self):
+        """ Suggestions could be added for close filenames. """
+        # NICE_TO_HAVE
+        code = 'open("does_not_exist")'
+        self.throws(code, NOFILE)
 
 
 class AnyErrorTests(GetSuggestionsTests):

@@ -360,6 +360,12 @@ class RegexTests(unittest2.TestCase):
         msg = "no binding for nonlocal 'foo' found"
         self.re_matches(msg, re.NO_BINDING_NONLOCAL_RE, ('foo', ))
 
+    def test_nosuchfile(self):
+        """ Test NO_SUCH_FILE_RE ."""
+        msg = "No such file or directory"
+        self.re_matches(msg, re.NO_SUCH_FILE_RE, ())
+
+
 if __name__ == '__main__':
     print(sys.version_info)
     unittest2.main()
