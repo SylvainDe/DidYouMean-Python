@@ -340,7 +340,7 @@ class GetSuggStringTests(unittest2.TestCase):
 
 
 class AddStringToExcTest(common.TestWithStringFunction):
-    """ Tests about add_string_to_exception. """
+    """ Generic class for tests about add_string_to_exception. """
     concat_str = True
     concat_repr = True
     adj_repr = 0
@@ -352,31 +352,33 @@ class AddStringToExcTest(common.TestWithStringFunction):
         error_type = self.error_type
         type_, value, _ = common.get_exception(code)
         self.assertEqual(error_type, type_)
-        # A deep copy is created because the same exception might be reused
-        # in other tests : http://bugs.python.org/issue24529
-        value2 = copy.deepcopy(value)
-        add_string_to_exception(value2, string)
-        return (func(value), func(value2))
+        before = func(value)
+        add_string_to_exception(value, string)
+        after = func(value)
+        return (before, after)
 
     def check_string_added(self, func, string, concat, adj):
+        """ Check that add_string_to_exception adds the strings. """
         s1, s2 = self.get_exc_before_and_after(string, func)
         self.assertStringAdded(string, s1, s2, concat, adj)
 
     def test_add_empty_string_to_str(self):
-        """ Empty string added to error. """
+        """ Empty string added to error's str value. """
         self.check_string_added(str, "", True, 0)
 
     def test_add_empty_string_to_repr(self):
-        """ Empty string added to error. """
+        """ Empty string added to error's repr value. """
         self.check_string_added(repr, "", True, 0)
 
     def test_add_string_to_str(self):
-        """ Non-empty string added to error. """
-        self.check_string_added(str, "ABCDE", self.concat_str, 0)
+        """ Non-empty string added to error's str value. """
+        self.check_string_added(
+            str, "ABCDEstr", self.concat_str, 0)
 
     def test_add_string_to_repr(self):
-        """ Non-empty string added to NameError. """
-        self.check_string_added(repr, "ABCDE", self.concat_repr, self.adj_repr)
+        """ Non-empty string added to error's repr value. """
+        self.check_string_added(
+            repr, "ABCDErepr", self.concat_repr, self.adj_repr)
 
 
 class AddStringToNameErrorTest(unittest2.TestCase, AddStringToExcTest):
