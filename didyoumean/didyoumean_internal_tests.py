@@ -10,6 +10,7 @@ from didyoumean_common_tests import CommonTestOldStyleClass2,\
     CommonTestNewStyleClass2  # to have these 2 in defined names
 import unittest2
 import sys
+import copy
 
 
 OLD_CLASS_SUPPORT = sys.version_info >= (3, 0)
@@ -338,92 +339,71 @@ class GetSuggStringTests(unittest2.TestCase):
             get_suggestion_string(('0', '1')), ". Did you mean 0, 1?")
 
 
-class AddStringToExcTest(
-        unittest2.TestCase, common.TestWithStringFunction):
+class AddStringToExcTest(common.TestWithStringFunction):
     """ Tests about add_string_to_exception. """
-    # This is getting highly repetitive and probably deserves a refactoring
+    concat_str = True
+    concat_repr = True
+    adj_repr = 0
 
-    def get_exc_as_str_before_and_after(self, code, type_arg, string):
+    def get_exc_before_and_after(self, string, func):
         """ Retrieve string representations of exceptions raised by code
         before and after calling add_string_to_exception. """
+        code = self.code
+        error_type = self.error_type
         type_, value, _ = common.get_exception(code)
-        self.assertEqual(type_arg, type_)
-        str1, repr1 = str(value), repr(value)
-        add_string_to_exception(value, string)
-        str2, repr2 = str(value), repr(value)
-        return (str1, repr1, str2, repr2)
+        self.assertEqual(error_type, type_)
+        # A deep copy is created because the same exception might be reused
+        # in other tests : http://bugs.python.org/issue24529
+        value2 = copy.deepcopy(value)
+        add_string_to_exception(value2, string)
+        return (func(value), func(value2))
 
-    def test_add_empty_string(self):
-        """ Empty string added to NameError. """
-        string = ""
-        code = 'babar = 0\nbaba'
-        str1, repr1, str2, repr2 = self.get_exc_as_str_before_and_after(
-            code, NameError, string)
-        self.assertStringAdded(string, str1, str2)
-        self.assertStringAdded(string, repr1, repr2)
+    def check_string_added(self, func, string, concat, adj):
+        s1, s2 = self.get_exc_before_and_after(string, func)
+        self.assertStringAdded(string, s1, s2, concat, adj)
 
-    def test_add_string(self):
+    def test_add_empty_string_to_str(self):
+        """ Empty string added to error. """
+        self.check_string_added(str, "", True, 0)
+
+    def test_add_empty_string_to_repr(self):
+        """ Empty string added to error. """
+        self.check_string_added(repr, "", True, 0)
+
+    def test_add_string_to_str(self):
+        """ Non-empty string added to error. """
+        self.check_string_added(str, "ABCDE", self.concat_str, 0)
+
+    def test_add_string_to_repr(self):
         """ Non-empty string added to NameError. """
-        string = "ABCDEF"
-        code = 'babar = 0\nbaba'
-        str1, repr1, str2, repr2 = self.get_exc_as_str_before_and_after(
-            code, NameError, string)
-        self.assertStringAdded(string, str1, str2)
-        self.assertStringAdded(string, repr1, repr2, False)
+        self.check_string_added(repr, "ABCDE", self.concat_repr, self.adj_repr)
 
-    def test_add_empty_string_to_syntaxerr(self):
-        """ Empty string added to SyntaxError. """
-        string = ""
-        code = 'return'
-        str1, repr1, str2, repr2 = self.get_exc_as_str_before_and_after(
-            code, SyntaxError, string)
-        self.assertStringAdded(string, str1, str2)
-        self.assertStringAdded(string, repr1, repr2)
 
-    def test_add_string_to_syntaxerr(self):
-        """ Non-empty string added to SyntaxError. """
-        string = "ABCDEF"
-        code = 'return'
-        str1, repr1, str2, repr2 = self.get_exc_as_str_before_and_after(
-            code, SyntaxError, string)
-        self.assertStringAdded(string, str1, str2, False)
-        self.assertStringAdded(string, repr1, repr2, False)
+class AddStringToNameErrorTest(unittest2.TestCase, AddStringToExcTest):
+    code = 'babar = 0\nbaba'
+    error_type = NameError
+    concat_repr = False
 
-    def test_add_empty_string_to_memoryerr(self):
-        """ Empty string added to MemoryError. """
-        string = ""
-        code = '[0] * 999999999999999'
-        str1, repr1, str2, repr2 = self.get_exc_as_str_before_and_after(
-            code, MemoryError, string)
-        self.assertStringAdded(string, str1, str2)
-        self.assertStringAdded(string, repr1, repr2)
 
-    def test_add_string_to_memoryerr(self):
-        """ Non-empty string added to MemoryError. """
-        string = "ABCDEF"
-        code = '[0] * 999999999999999'
-        str1, repr1, str2, repr2 = self.get_exc_as_str_before_and_after(
-            code, MemoryError, string)
-        self.assertStringAdded(string, str1, str2)
-        self.assertStringAdded(string, repr1, repr2, False, 3)
+class AddStringToSyntaxErrorTest(unittest2.TestCase, AddStringToExcTest):
+    code = 'return'
+    error_type = SyntaxError
+    concat_str = False
+    concat_repr = False
 
-    def test_add_empty_string_to_nofileerr(self):
-        """ Empty string added to NoFileError. """
-        string = ""
-        code = 'open("/does_not_exist")'
-        str1, repr1, str2, repr2 = self.get_exc_as_str_before_and_after(
-            code, common.NoFileError, string)
-        self.assertStringAdded(string, str1, str2)
-        self.assertStringAdded(string, repr1, repr2)
 
-    def test_add_string_to_nofileerr(self):
-        """ Empty string added to NoFileError. """
-        string = "ABCDEF"
-        code = 'open("/does_not_exist")'
-        str1, repr1, str2, repr2 = self.get_exc_as_str_before_and_after(
-            code, common.NoFileError, string)
-        self.assertStringAdded(string, str1, str2, False)
-        self.assertStringAdded(string, repr1, repr2, False)
+class AddStringToMemoryErrorTest(unittest2.TestCase, AddStringToExcTest):
+    code = '[0] * 999999999999999'
+    error_type = MemoryError
+    concat_repr = False
+    adj_repr = 3
+
+
+class AddStringToIOErrorTest(unittest2.TestCase, AddStringToExcTest):
+    code = 'open("/does_not_exist")'
+    error_type = common.NoFileError
+    concat_str = False
+    concat_repr = False
 
 
 if __name__ == '__main__':
