@@ -3,7 +3,7 @@
 from didyoumean_api import didyoumean_decorator, didyoumean_contextmanager,\
     didyoumean_postmortem
 from didyoumean_common_tests import TestWithStringFunction,\
-    get_exception, no_exception, NoFileError
+    get_exception, no_exception, NoFileIoError
 import unittest2
 import sys
 import os
@@ -79,7 +79,7 @@ class ApiTest(TestWithStringFunction):
 
     def test_api_ioerror(self):
         """Check the case with IO error suggestion."""
-        type_ = NoFileError
+        type_ = NoFileIoError
         home = os.path.expanduser("~")
         sugg = ". Did you mean '" + home + "'?"
         code = 'with open("~") as f:\n\tpass'

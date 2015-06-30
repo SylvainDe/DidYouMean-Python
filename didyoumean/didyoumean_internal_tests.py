@@ -418,7 +418,7 @@ class AddStringToMemoryErrorTest(unittest2.TestCase, AddStringToExcTest):
 
 class AddStringToIOErrorTest(unittest2.TestCase, AddStringToExcTest):
     code = 'with open("/does_not_exist") as f:\n\tpass'
-    error_type = common.NoFileError
+    error_type = common.NoFileIoError
 
 
 if __name__ == '__main__':

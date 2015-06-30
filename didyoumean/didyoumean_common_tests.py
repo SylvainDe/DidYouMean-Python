@@ -3,9 +3,11 @@
 import sys
 
 try:
-    NoFileError = FileNotFoundError
+    NoFileIoError = FileNotFoundError
+    NoFileOsError = FileNotFoundError
 except NameError:
-    NoFileError = IOError
+    NoFileIoError = IOError
+    NoFileOsError = OSError
 
 
 def no_exception(code):

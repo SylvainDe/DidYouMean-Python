@@ -1,7 +1,7 @@
 # -*- coding: utf-8
 """Unit tests for get_suggestions_for_exception."""
 from didyoumean_internal import get_suggestions_for_exception, STAND_MODULES
-from didyoumean_common_tests import NoFileError
+from didyoumean_common_tests import NoFileIoError, NoFileOsError
 import unittest2
 import didyoumean_re as re
 import sys
@@ -181,8 +181,8 @@ IMPORTSTAR = (SyntaxError, re.IMPORTSTAR_RE)
 MEMORYERROR = (MemoryError, '')
 OVERFLOWERR = (OverflowError, re.RESULT_TOO_MANY_ITEMS_RE)
 # IOError
-NOFILE = (NoFileError, re.NO_SUCH_FILE_RE)
-NOFILE_OS = (OSError, re.NO_SUCH_FILE_RE)
+NOFILE_IO = (NoFileIoError, re.NO_SUCH_FILE_RE)
+NOFILE_OS = (NoFileOsError, re.NO_SUCH_FILE_RE)
 IOERROR = (IOError, None)
 
 
@@ -1274,7 +1274,7 @@ class IOError(GetSuggestionsTests):
     def test_no_such_file(self):
         """ File does not exist. """
         code = 'with open("doesnotexist") as f:\n\tpass'
-        self.throws(code, NOFILE)
+        self.throws(code, NOFILE_IO)
 
     def test_no_such_file2(self):
         """ File does not exist. """
