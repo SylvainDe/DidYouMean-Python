@@ -3,9 +3,10 @@
 from didyoumean_api import didyoumean_decorator, didyoumean_contextmanager,\
     didyoumean_postmortem
 from didyoumean_common_tests import TestWithStringFunction,\
-    get_exception, no_exception
+    get_exception, no_exception, NoFileError
 import unittest2
 import sys
+import os
 
 
 class ApiTest(TestWithStringFunction):
@@ -55,11 +56,12 @@ class ApiTest(TestWithStringFunction):
     def test_api_no_suggestion(self):
         """Check the case with no suggestion."""
         type_ = NameError
+        sugg = ""
         code = 'babar = 0\nfdjhflsdsqfjlkqs'
         str1, repr1, str2, repr2 = self.get_exc_as_str(
             code, type_)
-        self.assertStringAdded("", str1, str2)
-        self.assertStringAdded("", repr1, repr2)
+        self.assertStringAdded(sugg, str1, str2)
+        self.assertStringAdded(sugg, repr1, repr2)
 
     def test_api_syntax(self):
         """Check the case with syntax error suggestion."""
@@ -70,6 +72,20 @@ class ApiTest(TestWithStringFunction):
             code, type_)
         self.assertStringAdded(sugg, str1, str2)
         # normalise quotes as they get changed at some point on PyPy
+        self.assertStringAdded(
+            sugg.replace("'", '"'),
+            repr1.replace("'", '"'),
+            repr2.replace("'", '"'))
+
+    def test_api_ioerror(self):
+        """Check the case with IO error suggestion."""
+        type_ = NoFileError
+        home = os.path.expanduser("~")
+        sugg = ". Did you mean '" + home + "'?"
+        code = 'with open("~") as f:\n\tpass'
+        str1, repr1, str2, repr2 = self.get_exc_as_str(
+            code, type_)
+        self.assertStringAdded(sugg, str1, str2)
         self.assertStringAdded(
             sugg.replace("'", '"'),
             repr1.replace("'", '"'),
@@ -103,6 +119,9 @@ class PostMortemTest(unittest2.TestCase, ApiTest):
         """ Run code with didyoumean post mortem."""
         # A bit of an ugly way to proceed, in real life scenario
         # the sys.last_<something> members are set automatically.
+        for a in ('last_type', 'last_value', 'last_traceback'):
+            if hasattr(sys, a):
+                delattr(sys, a)
         try:
             exec(code)
         except:

@@ -6,6 +6,7 @@ import unittest2
 import didyoumean_re as re
 import sys
 import math
+import os
 
 
 this_is_a_global_list = []  # Value does not really matter but the type does
@@ -181,6 +182,7 @@ MEMORYERROR = (MemoryError, '')
 OVERFLOWERR = (OverflowError, re.RESULT_TOO_MANY_ITEMS_RE)
 # IOError
 NOFILE = (NoFileError, re.NO_SUCH_FILE_RE)
+NOFILE_OS = (OSError, re.NO_SUCH_FILE_RE)
 IOERROR = (IOError, None)
 
 
@@ -324,16 +326,18 @@ class NameErrorTests(GetSuggestionsTests):
         self.runs(good_code)
 
     def test_not_imported(self):
-        """Should be os.getenv after importing os"""
+        """Should be random.choice after importing random. """
         # This test assumes that `module` is not imported
-        module, attr = 'os', 'getenv'
+        module, attr = 'random', 'choice'
         self.assertFalse(module in locals())
         self.assertFalse(module in globals())
         self.assertTrue(module in STAND_MODULES)
         bad_code = attr
         good_code = 'from %s import %s\n' % (module, attr) + bad_code
         self.runs(good_code)
-        self.throws(bad_code, NAMEERROR, "'getenv' from os (not imported)")
+        self.throws(
+            bad_code, NAMEERROR,
+            "'%s' from %s (not imported)" % (attr, module))
 
     def test_enclosing_scope(self):
         """Variables from enclosing scope can be used too."""
@@ -1268,10 +1272,37 @@ class IOError(GetSuggestionsTests):
     """ Class for tests related to IOError ."""
 
     def test_no_such_file(self):
-        """ Suggestions could be added for close filenames. """
-        # NICE_TO_HAVE
-        code = 'open("does_not_exist")'
+        """ File does not exist. """
+        code = 'with open("doesnotexist") as f:\n\tpass'
         self.throws(code, NOFILE)
+
+    def test_no_such_file2(self):
+        """ File does not exist. """
+        code = 'os.listdir("doesnotexist")'
+        self.throws(code, NOFILE_OS)
+
+    def test_no_such_file_user(self):
+        """ Suggestions when one needs to expanduser . """
+        code = 'os.listdir("{0}")'
+        typo, sugg = "~", os.path.expanduser("~")
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, NOFILE_OS, "'" + sugg + "'")
+        self.runs(good_code)
+
+    def test_no_such_file_vars(self):
+        """ Suggestions when one needs to expandvars . """
+        code = 'os.listdir("{0}")'
+        key = 'HOME'
+        typo, sugg = "$" + key, os.path.expanduser("~")
+        original_home = os.environ.get('HOME', None)
+        os.environ[key] = sugg
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, NOFILE_OS, "'" + sugg + "'")
+        self.runs(good_code)
+        if original_home is None:
+            del os.environ[key]
+        else:
+            os.environ[key] = original_home
 
 
 class AnyErrorTests(GetSuggestionsTests):

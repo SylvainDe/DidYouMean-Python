@@ -5,6 +5,8 @@ import difflib
 import didyoumean_re as re
 import itertools
 import inspect
+import errno
+import os
 from collections import namedtuple
 
 
@@ -445,8 +447,20 @@ def suggest_memory_friendly_equi(name):
 # Functions related to IOError
 def get_io_error_sugg(value, frame):
     """Get suggestions for IOError exception."""
-    assert isinstance(value, IOError)
-    return []
+    # https://www.python.org/dev/peps/pep-3151/
+    assert isinstance(value, (IOError, OSError))
+    err, error_msg = value.args
+    if err == errno.ENOENT:
+        for f in suggest_if_file_does_not_exist(value.filename):
+            yield f
+
+
+def suggest_if_file_does_not_exist(filename):
+    """ Suggestions when a file does not exist."""
+    for f in (os.path.expanduser, os.path.expandvars):
+        expanded = f(filename)
+        if os.path.exists(expanded) and filename != expanded:
+            yield quote(expanded)
 
 
 def get_suggestions_for_exception(value, traceback):
@@ -462,6 +476,7 @@ def get_suggestions_for_exception(value, traceback):
         MemoryError: get_memory_error_sugg,
         OverflowError: get_overflow_error_sugg,
         IOError: get_io_error_sugg,
+        OSError: get_io_error_sugg,
     }
     return itertools.chain.from_iterable(
         func(value, frame)
