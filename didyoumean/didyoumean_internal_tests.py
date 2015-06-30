@@ -341,9 +341,8 @@ class GetSuggStringTests(unittest2.TestCase):
 
 class AddStringToExcTest(common.TestWithStringFunction):
     """ Generic class for tests about add_string_to_exception. """
-    concat_str = True
-    concat_repr = True
-    adj_repr = 0
+    prefix_repr = ""
+    suffix_repr = ""
 
     def get_exc_before_and_after(self, string, func):
         """ Retrieve string representations of exceptions raised by code
@@ -357,55 +356,69 @@ class AddStringToExcTest(common.TestWithStringFunction):
         after = func(value)
         return (before, after)
 
-    def check_string_added(self, func, string, concat, adj):
+    def check_string_added(self, func, string, prefix="", suffix=""):
         """ Check that add_string_to_exception adds the strings. """
         s1, s2 = self.get_exc_before_and_after(string, func)
-        self.assertStringAdded(string, s1, s2, concat, adj)
+        self.assertStringAdded(prefix + string + suffix, s1, s2)
 
     def test_add_empty_string_to_str(self):
         """ Empty string added to error's str value. """
-        self.check_string_added(str, "", True, 0)
+        self.check_string_added(str, "")
 
     def test_add_empty_string_to_repr(self):
         """ Empty string added to error's repr value. """
-        self.check_string_added(repr, "", True, 0)
+        self.check_string_added(repr, "")
 
     def test_add_string_to_str(self):
         """ Non-empty string added to error's str value. """
-        self.check_string_added(
-            str, "ABCDEstr", self.concat_str, 0)
+        self.check_string_added(str, "ABCDEstr")
 
     def test_add_string_to_repr(self):
         """ Non-empty string added to error's repr value. """
         self.check_string_added(
-            repr, "ABCDErepr", self.concat_repr, self.adj_repr)
+            repr, "ABCDErepr", self.prefix_repr, self.suffix_repr)
 
 
 class AddStringToNameErrorTest(unittest2.TestCase, AddStringToExcTest):
     code = 'babar = 0\nbaba'
     error_type = NameError
-    concat_repr = False
+
+
+class AddStringToTypeErrorTest(unittest2.TestCase, AddStringToExcTest):
+    code = '[0](0)'
+    error_type = TypeError
+
+
+class AddStringToImportErrorTest(unittest2.TestCase, AddStringToExcTest):
+    code = 'import maths'
+    error_type = ImportError
+
+
+class AddStringToKeyErrorTest(unittest2.TestCase, AddStringToExcTest):
+    code = 'dict()["ffdsqmjklfqsd"]'
+    error_type = KeyError
+
+
+class AddStringToAttributeErrorTest(unittest2.TestCase, AddStringToExcTest):
+    code = '[].does_not_exist'
+    error_type = AttributeError
 
 
 class AddStringToSyntaxErrorTest(unittest2.TestCase, AddStringToExcTest):
     code = 'return'
     error_type = SyntaxError
-    concat_str = False
-    concat_repr = False
 
 
 class AddStringToMemoryErrorTest(unittest2.TestCase, AddStringToExcTest):
     code = '[0] * 999999999999999'
     error_type = MemoryError
-    concat_repr = False
-    adj_repr = 3
+    prefix_repr = "'"
+    suffix_repr = "',"
 
 
 class AddStringToIOErrorTest(unittest2.TestCase, AddStringToExcTest):
     code = 'open("/does_not_exist")'
     error_type = common.NoFileError
-    concat_str = False
-    concat_repr = False
 
 
 if __name__ == '__main__':

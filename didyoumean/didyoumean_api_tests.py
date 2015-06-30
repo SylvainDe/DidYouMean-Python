@@ -50,7 +50,7 @@ class ApiTest(TestWithStringFunction):
         str1, repr1, str2, repr2 = self.get_exc_as_str(
             code, type_)
         self.assertStringAdded(sugg, str1, str2)
-        self.assertStringAdded(sugg, repr1, repr2, False)
+        self.assertStringAdded(sugg, repr1, repr2)
 
     def test_api_no_suggestion(self):
         """Check the case with no suggestion."""
@@ -68,8 +68,8 @@ class ApiTest(TestWithStringFunction):
         code = 'return'
         str1, repr1, str2, repr2 = self.get_exc_as_str(
             code, type_)
-        self.assertStringAdded(sugg, str1, str2, False)
-        self.assertStringAdded(sugg, repr1, repr2, False)
+        self.assertStringAdded(sugg, str1, str2)
+        self.assertStringAdded(sugg, repr1, repr2)
 
 
 class DecoratorTest(unittest2.TestCase, ApiTest):

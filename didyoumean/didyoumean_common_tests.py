@@ -45,21 +45,19 @@ class CommonTestNewStyleClass2(object):
 class TestWithStringFunction(object):
     """ Unit test class with an helper method. """
 
-    def assertStringAdded(self, string, before, after, concat=True, adj=0):
+    def assertStringAdded(self, string, before, after):
         """ Check that `string` has been added to `before` to get `after`.
         In some representation, string is not added via pure concatenation but
         can be added anywhere. Reusing as many already defined assert methods
-        to have the pretty printing.
-        - Argument `concat` is used to know whether concatenation is to be
-        checked (after = before + string)
-        `adj` is used as an adjustment when comparing string lengths."""
+        to have the pretty printing. """
         if string:
             self.assertNotEqual(before, after)
             self.assertFalse(string in before, before)
             self.assertTrue(string in after, after)
-            self.assertEqual(len(after), len(before) + len(string) + adj)
-            if concat:
-                self.assertEqual(before + string, after)
+            # Removing string and checking that we get the original string
+            begin, mid, end = after.partition(string)
+            self.assertEqual(mid, string)
+            self.assertEqual(begin + end, before)
         else:
             self.assertEqual(before, after)
 
