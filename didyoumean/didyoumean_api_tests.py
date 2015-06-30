@@ -69,7 +69,11 @@ class ApiTest(TestWithStringFunction):
         str1, repr1, str2, repr2 = self.get_exc_as_str(
             code, type_)
         self.assertStringAdded(sugg, str1, str2)
-        self.assertStringAdded(sugg, repr1, repr2)
+        # normalise quotes as they get changed at some point on PyPy
+        self.assertStringAdded(
+            sugg.replace("'", '"'),
+            repr1.replace("'", '"'),
+            repr2.replace("'", '"'))
 
 
 class DecoratorTest(unittest2.TestCase, ApiTest):
