@@ -218,9 +218,18 @@ def suggest_name_as_keyword_typo(name):
 
 def suggest_name_as_special_case(name):
     """ Suggest that name could correspond to a typo with special handling."""
-    # Imaginary unit is '1j' in Python
-    if name == 'i' or name == 'j':
-        yield quote('1j') + " (imaginary unit)"
+    special_cases = {
+        # Imaginary unit is '1j' in Python
+        'i': quote('1j') + " (imaginary unit)",
+        'j': quote('1j') + " (imaginary unit)",
+        # Shell commands entered in interpreter
+        'pwd': 'os.getcwd()',
+        'ls': 'os.listdir(os.getcwd())',
+        'cd': 'os.chdir(path)',
+    }
+    result = special_cases.get(name, None)
+    if result is not None:
+        yield result
 
 
 # Functions related to AttributeError
