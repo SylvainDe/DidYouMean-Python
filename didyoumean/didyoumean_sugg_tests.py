@@ -1131,6 +1131,15 @@ class SyntaxErrorTests(GetSuggestionsTests):
             self.throws(bad_code, INVALIDSYNTAX)
             self.runs(good_code)
 
+    def test_wrong_bool_operator(self):
+        """ Trying to use '&&' or '||'. """
+        # NICE_TO_HAVE
+        code = 'True {0} False'
+        for typo, sugg in (('&&', 'and'), ('||', 'or')):
+            bad_code, good_code = format_str(code, typo, sugg)
+            self.throws(bad_code, INVALIDSYNTAX)
+            self.runs(good_code)
+
     def test_import_future_not_first(self):
         """ Imports from __future__ need before anything else ."""
         code = 'a = 8/7\nfrom __future__ import division'
