@@ -1286,7 +1286,9 @@ class IOError(GetSuggestionsTests):
         code = 'os.listdir("{0}")'
         typo, sugg = "~", os.path.expanduser("~")
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NOFILE_OS, "'" + sugg + "'")
+        self.throws(
+            bad_code, NOFILE_OS,
+            "'" + sugg + "' (calling os.path.expanduser)")
         self.runs(good_code)
 
     def test_no_such_file_vars(self):
@@ -1297,7 +1299,9 @@ class IOError(GetSuggestionsTests):
         original_home = os.environ.get('HOME', None)
         os.environ[key] = sugg
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NOFILE_OS, "'" + sugg + "'")
+        self.throws(
+            bad_code, NOFILE_OS,
+            "'" + sugg + "' (calling os.path.expandvars)")
         self.runs(good_code)
         if original_home is None:
             del os.environ[key]

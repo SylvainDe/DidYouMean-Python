@@ -81,7 +81,7 @@ class ApiTest(TestWithStringFunction):
         """Check the case with IO error suggestion."""
         type_ = NoFileIoError
         home = os.path.expanduser("~")
-        sugg = ". Did you mean '" + home + "'?"
+        sugg = ". Did you mean '" + home + "' (calling os.path.expanduser)?"
         code = 'with open("~") as f:\n\tpass'
         str1, repr1, str2, repr2 = self.get_exc_as_str(
             code, type_)

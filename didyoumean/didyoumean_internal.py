@@ -457,10 +457,12 @@ def get_io_error_sugg(value, frame):
 
 def suggest_if_file_does_not_exist(filename):
     """ Suggestions when a file does not exist."""
-    for f in (os.path.expanduser, os.path.expandvars):
-        expanded = f(filename)
+    for func, name in (
+            (os.path.expanduser, 'os.path.expanduser'),
+            (os.path.expandvars, 'os.path.expandvars')):
+        expanded = func(filename)
         if os.path.exists(expanded) and filename != expanded:
-            yield quote(expanded)
+            yield quote(expanded) + " (calling " + name + ")"
 
 
 def get_suggestions_for_exception(value, traceback):

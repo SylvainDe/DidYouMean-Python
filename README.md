@@ -9,7 +9,7 @@ DidYouMean-Python
 [![Code Climate](https://codeclimate.com/github/SylvainDe/DidYouMean-Python/badges/gpa.svg)](https://codeclimate.com/github/SylvainDe/DidYouMean-Python)
 [![Code Issues](http://www.quantifiedcode.com/api/v1/project/34c9b3f27db24a1ba944fcf3d69a9d2a/badge.svg)](http://www.quantifiedcode.com/app/project/34c9b3f27db24a1ba944fcf3d69a9d2a)
 
-Logic to have various kind of suggestions in case of errors (NameError, AttributeError, ImportError, TypeError, ValueError, SyntaxError, MemoryError, OverflowError).
+Logic to have various kind of suggestions in case of errors (NameError, AttributeError, ImportError, TypeError, ValueError, SyntaxError, MemoryError, OverflowError, IOError, OSError).
 
 Inspired by "Did you mean" for Ruby ([Explanation](http://www.yukinishijima.net/2014/10/21/did-you-mean-experience-in-ruby.html), [Github Page](https://github.com/yuki24/did_you_mean)), this is a simple implementation for/in Python. I wanted to see if I could mess around and create something similar in Python and it seems to be possible.
 
@@ -97,16 +97,16 @@ pi
 ##### Looking for missing imports
 
 ```python
-os.getenv
-#>>> Before: NameError("name 'os' is not defined",)
-#>>> After: NameError("name 'os' is not defined. Did you mean to import os first?",)
+string.ascii_lowercase
+#>>> Before: NameError("name 'string' is not defined",)
+#>>> After: NameError("name 'string' is not defined. Did you mean to import string first?",)
 ```
 ##### Looking in missing imports
 
 ```python
-getenv
-#>>> Before: NameError("name 'getenv' is not defined",)
-#>>> After: NameError("name 'getenv' is not defined. Did you mean 'getenv' from os (not imported)?",)
+choice
+#>>> Before: NameError("name 'choice' is not defined",)
+#>>> After: NameError("name 'choice' is not defined. Did you mean 'choice' from random (not imported)?",)
 ```
 ##### Special cases
 
@@ -239,6 +239,16 @@ range(999999999999999)
 #>>> Before: OverflowError('range() result has too many items',)
 #>>> After: OverflowError("range() result has too many items. Did you mean 'xrange'?",)
 ```
+### OSError/IOError
+
+##### Suggestion for tilde/variable expansions
+
+```python
+os.listdir('~')
+#>>> Before: OSError(2, 'No such file or directory')
+#>>> After: OSError(2, "No such file or directory. Did you mean '/home/user' (calling os.path.expanduser)?")
+```
+
 
 Usage
 -----

@@ -2,15 +2,26 @@
 """Code to generate examples in README.md."""
 from didyoumean_internal import add_suggestions_to_exception
 import sys
+import os
 
 
 def get_exception(code):
-    """Helper function to run code and get what it throws."""
+    """ Helper function to run code and get what it throws. """
     try:
         exec(code)
     except:
         return sys.exc_info()
     return None
+
+
+def standardise(string):
+    """ Replace strings from the environment by the name of the environment
+    variable. """
+    for var in ['USER']:
+        val = os.environ.get(var, None)
+        if val is not None:
+            string = string.replace(val, var.lower())
+    return string
 
 
 def main():
@@ -35,10 +46,10 @@ def main():
                 "import math\npi",
             ],
             (3, "Looking for missing imports"): [
-                "os.getenv",
+                "string.ascii_lowercase",
             ],
             (4, "Looking in missing imports"): [
-                "getenv",
+                "choice",
             ],
             (5, "Special cases"): [
                 "assert j ** 2 == -1",
@@ -99,11 +110,18 @@ def main():
                 "range(999999999999999)",
             ],
         },
+        (9, (OSError, IOError)): {
+            (1, "Suggestion for tilde/variable expansions"): [
+                "os.listdir('~')",
+            ]
+        }
     }
 
     str_func = repr  # could be str or repr
-    for (_, exc_type), exc_examples in sorted(examples.items()):
-        print("### %s\n" % exc_type.__name__)
+    for (_, exc_types), exc_examples in sorted(examples.items()):
+        if not isinstance(exc_types, tuple):
+            exc_types = (exc_types, )
+        print("### %s\n" % "/".join(e.__name__ for e in exc_types))
         for (_, desc), codes in sorted(exc_examples.items()):
             print("##### %s\n" % desc)
             for code in codes:
@@ -113,13 +131,13 @@ def main():
                         "No exception thrown on this version of Python"
                 else:
                     type_, value, traceback = exc
-                    if not issubclass(type_, exc_type):
+                    if not issubclass(type_, exc_types):
                         before = after = \
                             "Wrong exception thrown on this version of Python"
                     else:
-                        before = str_func(value)
+                        before = standardise(str_func(value))
                         add_suggestions_to_exception(type_, value, traceback)
-                        after = str_func(value)
+                        after = standardise(str_func(value))
                         if before == after:
                             after += " (unchanged on this version of Python)"
                 print("""```python
