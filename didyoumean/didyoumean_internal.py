@@ -458,20 +458,35 @@ def get_io_error_sugg(value, frame):
     """Get suggestions for IOError exception."""
     # https://www.python.org/dev/peps/pep-3151/
     assert isinstance(value, (IOError, OSError))
+    assert not (isinstance(value, IOError) and isinstance(value, OSError))
     err, error_msg = value.args
-    if err == errno.ENOENT:
-        for f in suggest_if_file_does_not_exist(value.filename):
-            yield f
+    errnos = {
+        errno.ENOENT: suggest_if_file_does_not_exist(value.filename),
+        errno.ENOTDIR: suggest_if_file_is_not_dir(value.filename),
+        errno.EISDIR: suggest_if_file_is_dir(value.filename),
+    }
+    return errnos.get(err, [])
 
 
 def suggest_if_file_does_not_exist(filename):
     """ Suggestions when a file does not exist."""
+    # TODO: Add fuzzy match
     for func, name in (
             (os.path.expanduser, 'os.path.expanduser'),
             (os.path.expandvars, 'os.path.expandvars')):
         expanded = func(filename)
         if os.path.exists(expanded) and filename != expanded:
             yield quote(expanded) + " (calling " + name + ")"
+
+
+def suggest_if_file_is_not_dir(filename):
+    """ Suggestions when a file should have been a dir and is not. """
+    yield quote(os.path.dirname(filename)) + " (calling os.path.dirname)"
+
+
+def suggest_if_file_is_dir(filename):
+    """ Suggestions when a file is a dir and should not. """
+    return []
 
 
 def get_suggestions_for_exception(value, traceback):

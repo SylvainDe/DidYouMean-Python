@@ -2,12 +2,23 @@
 """Common logic for unit tests."""
 import sys
 
+old_errors = (IOError, OSError)
+
 try:
-    NoFileIoError = FileNotFoundError
-    NoFileOsError = FileNotFoundError
+    NoFileIoError = NoFileOsError = FileNotFoundError
 except NameError:
-    NoFileIoError = IOError
-    NoFileOsError = OSError
+    NoFileIoError, NoFileOsError = old_errors
+
+try:
+    IsDirIoError = IsDirOsError = IsADirectoryError
+except NameError:
+    IsDirIoError, IsDirOsError = old_errors
+
+
+try:
+    NotDirIoError = NotDirOsError = NotADirectoryError
+except NameError:
+    NotDirIoError, NotDirOsError = old_errors
 
 
 def no_exception(code):

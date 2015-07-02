@@ -1,7 +1,7 @@
 # -*- coding: utf-8
 """Unit tests for get_suggestions_for_exception."""
 from didyoumean_internal import get_suggestions_for_exception, STAND_MODULES
-from didyoumean_common_tests import NoFileIoError, NoFileOsError
+import didyoumean_common_tests as common
 import unittest2
 import didyoumean_re as re
 import sys
@@ -181,9 +181,12 @@ IMPORTSTAR = (SyntaxError, re.IMPORTSTAR_RE)
 MEMORYERROR = (MemoryError, '')
 OVERFLOWERR = (OverflowError, re.RESULT_TOO_MANY_ITEMS_RE)
 # IOError
-NOFILE_IO = (NoFileIoError, re.NO_SUCH_FILE_RE)
-NOFILE_OS = (NoFileOsError, re.NO_SUCH_FILE_RE)
-IOERROR = (IOError, None)
+NOFILE_IO = (common.NoFileIoError, re.NO_SUCH_FILE_RE)
+NOFILE_OS = (common.NoFileOsError, re.NO_SUCH_FILE_RE)
+NOTADIR_IO = (common.NotDirIoError, "^Not a directory$")
+NOTADIR_OS = (common.NotDirOsError, "^Not a directory$")
+ISADIR_IO = (common.IsDirIoError, "^Is a directory$")
+ISADIR_OS = (common.IsDirOsError, "^Is a directory$")
 
 
 class GetSuggestionsTests(unittest2.TestCase):
@@ -1328,6 +1331,25 @@ class IOError(GetSuggestionsTests):
             del os.environ[key]
         else:
             os.environ[key] = original_home
+
+    def test_is_dir(self):
+        """ Suggestions when file is a directory. """
+        # NICE_TO_HAVE
+        code = 'with open("{0}") as f:\n\tpass'
+        home = os.path.expanduser("~")
+        bad_code, _ = format_str(code, home, "TODO")
+        self.throws(bad_code, ISADIR_IO)
+
+    def test_is_not_dir(self):
+        """ Suggestions when file is not a directory. """
+        code = 'with open("{0}") as f:\n\tpass'
+        code = 'os.listdir("{0}")'
+        typo, sugg = __file__, os.path.dirname(__file__)
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(
+            bad_code, NOTADIR_OS,
+            "'" + sugg + "' (calling os.path.dirname)")
+        self.runs(good_code)
 
 
 class AnyErrorTests(GetSuggestionsTests):
