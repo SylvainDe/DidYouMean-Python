@@ -458,7 +458,6 @@ def get_io_error_sugg(value, frame):
     """Get suggestions for IOError exception."""
     # https://www.python.org/dev/peps/pep-3151/
     assert isinstance(value, (IOError, OSError))
-    assert not (isinstance(value, IOError) and isinstance(value, OSError))
     err, error_msg = value.args
     errnos = {
         errno.ENOENT: suggest_if_file_does_not_exist(value.filename),
