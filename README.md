@@ -34,6 +34,8 @@ See also :
 
  - [TheF*ck](https://github.com/nvbn/thefuck) : Correct and execute your previous shell command.
 
+ - [PyDidYouMean](https://github.com/asweigart/pydidyoumean) : Improve "file/command not found" errors with suggestions.
+
 
 Example
 -------
