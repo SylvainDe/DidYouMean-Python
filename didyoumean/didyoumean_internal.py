@@ -454,7 +454,7 @@ def suggest_memory_friendly_equi(name):
 
 
 # Functions related to IOError
-def get_io_error_sugg(value, frame):
+def get_io_os_error_sugg(value, frame):
     """Get suggestions for IOError exception."""
     # https://www.python.org/dev/peps/pep-3151/
     assert isinstance(value, (IOError, OSError))
@@ -500,8 +500,7 @@ def get_suggestions_for_exception(value, traceback):
         SyntaxError: get_syntax_error_sugg,
         MemoryError: get_memory_error_sugg,
         OverflowError: get_overflow_error_sugg,
-        IOError: get_io_error_sugg,
-        OSError: get_io_error_sugg,
+        (IOError, OSError): get_io_os_error_sugg,
     }
     return itertools.chain.from_iterable(
         func(value, frame)
