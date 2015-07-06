@@ -7,6 +7,8 @@ import didyoumean_re as re
 import sys
 import math
 import os
+import tempfile
+from shutil import rmtree
 
 
 this_is_a_global_list = []  # Value does not really matter but the type does
@@ -187,6 +189,7 @@ NOTADIR_IO = (common.NotDirIoError, "^Not a directory$")
 NOTADIR_OS = (common.NotDirOsError, "^Not a directory$")
 ISADIR_IO = (common.IsDirIoError, "^Is a directory$")
 ISADIR_OS = (common.IsDirOsError, "^Is a directory$")
+DIRNOTEMPTY_OS = (OSError, "^Directory not empty$")
 
 
 class GetSuggestionsTests(unittest2.TestCase):
@@ -1332,13 +1335,52 @@ class IOError(GetSuggestionsTests):
         else:
             os.environ[key] = original_home
 
-    def test_is_dir(self):
-        """ Suggestions when file is a directory. """
-        # NICE_TO_HAVE
+    def create_tmp_dir_with_files(self, filelist):
+        """ Creates a temporary directory with files in it."""
+        tmpdir = tempfile.mkdtemp()
+        files = [os.path.join(tmpdir, f) for f in filelist]
+        for name in files:
+            open(name, 'a').close()
+        return tmpdir
+
+    def test_is_dir_empty(self):
+        """ Suggestions when file is an empty directory. """
+        # Create empty temp dir
+        tmpdir = self.create_tmp_dir_with_files([])
         code = 'with open("{0}") as f:\n\tpass'
-        home = os.path.expanduser("~")
-        bad_code, _ = format_str(code, home, "TODO")
-        self.throws(bad_code, ISADIR_IO)
+        bad_code, _ = format_str(code, tmpdir, "TODO")
+        self.throws(bad_code, ISADIR_IO, "to add content to %s first" % tmpdir)
+        rmtree(tmpdir)
+
+    def test_is_dir_small(self):
+        """ Suggestions when file is directory with a few files. """
+        # Create temp dir with a few files
+        nb_files = 3
+        files = sorted([str(i) + ".txt" for i in range(nb_files)])
+        tmpdir = self.create_tmp_dir_with_files(files)
+        code = 'with open("{0}") as f:\n\tpass'
+        bad_code, good_code = format_str(code, tmpdir, files[0])
+        self.throws(
+            bad_code, ISADIR_IO,
+            "any of the 3 files in directory ('0.txt', '1.txt', '2.txt')")
+        self.runs(good_code)
+        rmtree(tmpdir)
+
+    def test_is_dir_big(self):
+        """ Suggestions when file is directory with many files. """
+        # Create temp dir with many files
+        tmpdir = tempfile.mkdtemp()
+        nb_files = 30
+        files = sorted([str(i) + ".txt" for i in range(nb_files)])
+        tmpdir = self.create_tmp_dir_with_files(files)
+        code = 'with open("{0}") as f:\n\tpass'
+        bad_code, good_code = format_str(code, tmpdir, files[0])
+        self.throws(
+            bad_code, ISADIR_IO,
+            "any of the 30 files in directory "
+            "('0.txt', '1.txt', '10.txt', '11.txt', etc)")
+        self.runs(good_code)
+        rmtree(tmpdir)
 
     def test_is_not_dir(self):
         """ Suggestions when file is not a directory. """
@@ -1350,6 +1392,15 @@ class IOError(GetSuggestionsTests):
             bad_code, NOTADIR_OS,
             "'" + sugg + "' (calling os.path.dirname)")
         self.runs(good_code)
+
+    def test_dir_is_not_empty(self):
+        """ Suggestions when directory is not empty. """
+        # NICE_TO_HAVE
+        nb_files = 3
+        files = sorted([str(i) + ".txt" for i in range(nb_files)])
+        tmpdir = self.create_tmp_dir_with_files(files)
+        self.throws('os.rmdir("%s")' % tmpdir, DIRNOTEMPTY_OS)
+        rmtree(tmpdir)  # this should be the suggestion
 
 
 class AnyErrorTests(GetSuggestionsTests):

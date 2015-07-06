@@ -460,16 +460,17 @@ def get_io_os_error_sugg(value, frame):
     assert isinstance(value, (IOError, OSError))
     err, error_msg = value.args
     errnos = {
-        errno.ENOENT: suggest_if_file_does_not_exist(value.filename),
-        errno.ENOTDIR: suggest_if_file_is_not_dir(value.filename),
-        errno.EISDIR: suggest_if_file_is_dir(value.filename),
+        errno.ENOENT: suggest_if_file_does_not_exist,
+        errno.ENOTDIR: suggest_if_file_is_not_dir,
+        errno.EISDIR: suggest_if_file_is_dir,
     }
-    return errnos.get(err, [])
+    return errnos.get(err, lambda x: [])(value)
 
 
-def suggest_if_file_does_not_exist(filename):
+def suggest_if_file_does_not_exist(value):
     """ Suggestions when a file does not exist."""
     # TODO: Add fuzzy match
+    filename = value.filename
     for func, name in (
             (os.path.expanduser, 'os.path.expanduser'),
             (os.path.expandvars, 'os.path.expandvars')):
@@ -478,14 +479,25 @@ def suggest_if_file_does_not_exist(filename):
             yield quote(expanded) + " (calling " + name + ")"
 
 
-def suggest_if_file_is_not_dir(filename):
+def suggest_if_file_is_not_dir(value):
     """ Suggestions when a file should have been a dir and is not. """
+    filename = value.filename
     yield quote(os.path.dirname(filename)) + " (calling os.path.dirname)"
 
 
-def suggest_if_file_is_dir(filename):
+def suggest_if_file_is_dir(value):
     """ Suggestions when a file is a dir and should not. """
-    return []
+    filename = value.filename
+    listdir = sorted(os.listdir(filename))
+    if listdir:
+        LIMIT = 4
+        trunc_l = listdir[:LIMIT]
+        truncated = listdir != trunc_l
+        filelist = [quote(f) for f in trunc_l] + (["etc"] if truncated else [])
+        yield "any of the %d files in directory (%s)" % (
+            len(listdir), ", ".join(filelist))
+    else:
+        yield "to add content to %s first" % filename
 
 
 def get_suggestions_for_exception(value, traceback):
