@@ -227,7 +227,7 @@ def suggest_name_as_special_case(name):
         'ls': 'os.listdir(os.getcwd())',
         'cd': 'os.chdir(path)',
     }
-    result = special_cases.get(name, None)
+    result = special_cases.get(name)
     if result is not None:
         yield result
 
@@ -453,12 +453,12 @@ def suggest_memory_friendly_equi(name):
     return suggs.get(name, [])
 
 
-# Functions related to IOError
-def get_io_os_error_sugg(value, frame):
-    """Get suggestions for IOError exception."""
+# Functions related to IOError/OSError
+def get_io_os_error_sugg(value, _):
+    """Get suggestions for IOError/OSError exception."""
     # https://www.python.org/dev/peps/pep-3151/
     assert isinstance(value, (IOError, OSError))
-    err, error_msg = value.args
+    err, _ = value.args
     errnos = {
         errno.ENOENT: suggest_if_file_does_not_exist,
         errno.ENOTDIR: suggest_if_file_is_not_dir,

@@ -10,7 +10,6 @@ from didyoumean_common_tests import CommonTestOldStyleClass2,\
     CommonTestNewStyleClass2  # to have these 2 in defined names
 import unittest2
 import sys
-import copy
 
 
 OLD_CLASS_SUPPORT = sys.version_info >= (3, 0)

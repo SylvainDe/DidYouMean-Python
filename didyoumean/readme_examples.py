@@ -18,7 +18,7 @@ def standardise(string):
     """ Replace strings from the environment by the name of the environment
     variable. """
     for var in ['USER']:
-        val = os.environ.get(var, None)
+        val = os.environ.get(var)
         if val is not None:
             string = string.replace(val, var.lower())
     return string

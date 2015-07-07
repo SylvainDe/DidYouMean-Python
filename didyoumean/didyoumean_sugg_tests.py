@@ -643,7 +643,7 @@ class AttributeErrorTests(GetSuggestionsTests):
             bad_code,
             ATTRIBUTEERROR,
             ["'%s' (but it is supposed to be private)" % sugg,
-                "'%s'" % sugg2])
+             "'%s'" % sugg2])
         self.runs(bad_sugg)
         self.runs(good_sugg)
 
@@ -1295,7 +1295,7 @@ class ValueErrorTests(GetSuggestionsTests):
         self.runs(new_code, from_version(version))
 
 
-class IOError(GetSuggestionsTests):
+class IOErrorTests(GetSuggestionsTests):
     """ Class for tests related to IOError ."""
 
     def test_no_such_file(self):
@@ -1323,7 +1323,7 @@ class IOError(GetSuggestionsTests):
         code = 'os.listdir("{0}")'
         key = 'HOME'
         typo, sugg = "$" + key, os.path.expanduser("~")
-        original_home = os.environ.get('HOME', None)
+        original_home = os.environ.get('HOME')
         os.environ[key] = sugg
         bad_code, good_code = format_str(code, typo, sugg)
         self.throws(
