@@ -1338,15 +1338,15 @@ class IOError(GetSuggestionsTests):
     def create_tmp_dir_with_files(self, filelist):
         """ Creates a temporary directory with files in it."""
         tmpdir = tempfile.mkdtemp()
-        files = [os.path.join(tmpdir, f) for f in filelist]
-        for name in files:
+        absfiles = [os.path.join(tmpdir, f) for f in filelist]
+        for name in absfiles:
             open(name, 'a').close()
-        return tmpdir
+        return (tmpdir, absfiles)
 
     def test_is_dir_empty(self):
         """ Suggestions when file is an empty directory. """
         # Create empty temp dir
-        tmpdir = self.create_tmp_dir_with_files([])
+        tmpdir, _ = self.create_tmp_dir_with_files([])
         code = 'with open("{0}") as f:\n\tpass'
         bad_code, _ = format_str(code, tmpdir, "TODO")
         self.throws(bad_code, ISADIR_IO, "to add content to %s first" % tmpdir)
@@ -1357,9 +1357,9 @@ class IOError(GetSuggestionsTests):
         # Create temp dir with a few files
         nb_files = 3
         files = sorted([str(i) + ".txt" for i in range(nb_files)])
-        tmpdir = self.create_tmp_dir_with_files(files)
+        tmpdir, absfiles = self.create_tmp_dir_with_files(files)
         code = 'with open("{0}") as f:\n\tpass'
-        bad_code, good_code = format_str(code, tmpdir, files[0])
+        bad_code, good_code = format_str(code, tmpdir, absfiles[0])
         self.throws(
             bad_code, ISADIR_IO,
             "any of the 3 files in directory ('0.txt', '1.txt', '2.txt')")
@@ -1372,9 +1372,9 @@ class IOError(GetSuggestionsTests):
         tmpdir = tempfile.mkdtemp()
         nb_files = 30
         files = sorted([str(i) + ".txt" for i in range(nb_files)])
-        tmpdir = self.create_tmp_dir_with_files(files)
+        tmpdir, absfiles = self.create_tmp_dir_with_files(files)
         code = 'with open("{0}") as f:\n\tpass'
-        bad_code, good_code = format_str(code, tmpdir, files[0])
+        bad_code, good_code = format_str(code, tmpdir, absfiles[0])
         self.throws(
             bad_code, ISADIR_IO,
             "any of the 30 files in directory "
@@ -1398,7 +1398,7 @@ class IOError(GetSuggestionsTests):
         # NICE_TO_HAVE
         nb_files = 3
         files = sorted([str(i) + ".txt" for i in range(nb_files)])
-        tmpdir = self.create_tmp_dir_with_files(files)
+        tmpdir, _ = self.create_tmp_dir_with_files(files)
         self.throws('os.rmdir("%s")' % tmpdir, DIRNOTEMPTY_OS)
         rmtree(tmpdir)  # this should be the suggestion
 
