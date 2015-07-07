@@ -487,14 +487,17 @@ class NameErrorTests(GetSuggestionsTests):
     def test_shell_commands(self):
         """ Trying shell commands ."""
         cmd, sugg = 'ls', 'os.listdir(os.getcwd())'
-        self.throws(cmd, NAMEERROR, sugg)
+        self.throws(cmd, NAMEERROR, "'" + sugg + "'")
         self.runs(sugg)
         cmd, sugg = 'pwd', 'os.getcwd()'
-        self.throws(cmd, NAMEERROR, sugg)
+        self.throws(cmd, NAMEERROR, "'" + sugg + "'")
         self.runs(sugg)
         cmd, sugg = 'cd', 'os.chdir(path)'
-        self.throws(cmd, NAMEERROR, sugg)
+        self.throws(cmd, NAMEERROR, "'" + sugg + "'")
         self.runs(sugg.replace('path', 'os.getcwd()'))
+        cmd = 'rm'
+        sugg = "'os.remove(filename)', 'shutil.rmtree(dir)' for recursive"
+        self.throws(cmd, NAMEERROR, sugg)
 
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""

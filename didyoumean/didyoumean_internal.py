@@ -223,9 +223,10 @@ def suggest_name_as_special_case(name):
         'i': quote('1j') + " (imaginary unit)",
         'j': quote('1j') + " (imaginary unit)",
         # Shell commands entered in interpreter
-        'pwd': 'os.getcwd()',
-        'ls': 'os.listdir(os.getcwd())',
-        'cd': 'os.chdir(path)',
+        'pwd': quote('os.getcwd()'),
+        'ls': quote('os.listdir(os.getcwd())'),
+        'cd': quote('os.chdir(path)'),
+        'rm': "'os.remove(filename)', 'shutil.rmtree(dir)' for recursive",
     }
     result = special_cases.get(name)
     if result is not None:
