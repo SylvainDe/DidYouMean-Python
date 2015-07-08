@@ -224,9 +224,9 @@ class GetSuggestionsTests(unittest2.TestCase):
             type_caught, value, traceback = get_exception(code)
             self.assertTrue(isinstance(value, type_caught))
             self.assertTrue(
-                issubclass(error_type, type_caught),
-                "%s (%s) not a subclass of %s"
-                % (error_type, value, type_caught))
+                issubclass(type_caught, error_type),
+                "{0} ({1}) not a subclass of {2}"
+                .format(type_caught, value, error_type))
             msg = next((a for a in value.args if isinstance(a, str)), '')
             if error_msg is not None:
                 self.assertRegexpMatches(msg, error_msg)
@@ -339,11 +339,11 @@ class NameErrorTests(GetSuggestionsTests):
         self.assertFalse(module in globals())
         self.assertTrue(module in STAND_MODULES)
         bad_code = attr
-        good_code = 'from %s import %s\n' % (module, attr) + bad_code
+        good_code = 'from {0} import {1}\n{2}'.format(module, attr, bad_code)
         self.runs(good_code)
         self.throws(
             bad_code, NAMEERROR,
-            "'%s' from %s (not imported)" % (attr, module))
+            "'{0}' from {1} (not imported)".format(attr, module))
 
     def test_enclosing_scope(self):
         """Variables from enclosing scope can be used too."""
@@ -435,16 +435,16 @@ class NameErrorTests(GetSuggestionsTests):
     def test_import_sugg(self):
         """Should import module first."""
         module = 'collections'
-        sugg = 'import %s' % module
+        sugg = 'import {0}'.format(module)
         typo, good_code = module, sugg + '\n' + module
         self.assertFalse(module in locals())
         self.assertFalse(module in globals())
         self.assertTrue(module in STAND_MODULES)
         suggestions = (
             # module.module is suggested on Python 3.3 :-/
-            ["'%s' from %s (not imported)" % (module, module)]
+            ["'{0}' from {1} (not imported)".format(module, module)]
             if version_in_range(((3, 3), (3, 4))) else []) + \
-            ['to %s first' % sugg]
+            ['to {0} first'.format(sugg)]
         self.throws(typo, NAMEERROR, suggestions)
         self.runs(good_code)
 
@@ -645,8 +645,8 @@ class AttributeErrorTests(GetSuggestionsTests):
         self.throws(
             bad_code,
             ATTRIBUTEERROR,
-            ["'%s' (but it is supposed to be private)" % sugg,
-             "'%s'" % sugg2])
+            ["'{0}' (but it is supposed to be private)".format(sugg),
+             "'{0}'".format(sugg2)])
         self.runs(bad_sugg)
         self.runs(good_sugg)
 
@@ -1352,7 +1352,8 @@ class IOErrorTests(GetSuggestionsTests):
         tmpdir, _ = self.create_tmp_dir_with_files([])
         code = 'with open("{0}") as f:\n\tpass'
         bad_code, _ = format_str(code, tmpdir, "TODO")
-        self.throws(bad_code, ISADIR_IO, "to add content to %s first" % tmpdir)
+        self.throws(
+            bad_code, ISADIR_IO, "to add content to {0} first".format(tmpdir))
         rmtree(tmpdir)
 
     def test_is_dir_small(self):
@@ -1402,7 +1403,7 @@ class IOErrorTests(GetSuggestionsTests):
         nb_files = 3
         files = sorted([str(i) + ".txt" for i in range(nb_files)])
         tmpdir, _ = self.create_tmp_dir_with_files(files)
-        self.throws('os.rmdir("%s")' % tmpdir, DIRNOTEMPTY_OS)
+        self.throws('os.rmdir("{0}")'.format(tmpdir), DIRNOTEMPTY_OS)
         rmtree(tmpdir)  # this should be the suggestion
 
 
@@ -1417,8 +1418,8 @@ class AnyErrorTests(GetSuggestionsTests):
         raised_exc, other_exc = KeyError, TypeError
         raised, other = raised_exc.__name__, other_exc.__name__
         code = "try:\n\traise %s()\nexcept {0}:\n\tpass" % raised
-        typo = "%s, %s" % (other, raised)
-        sugg = "(%s)" % typo
+        typo = "{0}, {1}".format(other, raised)
+        sugg = "({0})".format(typo)
         bad1, bad2, good1, good2 = format_str(code, typo, other, sugg, raised)
         self.throws(bad1, (raised_exc, None), [], up_to_version(version))
         self.throws(bad1, INVALIDSYNTAX, [], from_version(version))

@@ -31,7 +31,7 @@ SYNONYMS_SETS = [set(['add', 'append']), set(['extend', 'update'])]
 # Helper function for string manipulation
 def quote(string):
     """Surround string with single quotes."""
-    return "'%s'" % string
+    return "'{0}'".format(string)
 
 
 def get_close_matches(word, possibilities):
@@ -182,7 +182,7 @@ def suggest_name_as_attribute(name, objdict):
             if hasattr(obj, name):
                 yield quote(nameobj + '.' + name) + \
                     ('' if prev_scope is None else
-                     ' (%s hidden by %s)' % (scope, prev_scope))
+                     ' ({0} hidden by {1})'.format(scope, prev_scope))
                 break
             prev_scope = scope
 
@@ -192,14 +192,14 @@ def suggest_name_as_missing_import(name, objdict, frame):
     Example: 'foo' -> 'import mod, mod.foo'."""
     for mod in STAND_MODULES:
         if mod not in objdict and name in dir(import_from_frame(mod, frame)):
-            yield "'%s' from %s (not imported)" % (name, mod)
+            yield "'{0}' from {1} (not imported)".format(name, mod)
 
 
 def suggest_name_as_standard_module(name):
     """Suggest that name could be a non-imported standard module.
     Example: 'os.whatever' -> 'import os' and then 'os.whatever'."""
     if name in STAND_MODULES:
-        yield 'to import %s first' % name
+        yield 'to import {0} first'.format(name)
 
 
 def suggest_name_as_name_typo(name, objdict):
@@ -353,7 +353,7 @@ def suggest_import_from_module(imported_name, frame):
     Example: 'from itertools import pi' -> 'from math import pi'."""
     for mod in STAND_MODULES:
         if imported_name in dir(import_from_frame(mod, frame)):
-            yield quote('from %s import %s' % (mod, imported_name))
+            yield quote('from {0} import {1}'.format(mod, imported_name))
 
 
 # Functions related to TypeError
@@ -495,10 +495,10 @@ def suggest_if_file_is_dir(value):
         trunc_l = listdir[:LIMIT]
         truncated = listdir != trunc_l
         filelist = [quote(f) for f in trunc_l] + (["etc"] if truncated else [])
-        yield "any of the %d files in directory (%s)" % (
+        yield "any of the {0} files in directory ({1})".format(
             len(listdir), ", ".join(filelist))
     else:
-        yield "to add content to %s first" % filename
+        yield "to add content to {0} first".format(filename)
 
 
 def get_suggestions_for_exception(value, traceback):

@@ -121,9 +121,9 @@ def main():
     for (_, exc_types), exc_examples in sorted(examples.items()):
         if not isinstance(exc_types, tuple):
             exc_types = (exc_types, )
-        print("### %s\n" % "/".join(e.__name__ for e in exc_types))
+        print("### {0}\n".format("/".join(e.__name__ for e in exc_types)))
         for (_, desc), codes in sorted(exc_examples.items()):
-            print("##### %s\n" % desc)
+            print("##### {0}\n".format(desc))
             for code in codes:
                 exc = get_exception(code)
                 if exc is None:
@@ -141,10 +141,10 @@ def main():
                         if before == after:
                             after += " (unchanged on this version of Python)"
                 print("""```python
-%s
-#>>> Before: %s
-#>>> After: %s
-```""" % (code, before, after))
+{0}
+#>>> Before: {1}
+#>>> After: {2}
+```""".format(standardise(code), before, after))
 
 if __name__ == '__main__':
     main()
