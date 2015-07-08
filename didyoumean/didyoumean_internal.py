@@ -400,27 +400,45 @@ def get_syntax_error_sugg(value, frame):
     """Get suggestions for SyntaxError exception."""
     assert isinstance(value, SyntaxError)
     error_msg = value.args[0]
-    match = re.match(re.OUTSIDE_FUNCTION_RE, error_msg)
-    if match:
-        yield "to indent it"
-        word, = match.groups()
-        if word == 'return':
-            yield "'sys.exit([arg])'"
-    match = re.match(re.FUTURE_FEATURE_NOT_DEF_RE, error_msg)
-    if match:
-        feature, = match.groups()
-        for m in suggest_imported_name_as_typo(feature, '__future__', frame):
-            yield m
-    match = re.match(re.INVALID_COMP_RE, error_msg)
-    if match:
-        yield quote('!=')
-    match = re.match(re.INVALID_SYNTAX_RE, error_msg)
-    if match:
-        offset = value.offset
-        if offset is not None and offset > 2:
-            two_last = value.text[offset - 2:offset]
-            if two_last == '<>':
-                yield quote('!=')
+    errors = {
+        re.OUTSIDE_FUNCTION_RE: suggest_outside_func_error,
+        re.FUTURE_FEATURE_NOT_DEF_RE: suggest_future_feature,
+        re.INVALID_COMP_RE: suggest_invalid_comp,
+        re.INVALID_SYNTAX_RE: suggest_invalid_syntax,
+    }
+    for regex, func in errors.items():
+        match = re.match(regex, error_msg)
+        if match:
+            return func(value, frame, match)
+    return []
+
+
+def suggest_outside_func_error(_, __, match):
+    """ Suggestions in case of OUTSIDE_FUNCTION error."""
+    yield "to indent it"
+    word, = match.groups()
+    if word == 'return':
+        yield "'sys.exit([arg])'"
+
+
+def suggest_future_feature(_, frame, match):
+    """ Suggestions in case of FUTURE_FEATURE_NOT_DEF error."""
+    feature, = match.groups()
+    return suggest_imported_name_as_typo(feature, '__future__', frame)
+
+
+def suggest_invalid_comp(_, __, ___):
+    """ Suggestions in case of INVALID_COMP error."""
+    yield quote('!=')
+
+
+def suggest_invalid_syntax(value, _, __):
+    """ Suggestions in case of INVALID_SYNTAX error."""
+    offset = value.offset
+    if offset is not None and offset > 2:
+        two_last = value.text[offset - 2:offset]
+        if two_last == '<>':
+            yield quote('!=')
 
 
 # Functions related to MemoryError
