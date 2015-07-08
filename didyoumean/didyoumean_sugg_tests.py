@@ -122,7 +122,7 @@ def no_exception(code):
 def get_exception(code):
     """Helper function to run code and get what it throws."""
     try:
-        exec(code)
+        no_exception(code)
     except:
         return sys.exc_info()
     assert False, "No exception thrown"

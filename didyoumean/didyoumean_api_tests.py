@@ -99,7 +99,7 @@ class DecoratorTest(unittest2.TestCase, ApiTest):
         """ Run code with didyoumean decorator."""
         @didyoumean_decorator
         def my_func():
-            exec(code) in globals(), locals()
+            no_exception(code)
         my_func()
 
 
@@ -109,7 +109,7 @@ class ContextManagerTest(unittest2.TestCase, ApiTest):
     def run_with_api(self, code):
         """ Run code with didyoumean context manager."""
         with didyoumean_contextmanager():
-            exec(code)
+            no_exception(code)
 
 
 class PostMortemTest(unittest2.TestCase, ApiTest):
@@ -123,7 +123,7 @@ class PostMortemTest(unittest2.TestCase, ApiTest):
             if hasattr(sys, a):
                 delattr(sys, a)
         try:
-            exec(code)
+            no_exception(code)
         except:
             sys.last_type, sys.last_value, sys.last_traceback = sys.exc_info()
         ret = didyoumean_postmortem()
