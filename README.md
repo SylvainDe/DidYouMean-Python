@@ -3,11 +3,16 @@ DidYouMean-Python
 
 [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/SylvainDe/DidYouMean-Python?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/SylvainDe/DidYouMean-Python.svg)](https://travis-ci.org/SylvainDe/DidYouMean-Python)
+
 [![Coverage Status](https://coveralls.io/repos/SylvainDe/DidYouMean-Python/badge.svg?branch=master)](https://coveralls.io/r/SylvainDe/DidYouMean-Python?branch=master)
 [![codecov.io](http://codecov.io/github/SylvainDe/DidYouMean-Python/coverage.svg?branch=master)](http://codecov.io/github/SylvainDe/DidYouMean-Python?branch=master)
+
 [![Code Health](https://landscape.io/github/SylvainDe/DidYouMean-Python/master/landscape.svg?style=flat)](https://landscape.io/github/SylvainDe/DidYouMean-Python/master)
 [![Code Climate](https://codeclimate.com/github/SylvainDe/DidYouMean-Python/badges/gpa.svg)](https://codeclimate.com/github/SylvainDe/DidYouMean-Python)
 [![Code Issues](http://www.quantifiedcode.com/api/v1/project/34c9b3f27db24a1ba944fcf3d69a9d2a/badge.svg)](http://www.quantifiedcode.com/app/project/34c9b3f27db24a1ba944fcf3d69a9d2a)
+[![Scrutinizer](https://scrutinizer-ci.com/g/SylvainDe/DidYouMean-Python/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/SylvainDe/DidYouMean-Python/?branch=master)
+[![Codacy Badge](https://www.codacy.com/project/badge/54bed0a6466b48ea973325cff2594376)](https://www.codacy.com/app/sylvain-desodt-github/DidYouMean-Python)
+
 
 Logic to have various kind of suggestions in case of errors (NameError, AttributeError, ImportError, TypeError, ValueError, SyntaxError, MemoryError, OverflowError, IOError, OSError).
 
