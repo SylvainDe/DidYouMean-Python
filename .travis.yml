@@ -21,7 +21,7 @@ before_script:
 
 script:
  - coverage run -m unittest2.__main__ discover --start-directory=didyoumean --pattern=*.py
- - coverage run -p didyoumean/readme_examples.py
+ - python didyoumean/readme_examples.py
 
 after_success:
  - coveralls
