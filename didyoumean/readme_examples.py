@@ -2,7 +2,6 @@
 """Code to generate examples in README.md."""
 from didyoumean_internal import add_suggestions_to_exception
 import didyoumean_common_tests as common
-import sys
 import os
 
 
