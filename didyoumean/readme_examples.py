@@ -1,17 +1,9 @@
 # -*- coding: utf-8
 """Code to generate examples in README.md."""
 from didyoumean_internal import add_suggestions_to_exception
+import didyoumean_common_tests as common
 import sys
 import os
-
-
-def get_exception(code):
-    """ Helper function to run code and get what it throws. """
-    try:
-        exec(code)
-    except:
-        return sys.exc_info()
-    return None
 
 
 def standardise(string):
@@ -125,7 +117,7 @@ def main():
         for (_, desc), codes in sorted(exc_examples.items()):
             print("##### {0}\n".format(desc))
             for code in codes:
-                exc = get_exception(code)
+                exc = common.get_exception(code)
                 if exc is None:
                     before = after = \
                         "No exception thrown on this version of Python"

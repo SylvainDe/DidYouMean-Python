@@ -32,7 +32,7 @@ def get_exception(code):
         no_exception(code)
     except:
         return sys.exc_info()
-    assert False, "No exception thrown"
+    return None
 
 
 class CommonTestOldStyleClass:
