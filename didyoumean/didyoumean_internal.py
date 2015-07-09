@@ -27,6 +27,9 @@ STAND_MODULES = set(['string', 'os', 'sys', 're', 'math', 'random',
 # To be completed
 SYNONYMS_SETS = [set(['add', 'append']), set(['extend', 'update'])]
 
+#: Maximum number of files suggested
+MAX_NB_FILES = 4
+
 
 # Helper function for string manipulation
 def quote(string):
@@ -147,22 +150,10 @@ def import_from_frame(module_name, frame):
 
 
 # Functions related to NameError
-def get_name_error_sugg(value, frame):
-    """Get suggestions for NameError exception."""
-    assert isinstance(value, NameError)
-    assert len(value.args) == 1
-    error_msg, = value.args
-    error_re = re.UNBOUNDERROR_RE if isinstance(value, UnboundLocalError) \
-        else re.NAMENOTDEFINED_RE
-    match = re.match(error_re, error_msg)
-    if match:
-        name, = match.groups()
-        return get_name_suggestions(name, frame)
-    return []
-
-
-def get_name_suggestions(name, frame):
+def suggest_name_not_defined(value, frame, groups):
     """Get the suggestions for name in case of NameError."""
+    del value  # unused param
+    name, = groups
     objs = get_objects_in_frame(frame)
     return itertools.chain(
         suggest_name_as_attribute(name, objs),
@@ -205,15 +196,15 @@ def suggest_name_as_standard_module(name):
 def suggest_name_as_name_typo(name, objdict):
     """Suggest that name could be a typo (misspelled existing name).
     Example: 'foobaf' -> 'foobar'."""
-    for n in get_close_matches(name, objdict.keys()):
-        yield quote(n) + ' (' + objdict[n][0].scope + ')'
+    for name in get_close_matches(name, objdict.keys()):
+        yield quote(name) + ' (' + objdict[name][0].scope + ')'
 
 
 def suggest_name_as_keyword_typo(name):
     """Suggest that name could be a typo (misspelled keyword).
     Example: 'yieldd' -> 'yield'."""
-    for n in get_close_matches(name, keyword.kwlist):
-        yield quote(n) + " (keyword)"
+    for name in get_close_matches(name, keyword.kwlist):
+        yield quote(name) + " (keyword)"
 
 
 def suggest_name_as_special_case(name):
@@ -234,20 +225,18 @@ def suggest_name_as_special_case(name):
 
 
 # Functions related to AttributeError
-def get_attribute_error_sugg(value, frame):
-    """Get suggestions for AttributeError exception."""
-    assert isinstance(value, AttributeError)
-    assert len(value.args) == 1
-    error_msg, = value.args
-    match = re.match(re.ATTRIBUTEERROR_RE, error_msg)
-    if match:
-        type_str, attr = match.groups()
-        return get_attribute_suggestions(type_str, attr, frame)
-    match = re.match(re.MODULEHASNOATTRIBUTE_RE, error_msg)
-    if match:
-        _, attr = match.groups()  # name ignored for the time being
-        return get_attribute_suggestions('module', attr, frame)
-    return []
+def suggest_attribute_error(value, frame, groups):
+    """ Suggestions in case of ATTRIBUTEERROR. """
+    del value  # unused param
+    type_str, attr = groups
+    return get_attribute_suggestions(type_str, attr, frame)
+
+
+def suggest_module_has_no_attr(value, frame, groups):
+    """ Suggestions in case of MODULEHASNOATTRIBUTE. """
+    del value  # unused param
+    _, attr = groups  # name ignored for the time being
+    return get_attribute_suggestions('module', attr, frame)
 
 
 def get_attribute_suggestions(type_str, attribute, frame):
@@ -300,40 +289,28 @@ def suggest_attribute_synonyms(attribute, attributes):
 def suggest_attribute_as_typo(attribute, attributes):
     """Suggest the attribute could be a typo.
     Example: 'a.do_baf()' -> 'a.do_bar()'."""
-    for n in get_close_matches(attribute, attributes):
+    for name in get_close_matches(attribute, attributes):
         # Handle Private name mangling
-        if n.startswith('_') and '__' in n and not n.endswith('__'):
-            yield quote(n) + ' (but it is supposed to be private)'
+        if name.startswith('_') and '__' in name and not name.endswith('__'):
+            yield quote(name) + ' (but it is supposed to be private)'
         else:
-            yield quote(n)
+            yield quote(name)
 
 
 # Functions related to ImportError
-def get_import_error_sugg(value, frame):
-    """Get suggestions for ImportError exception."""
-    assert isinstance(value, ImportError)
-    assert len(value.args) == 1
-    error_msg, = value.args
-    match = re.match(re.NOMODULE_RE, error_msg)
-    if match:
-        module_str, = match.groups()
-        return get_module_name_suggestion(module_str)
-    match = re.match(re.CANNOTIMPORT_RE, error_msg)
-    if match:
-        imported_name, = match.groups()
-        return get_imported_name_suggestion(imported_name, frame)
-    return []
-
-
-def get_module_name_suggestion(module_str):
+def suggest_no_module(value, frame, groups):
     """Get the suggestions closest to the failing module import.
     Example: 'import maths' -> 'import math'."""
-    for n in get_close_matches(module_str, STAND_MODULES):
-        yield quote(n)
+    del value, frame  # unused param
+    module_str, = groups
+    for name in get_close_matches(module_str, STAND_MODULES):
+        yield quote(name)
 
 
-def get_imported_name_suggestion(imported_name, frame):
+def suggest_cannot_import(value, frame, groups):
     """Get the suggestions closest to the failing import."""
+    del value  # unused param
+    imported_name, = groups
     module_name = frame.f_code.co_names[0]
     return itertools.chain(
         suggest_imported_name_as_typo(imported_name, module_name, frame),
@@ -344,8 +321,8 @@ def suggest_imported_name_as_typo(imported_name, module_name, frame):
     """Suggest that imported name could be a typo from actual name in module.
     Example: 'from math import pie' -> 'from math import pi'."""
     dir_mod = dir(import_from_frame(module_name, frame))
-    for n in get_close_matches(imported_name, dir_mod):
-        yield quote(n)
+    for name in get_close_matches(imported_name, dir_mod):
+        yield quote(name)
 
 
 def suggest_import_from_module(imported_name, frame):
@@ -357,83 +334,68 @@ def suggest_import_from_module(imported_name, frame):
 
 
 # Functions related to TypeError
-def get_type_error_sugg(value, frame):
-    """Get suggestions for TypeError exception."""
-    assert isinstance(value, TypeError)
-    assert len(value.args) == 1
-    error_msg, = value.args
-    match = re.match(re.UNSUBSCRIBTABLE_RE, error_msg)
-    if match:
-        type_str, = match.groups()
-        types = get_types_for_str(type_str, frame)
-        if any(hasattr(t, '__call__') for t in types):
-            yield quote(type_str + '(value)')
-    match = re.match(re.UNEXPECTED_KEYWORDARG_RE, error_msg)
-    if match:
-        func_name, kw_arg = match.groups()
-        objs = get_objects_in_frame(frame)
-        func = objs[func_name][0].obj
-        args = func.__code__.co_varnames
-        for n in get_close_matches(kw_arg, args):
-            yield quote(n)
-    match = re.match(re.NOT_CALLABLE_RE, error_msg)
-    if match:
-        type_str, = match.groups()
-        types = get_types_for_str(type_str, frame)
-        if any(hasattr(t, '__getitem__') for t in types):
-            yield quote(type_str + '[value]')
+def suggest_unsubscriptable(value, frame, groups):
+    """ Suggestions in case of UNSUBSCRIBTABLE error."""
+    del value  # unused param
+    type_str, = groups
+    types = get_types_for_str(type_str, frame)
+    if any(hasattr(t, '__call__') for t in types):
+        yield quote(type_str + '(value)')
+
+
+def suggest_unexpected_keywordarg(value, frame, groups):
+    """ Suggestions in case of UNEXPECTED_KEYWORDARG error."""
+    del value  # unused param
+    func_name, kw_arg = groups
+    objs = get_objects_in_frame(frame)
+    func = objs[func_name][0].obj
+    args = func.__code__.co_varnames
+    for name in get_close_matches(kw_arg, args):
+        yield quote(name)
+
+
+def suggest_not_callable(value, frame, groups):
+    """ Suggestions in case of NOT_CALLABLE error."""
+    del value  # unused param
+    type_str, = groups
+    types = get_types_for_str(type_str, frame)
+    if any(hasattr(t, '__getitem__') for t in types):
+        yield quote(type_str + '[value]')
 
 
 # Functions related to ValueError
-def get_value_error_sugg(value, _):
-    """Get suggestions for ValueError exception."""
-    assert isinstance(value, ValueError)
-    assert len(value.args) == 1
-    error_msg, = value.args
-    match = re.match(re.ZERO_LEN_FIELD_RE, error_msg)
-    if match:
-        yield '{0}'
+def suggest_zero_len_field(value, frame, groups):
+    """ Suggestions in case of ZERO_LEN_FIELD. """
+    del value, frame, groups  # unused param
+    yield '{0}'
 
 
 # Functions related to SyntaxError
-def get_syntax_error_sugg(value, frame):
-    """Get suggestions for SyntaxError exception."""
-    assert isinstance(value, SyntaxError)
-    error_msg = value.args[0]
-    errors = {
-        re.OUTSIDE_FUNCTION_RE: suggest_outside_func_error,
-        re.FUTURE_FEATURE_NOT_DEF_RE: suggest_future_feature,
-        re.INVALID_COMP_RE: suggest_invalid_comp,
-        re.INVALID_SYNTAX_RE: suggest_invalid_syntax,
-    }
-    for regex, func in errors.items():
-        match = re.match(regex, error_msg)
-        if match:
-            return func(value, frame, match)
-    return []
-
-
-def suggest_outside_func_error(_, __, match):
+def suggest_outside_func_error(value, frame, groups):
     """ Suggestions in case of OUTSIDE_FUNCTION error."""
+    del value, frame  # unused param
     yield "to indent it"
-    word, = match.groups()
+    word, = groups
     if word == 'return':
         yield "'sys.exit([arg])'"
 
 
-def suggest_future_feature(_, frame, match):
+def suggest_future_feature(value, frame, groups):
     """ Suggestions in case of FUTURE_FEATURE_NOT_DEF error."""
-    feature, = match.groups()
+    del value  # unused param
+    feature, = groups
     return suggest_imported_name_as_typo(feature, '__future__', frame)
 
 
-def suggest_invalid_comp(_, __, ___):
+def suggest_invalid_comp(value, frame, groups):
     """ Suggestions in case of INVALID_COMP error."""
+    del value, frame, groups  # unused param
     yield quote('!=')
 
 
-def suggest_invalid_syntax(value, _, __):
+def suggest_invalid_syntax(value, frame, groups):
     """ Suggestions in case of INVALID_SYNTAX error."""
+    del frame, groups  # unused param
     offset = value.offset
     if offset is not None and offset > 2:
         two_last = value.text[offset - 2:offset]
@@ -446,36 +408,31 @@ def get_memory_error_sugg(value, frame):
     """Get suggestions for MemoryError exception."""
     assert isinstance(value, MemoryError)
     objs = get_objects_in_frame(frame)
-    for name in frame.f_code.co_names:
-        for sugg in suggest_memory_friendly_equi(name):
-            if sugg in objs:
-                yield quote(sugg)
+    return itertools.chain.from_iterable(
+        suggest_memory_friendly_equi(name, objs)
+        for name in frame.f_code.co_names)
 
 
 # Functions related to OverflowError
-def get_overflow_error_sugg(value, frame):
-    """Get suggestions for OverflowError exception."""
-    assert isinstance(value, OverflowError)
+def suggest_too_many_items(value, frame, groups):
+    """ Suggest for TOO_MANY_ITEMS error. """
+    del value  # unused param
+    func, = groups
     objs = get_objects_in_frame(frame)
-    error_msg = value.args[0]
-    match = re.match(re.RESULT_TOO_MANY_ITEMS_RE, error_msg)
-    if match:
-        func, = match.groups()
-        for sugg in suggest_memory_friendly_equi(func):
-            if sugg in objs:
-                yield quote(sugg)
+    return suggest_memory_friendly_equi(func, objs)
 
 
-def suggest_memory_friendly_equi(name):
+def suggest_memory_friendly_equi(name, objs):
     """ Suggest name of a memory friendly equivalent for a function. """
     suggs = {'range': ['xrange']}
-    return suggs.get(name, [])
+    return [quote(s) for s in suggs.get(name, []) if s in objs]
 
 
 # Functions related to IOError/OSError
-def get_io_os_error_sugg(value, _):
+def get_io_os_error_sugg(value, frame):
     """Get suggestions for IOError/OSError exception."""
     # https://www.python.org/dev/peps/pep-3151/
+    del frame  # unused param
     assert isinstance(value, (IOError, OSError))
     err, _ = value.args
     errnos = {
@@ -509,8 +466,7 @@ def suggest_if_file_is_dir(value):
     filename = value.filename
     listdir = sorted(os.listdir(filename))
     if listdir:
-        LIMIT = 4
-        trunc_l = listdir[:LIMIT]
+        trunc_l = listdir[:MAX_NB_FILES]
         truncated = listdir != trunc_l
         filelist = [quote(f) for f in trunc_l] + (["etc"] if truncated else [])
         yield "any of the {0} files in directory ({1})".format(
@@ -519,23 +475,77 @@ def suggest_if_file_is_dir(value):
         yield "to add content to {0} first".format(filename)
 
 
+NAMEERRORS = {
+    re.UNBOUNDERROR_RE: suggest_name_not_defined,
+    re.NAMENOTDEFINED_RE: suggest_name_not_defined,
+}
+
+ATTRIBUTEERRORS = {
+    re.ATTRIBUTEERROR_RE: suggest_attribute_error,
+    re.MODULEHASNOATTRIBUTE_RE: suggest_module_has_no_attr,
+}
+
+TYPEERRORS = {
+    re.UNSUBSCRIBTABLE_RE: suggest_unsubscriptable,
+    re.UNEXPECTED_KEYWORDARG_RE: suggest_unexpected_keywordarg,
+    re.NOT_CALLABLE_RE: suggest_not_callable,
+}
+
+VALUEERRORS = {
+    re.ZERO_LEN_FIELD_RE: suggest_zero_len_field,
+}
+
+SYNTAXERRORS = {
+    re.OUTSIDE_FUNCTION_RE: suggest_outside_func_error,
+    re.FUTURE_FEATURE_NOT_DEF_RE: suggest_future_feature,
+    re.INVALID_COMP_RE: suggest_invalid_comp,
+    re.INVALID_SYNTAX_RE: suggest_invalid_syntax,
+}
+
+OVERFLOWERRORS = {
+    re.RESULT_TOO_MANY_ITEMS_RE: suggest_too_many_items
+}
+
+IMPORTERRORS = {
+    re.NOMODULE_RE: suggest_no_module,
+    re.CANNOTIMPORT_RE: suggest_cannot_import,
+}
+
+
+def get_suggestions_for_error(value, frame, re_dict):
+    """ Call relevant suggestion generator based on error message
+    and regex dictionnary. """
+    error_msg = value.args[0]
+    for regex, generator in re_dict.items():
+        match = re.match(regex, error_msg)
+        if match:
+            return generator(value, frame, match.groups())
+    return []
+
+
 def get_suggestions_for_exception(value, traceback):
     """Get suggestions for an exception."""
     frame = get_last_frame(traceback)
+
+    def partial_app(re_dict):
+        """ Partial application of get_suggestions_for_error to re_dict."""
+        return (lambda val, fram:
+                get_suggestions_for_error(val, fram, re_dict))
+
     error_types = {
-        NameError: get_name_error_sugg,
-        AttributeError: get_attribute_error_sugg,
-        TypeError: get_type_error_sugg,
-        ValueError: get_value_error_sugg,
-        ImportError: get_import_error_sugg,
-        SyntaxError: get_syntax_error_sugg,
+        NameError: partial_app(NAMEERRORS),
+        AttributeError: partial_app(ATTRIBUTEERRORS),
+        TypeError: partial_app(TYPEERRORS),
+        ValueError: partial_app(VALUEERRORS),
+        ImportError: partial_app(IMPORTERRORS),
+        SyntaxError: partial_app(SYNTAXERRORS),
+        OverflowError: partial_app(OVERFLOWERRORS),
         MemoryError: get_memory_error_sugg,
-        OverflowError: get_overflow_error_sugg,
         (IOError, OSError): get_io_os_error_sugg,
     }
     return itertools.chain.from_iterable(
-        func(value, frame)
-        for error_type, func in error_types.items()
+        generator(value, frame)
+        for error_type, generator in error_types.items()
         if isinstance(value, error_type))
 
 
@@ -553,9 +563,9 @@ def add_string_to_exception(value, string):
     assert type(value.args) == tuple
     if string:
         lst_args = list(value.args)
-        for i, a in enumerate(lst_args):
-            if isinstance(a, str):
-                lst_args[i] = a + string
+        for i, arg in enumerate(lst_args):
+            if isinstance(arg, str):
+                lst_args[i] = arg + string
                 break
         else:
             # if no string arg, add the string anyway
