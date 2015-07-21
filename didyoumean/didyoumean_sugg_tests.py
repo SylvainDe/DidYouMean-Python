@@ -1418,7 +1418,7 @@ class AnyErrorTests(GetSuggestionsTests):
         version = (3, 0)
         raised_exc, other_exc = KeyError, TypeError
         raised, other = raised_exc.__name__, other_exc.__name__
-        code = "try:\n\traise %s()\nexcept {0}:\n\tpass" % raised
+        code = "try:\n\traise {0}()\nexcept {{0}}:\n\tpass".format(raised)
         typo = "{0}, {1}".format(other, raised)
         sugg = "({0})".format(typo)
         bad1, bad2, good1, good2 = format_str(code, typo, other, sugg, raised)
