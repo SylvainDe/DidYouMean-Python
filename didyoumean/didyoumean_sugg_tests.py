@@ -222,6 +222,7 @@ class GetSuggestionsTests(unittest2.TestCase):
         if version_in_range(version_range) and interpreter_in(interpreters):
             error_type, error_msg = error_info
             type_caught, value, traceback = get_exception(code)
+            details = "Running following code :\n---\n{0}\n---".format(code)
             self.assertTrue(isinstance(value, type_caught))
             self.assertTrue(
                 issubclass(type_caught, error_type),
@@ -232,7 +233,7 @@ class GetSuggestionsTests(unittest2.TestCase):
                 self.assertRegexpMatches(msg, error_msg)
             suggestions = sorted(
                 get_suggestions_for_exception(value, traceback))
-            self.assertEqual(suggestions, sugg)
+            self.assertEqual(suggestions, sugg, details)
 
 
 class NameErrorTests(GetSuggestionsTests):
@@ -349,7 +350,7 @@ class NameErrorTests(GetSuggestionsTests):
         """Variables from enclosing scope can be used too."""
         # NICE_TO_HAVE
         typo, sugg = 'foob', 'foo'
-        code = 'def f():\n\t%s = 0\n\tdef g():\n\t\t{0}\n\tg()\nf()' % sugg
+        code = 'def f():\n\tfoo = 0\n\tdef g():\n\t\t{0}\n\tg()\nf()'
         bad_code, good_code = format_str(code, typo, sugg)
         self.throws(bad_code, NAMEERROR)
         self.runs(good_code)
