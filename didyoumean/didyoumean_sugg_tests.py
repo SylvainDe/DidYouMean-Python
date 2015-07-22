@@ -15,24 +15,31 @@ this_is_a_global_list = []  # Value does not really matter but the type does
 
 
 def func_gen(name='some_func', param='', body='pass', args=None):
-    """Function to generate code for function def (and sometimes a call to it).
+    """Generate code corresponding to a function definition.
+
+    Generate code for function definition (and eventually a call to it).
     Parameters are : name (with default), body (with default),
     parameters (with default) and arguments to call the functions with (if not
     provided or provided None, function call is not included in generated
-    code."""
+    code).
+    """
     func = "def {0}({1}):\n\t{2}\n".format(name, param, body)
     call = "" if args is None else "{0}({1})\n".format(name, args)
     return func + call
 
 
 def my_generator():
-    """This is my generator.
-    This is my generator, baby."""
+    """Generate values for testing purposes.
+
+    my_generator
+    This is my generator, baby.
+    """
     for i in range(5):
         yield i
 
 
 class FoobarClass():
+
     """Dummy class for testing purposes."""
 
     def __init__(self):
@@ -88,13 +95,13 @@ def up_to_version(version):
 
 
 def version_in_range(version_range):
-    """ Test if current version is in a range version."""
+    """Test if current version is in a range version."""
     beg, end = version_range
     return beg <= sys.version_info < end
 
 
 def interpreter_in(interpreters):
-    """ Test if current interpreter is in a list of interpreters. """
+    """Test if current interpreter is in a list of interpreters."""
     is_pypy = hasattr(sys, "pypy_translation_info")
     interpreter = 'pypy' if is_pypy else 'cython'
     return interpreter in interpreters
@@ -106,7 +113,7 @@ def format_str(template, *args):
 
 
 def listify(value, default):
-    """ Return list from value, using default value if value is None. """
+    """Return list from value, using default value if value is None."""
     if value is None:
         value = default
     if not isinstance(value, list):
@@ -193,6 +200,7 @@ DIRNOTEMPTY_OS = (OSError, "^Directory not empty$")
 
 
 class GetSuggestionsTests(unittest2.TestCase):
+
     """Generic class to test get_suggestions_for_exception.
 
     Many tests do not correspond to any handled exceptions but are
@@ -201,10 +209,15 @@ class GetSuggestionsTests(unittest2.TestCase):
     are flagged with a NICE_TO_HAVE comment.
     Finally, whenever it is easily possible, the code with the suggestions
     taken into account is usually tested too to ensure that the suggestion does
-    work."""
+    work.
+    """
 
     def runs(self, code, version_range=None, interpreters=None):
-        """Helper function to run code."""
+        """Helper function to run code.
+
+        version_range and interpreters can be provided if the test depends on
+        the used environment.
+        """
         interpreters = listify(interpreters, INTERPRETERS)
         if version_range is None:
             version_range = ALL_VERSIONS
@@ -213,8 +226,13 @@ class GetSuggestionsTests(unittest2.TestCase):
 
     def throws(self, code, error_info,
                sugg=None, version_range=None, interpreters=None):
-        """Helper function to run code and check what it throws
-        that what we have expected suggestions."""
+        """Run code and check it throws and relevant suggestions are provided.
+
+        Helper function to run code, check that it throws, what it throws and
+        that the exception leads to the expected suggestions.
+        version_range and interpreters can be provided if the test depends on
+        the used environment.
+        """
         if version_range is None:
             version_range = ALL_VERSIONS
         interpreters = listify(interpreters, INTERPRETERS)
@@ -237,6 +255,7 @@ class GetSuggestionsTests(unittest2.TestCase):
 
 
 class NameErrorTests(GetSuggestionsTests):
+
     """Class for tests related to NameError."""
 
     def test_local(self):
@@ -333,7 +352,7 @@ class NameErrorTests(GetSuggestionsTests):
         self.runs(good_code)
 
     def test_not_imported(self):
-        """Should be random.choice after importing random. """
+        """Should be random.choice after importing random."""
         # This test assumes that `module` is not imported
         module, attr = 'random', 'choice'
         self.assertFalse(module in locals())
@@ -347,7 +366,7 @@ class NameErrorTests(GetSuggestionsTests):
             "'{0}' from {1} (not imported)".format(attr, module))
 
     def test_enclosing_scope(self):
-        """Variables from enclosing scope can be used too."""
+        """Test that variables from enclosing scope are suggested."""
         # NICE_TO_HAVE
         typo, sugg = 'foob', 'foo'
         code = 'def f():\n\tfoo = 0\n\tdef g():\n\t\t{0}\n\tg()\nf()'
@@ -389,8 +408,10 @@ class NameErrorTests(GetSuggestionsTests):
         self.throws(code, NAMEERROR, [], from_version(version))
 
     def test_removed_reload(self):
-        """Builtin reload is removed
-        Moved to importlib.reload or imp.reload depending on version."""
+        """Builtin reload is removed.
+
+        Moved to importlib.reload or imp.reload depending on version.
+        """
         # NICE_TO_HAVE
         code = 'reload(math)'
         version = (3, 0)
@@ -476,7 +497,7 @@ class NameErrorTests(GetSuggestionsTests):
             ["'FoobarClass.this_is_cls_mthd'", "'cls.this_is_cls_mthd'"])
 
     def test_complex_numbers(self):
-        """ Should be 1j ."""
+        """Should be 1j."""
         code = 'assert {0} ** 2 == -1'
         sugg = '1j'
         good_code, bad_code_i, bad_code_j = format_str(code, sugg, 'i', 'j')
@@ -486,7 +507,7 @@ class NameErrorTests(GetSuggestionsTests):
         self.runs(good_code)
 
     def test_shell_commands(self):
-        """ Trying shell commands ."""
+        """Trying shell commands."""
         cmd, sugg = 'ls', 'os.listdir(os.getcwd())'
         self.throws(cmd, NAMEERROR, "'" + sugg + "'")
         self.runs(sugg)
@@ -508,6 +529,7 @@ class NameErrorTests(GetSuggestionsTests):
 
 
 class UnboundLocalErrorTests(GetSuggestionsTests):
+
     """Class for tests related to UnboundLocalError."""
 
     def test_unbound_typo(self):
@@ -535,11 +557,14 @@ class UnboundLocalErrorTests(GetSuggestionsTests):
 
 
 class AttributeErrorTests(GetSuggestionsTests):
+
     """Class for tests related to AttributeError."""
 
     def test_nonetype(self):
         """In-place methods like sort returns None.
-        Might also happen if the functions misses a return."""
+
+        Might also happen if the functions misses a return.
+        """
         # NICE_TO_HAVE
         code = '[].sort().append(4)'
         self.throws(code, ATTRIBUTEERROR)
@@ -637,7 +662,11 @@ class AttributeErrorTests(GetSuggestionsTests):
         self.runs(good_code)
 
     def test_private_attr(self):
-        """Sometimes 'private' members are suggested but it's not ideal."""
+        """Test that 'private' members are suggested with a warning message.
+
+        Sometimes 'private' members are suggested but it's not ideal, a
+        warning must be added to the suggestion.
+        """
         code = 'FoobarClass().{0}'
         method = '__some_private_method'
         method2 = '_some_semi_private_method'
@@ -713,13 +742,17 @@ class AttributeErrorTests(GetSuggestionsTests):
             self.runs(new_code)
 
     def test_join(self):
-        """This can be frustrating, a suggestion could be nice."""
+        """Test what happens when join is used incorrectly.
+
+        This can be frustrating to call join on an iterable instead of a
+        string, a suggestion could be nice.
+        """
         # NICE_TO_HAVE
         code = "['a', 'b'].join('-')"
         self.throws(code, ATTRIBUTEERROR)
 
     def test_set_dict_comprehension(self):
-        """ {} creates a dict and not an empty set leading to errors. """
+        """{} creates a dict and not an empty set leading to errors."""
         # NICE_TO_HAVE
         version = (2, 7)
         for method in set(dir(set)) - set(dir(dict)):
@@ -744,6 +777,7 @@ class AttributeErrorTests(GetSuggestionsTests):
 
 
 class TypeErrorTests(GetSuggestionsTests):
+
     """Class for tests related to TypeError."""
 
     def test_unhashable(self):
@@ -759,9 +793,12 @@ class TypeErrorTests(GetSuggestionsTests):
         self.runs(good_code)
 
     def test_method_called_on_class(self):
+        """Test where a method is called on a class and not an instance.
+
+        Forgetting parenthesis makes the difference between using an
+        instance and using a type.
+        """
         # NICE_TO_HAVE
-        """Forgetting parenthesis makes the difference between using an
-        instance and using a type."""
         wrong_type = (DESCREXPECT, MUSTCALLWITHINST, NBARGERROR)
         not_iterable = (ARGNOTITERABLE, ARGNOTITERABLE, ARGNOTITERABLE)
         version = (3, 0)
@@ -776,7 +813,7 @@ class TypeErrorTests(GetSuggestionsTests):
             self.throws(bad_code, err_pyp3, [], from_version(version), 'pypy')
 
     def test_set_operations(self):
-        """ +, +=, etc doesn't work on sets. A suggestion would be nice."""
+        """+, +=, etc doesn't work on sets. A suggestion would be nice."""
         # NICE_TO_HAVE
         typo1 = 'set() + set()'
         typo2 = 's = set()\ns += set()'
@@ -790,7 +827,7 @@ class TypeErrorTests(GetSuggestionsTests):
         self.runs(code3)
 
     def test_dict_operations(self):
-        """ +, +=, etc doesn't work on dicts. A suggestion would be nice."""
+        """+, +=, etc doesn't work on dicts. A suggestion would be nice."""
         # NICE_TO_HAVE
         typo1 = 'dict() + dict()'
         typo2 = 'd = dict()\nd += dict()'
@@ -802,7 +839,7 @@ class TypeErrorTests(GetSuggestionsTests):
         self.runs(code1)
 
     def test_len_on_iterable(self):
-        """ len() can't be called on iterable (weird but understandable)."""
+        """len() can't be called on iterable (weird but understandable)."""
         code = 'len(my_generator())'
         sugg = 'len(list(my_generator()))'
         self.throws(code, OBJECTHASNOFUNC)
@@ -881,7 +918,7 @@ class TypeErrorTests(GetSuggestionsTests):
         self.runs(good_code)
 
     def test_no_implicit_str_conv(self):
-        """ Trying to concatenate a non-string value to a string."""
+        """Trying to concatenate a non-string value to a string."""
         # NICE_TO_HAVE
         code = '{0} + " things"'
         typo, sugg = '12', 'str(12)'
@@ -890,7 +927,7 @@ class TypeErrorTests(GetSuggestionsTests):
         self.runs(good_code)
 
     def test_no_implicit_str_conv2(self):
-        """ Trying to concatenate a non-string value to a string."""
+        """Trying to concatenate a non-string value to a string."""
         # NICE_TO_HAVE
         code = '"things " + {0}'
         typo, sugg = '12', 'str(12)'
@@ -905,7 +942,7 @@ class TypeErrorTests(GetSuggestionsTests):
         self.runs(good_code)
 
     def test_assignment_to_range(self):
-        """ Trying to assign to range works on list, not on range."""
+        """Trying to assign to range works on list, not on range."""
         # NICE_TO_HAVE
         code = '{0}[2] = 1'
         typo, sugg = 'range(4)', 'list(range(4))'
@@ -916,7 +953,7 @@ class TypeErrorTests(GetSuggestionsTests):
         self.runs(good_code)
 
     def test_not_callable(self):
-        """ Sometimes, one uses parenthesis instead of brackets. """
+        """Sometimes, one uses parenthesis instead of brackets."""
         typo, getitem = '(0)', '[0]'
         for ex, sugg in {
             '[0]': "'list[value]'",
@@ -936,6 +973,7 @@ class TypeErrorTests(GetSuggestionsTests):
 
 
 class ImportErrorTests(GetSuggestionsTests):
+
     """Class for tests related to ImportError."""
 
     def test_no_module_no_sugg(self):
@@ -979,7 +1017,7 @@ class ImportErrorTests(GetSuggestionsTests):
         self.runs(good_code)
 
     def test_import_future_nomodule(self):
-        """ Should be '__future__' ."""
+        """Should be '__future__'."""
         code = 'import {0}'
         typo, sugg = '__future_', '__future__'
         self.assertTrue(sugg in STAND_MODULES)
@@ -1032,10 +1070,12 @@ class ImportErrorTests(GetSuggestionsTests):
 
 
 class LookupErrorTests(GetSuggestionsTests):
+
     """Class for tests related to LookupError."""
 
 
 class KeyErrorTests(LookupErrorTests):
+
     """Class for tests related to KeyError."""
 
     def test_no_sugg(self):
@@ -1044,6 +1084,7 @@ class KeyErrorTests(LookupErrorTests):
 
 
 class IndexErrorTests(LookupErrorTests):
+
     """Class for tests related to IndexError."""
 
     def test_no_sugg(self):
@@ -1052,20 +1093,21 @@ class IndexErrorTests(LookupErrorTests):
 
 
 class SyntaxErrorTests(GetSuggestionsTests):
+
     """Class for tests related to SyntaxError."""
 
     def test_no_error(self):
-        """ No error."""
+        """No error."""
         self.runs("1 + 2 == 2")
 
     def test_yield_return_out_of_func(self):
-        """ yield/return needs to be in functions."""
+        """yield/return needs to be in functions."""
         sugg = "to indent it"
         self.throws("yield 1", OUTSIDEFUNC, sugg)
         self.throws("return 1", OUTSIDEFUNC, ["'sys.exit([arg])'", sugg])
 
     def test_print(self):
-        """ print is a functions now and needs parenthesis."""
+        """print is a functions now and needs parenthesis."""
         # NICE_TO_HAVE
         code, new_code = 'print ""', 'print("")'
         version = (3, 0)
@@ -1076,7 +1118,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         self.runs(new_code)
 
     def test_exec(self):
-        """ exec is a functions now and needs parenthesis."""
+        """exec is a functions now and needs parenthesis."""
         # NICE_TO_HAVE
         code, new_code = 'exec "1"', 'exec("1")'
         version = (3, 0)
@@ -1087,7 +1129,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         self.runs(new_code)
 
     def test_old_comparison(self):
-        """ <> comparison is removed, != always works."""
+        """<> comparison is removed, != always works."""
         code = '1 {0} 2'
         old, new = '<>', '!='
         version = (3, 0)
@@ -1108,7 +1150,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         self.runs(new_code)
 
     def test_missing_colon(self):
-        """ Missing colon is a classic mistake."""
+        """Missing colon is a classic mistake."""
         # NICE_TO_HAVE
         code = "if True{0}\n\tpass"
         bad_code, good_code = format_str(code, "", ":")
@@ -1116,7 +1158,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         self.runs(good_code)
 
     def test_simple_equal(self):
-        """ '=' for comparison is a classic mistake."""
+        """'=' for comparison is a classic mistake."""
         # NICE_TO_HAVE
         code = "if 2 {0} 3:\n\tpass"
         bad_code, good_code = format_str(code, "=", "==")
@@ -1124,7 +1166,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         self.runs(good_code)
 
     def test_keyword_as_identifier(self):
-        """ Using a keyword as a variable name. """
+        """Using a keyword as a variable name."""
         # NICE_TO_HAVE
         code = '{0} = 1'
         bad_code, good_code = format_str(code, "from", "from_")
@@ -1132,7 +1174,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         self.runs(good_code)
 
     def test_increment(self):
-        """ Trying to use '++' or '--'. """
+        """Trying to use '++' or '--'."""
         # NICE_TO_HAVE
         code = 'a = 0\na{0}'
         for op in ('-', '+'):
@@ -1142,7 +1184,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
             self.runs(good_code)
 
     def test_wrong_bool_operator(self):
-        """ Trying to use '&&' or '||'. """
+        """Trying to use '&&' or '||'."""
         # NICE_TO_HAVE
         code = 'True {0} False'
         for typo, sugg in (('&&', 'and'), ('||', 'or')):
@@ -1151,12 +1193,12 @@ class SyntaxErrorTests(GetSuggestionsTests):
             self.runs(good_code)
 
     def test_import_future_not_first(self):
-        """ Imports from __future__ need before anything else ."""
+        """Test what happens when import from __future__ is not first."""
         code = 'a = 8/7\nfrom __future__ import division'
         self.throws(code, FUTUREFIRST)
 
     def test_import_future_not_def(self):
-        """ Should be 'division' ."""
+        """Should be 'division'."""
         code = 'from __future__ import {0}'
         typo, sugg = 'divisio', 'division'
         bad_code, good_code = format_str(code, typo, sugg)
@@ -1164,7 +1206,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         self.runs(good_code)
 
     def test_unqualified_exec(self):
-        """ Exec in nested functions. """
+        """Exec in nested functions."""
         # NICE_TO_HAVE
         version = (3, 0)
         codes = [
@@ -1178,7 +1220,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
             self.runs(code, from_version(version))
 
     def test_import_star(self):
-        """ 'import *' in nested functions. """
+        """'import *' in nested functions."""
         # NICE_TO_HAVE
         codes = [
             "def func1():\n\tbar='1'\n\tdef func2():"
@@ -1190,7 +1232,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
             self.throws(code, IMPORTSTAR, [])
 
     def test_unpack(self):
-        """ Extended tuple unpacking does not work prior to Python 3."""
+        """Extended tuple unpacking does not work prior to Python 3."""
         # NICE_TO_HAVE
         version = (3, 0)
         code = 'a, *b = (1, 2, 3)'
@@ -1198,7 +1240,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         self.runs(code, from_version(version))
 
     def test_unpack2(self):
-        """ Unpacking in function arguments was supported up to Python 3."""
+        """Unpacking in function arguments was supported up to Python 3."""
         # NICE_TO_HAVE
         version = (3, 0)
         code = 'def addpoints((x1, y1), (x2, y2)):\n\tpass'
@@ -1206,7 +1248,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         self.throws(code, INVALIDSYNTAX, [], from_version(version))
 
     def test_nonlocal(self):
-        """ nonlocal keyword is added in Python 3."""
+        """nonlocal keyword is added in Python 3."""
         # NICE_TO_HAVE
         version = (3, 0)
         code = 'def func():\n\tfoo = 1\n\tdef nested():\n\t\tnonlocal foo'
@@ -1214,7 +1256,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         self.throws(code, INVALIDSYNTAX, [], up_to_version(version))
 
     def test_nonlocal2(self):
-        """ nonlocal must be used only when binding exists."""
+        """nonlocal must be used only when binding exists."""
         # NICE_TO_HAVE
         version = (3, 0)
         code = 'def func():\n\tdef nested():\n\t\tnonlocal foo'
@@ -1222,7 +1264,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         self.throws(code, INVALIDSYNTAX, [], up_to_version(version))
 
     def test_nonlocal3(self):
-        """ nonlocal must be used only when binding to non-global exists."""
+        """nonlocal must be used only when binding to non-global exists."""
         # NICE_TO_HAVE
         version = (3, 0)
         code = 'foo = 1\ndef func():\n\tdef nested():\n\t\tnonlocal foo'
@@ -1231,15 +1273,16 @@ class SyntaxErrorTests(GetSuggestionsTests):
 
 
 class MemoryErrorTests(GetSuggestionsTests):
+
     """Class for tests related to MemoryError."""
 
     def test_out_of_memory(self):
-        """ Test what happens in case of MemoryError. """
+        """Test what happens in case of MemoryError."""
         code = '[0] * 999999999999999'
         self.throws(code, MEMORYERROR)
 
     def test_out_of_memory_range(self):
-        """ Test what happens in case of MemoryError. """
+        """Test what happens in case of MemoryError."""
         code = '{0}(999999999999999)'
         typo, sugg = 'range', 'xrange'
         bad_code, good_code = format_str(code, typo, sugg)
@@ -1261,10 +1304,11 @@ class MemoryErrorTests(GetSuggestionsTests):
 
 
 class ValueErrorTests(GetSuggestionsTests):
+
     """Class for tests related to ValueError."""
 
     def test_too_many_values(self):
-        """ Unpack 4 values in 3 variables."""
+        """Unpack 4 values in 3 variables."""
         code = 'a, b, c = [1, 2, 3, 4]'
         version = (3, 0)
         self.throws(code, EXPECTEDLENGTH, [], up_to_version(version), 'pypy')
@@ -1272,7 +1316,7 @@ class ValueErrorTests(GetSuggestionsTests):
         self.throws(code, TOOMANYVALUES, [], ALL_VERSIONS, 'cython')
 
     def test_not_enough_values(self):
-        """ Unpack 2 values in 3 variables."""
+        """Unpack 2 values in 3 variables."""
         code = 'a, b, c = [1, 2]'
         version = (3, 0)
         self.throws(code, EXPECTEDLENGTH, [], up_to_version(version), 'pypy')
@@ -1280,16 +1324,16 @@ class ValueErrorTests(GetSuggestionsTests):
         self.throws(code, NEEDMOREVALUES, [], ALL_VERSIONS, 'cython')
 
     def test_conversion_fails(self):
-        """ Conversion fails."""
+        """Conversion fails."""
         self.throws('int("toto")', INVALIDLITERAL)
 
     def test_math_domain(self):
-        """ Math function used out of its domain."""
+        """Math function used out of its domain."""
         code = 'import math\nlg = math.log(-1)'
         self.throws(code, MATHDOMAIN)
 
     def test_zero_len_field_in_format(self):
-        """ Format {} is not valid before Python 2.7."""
+        """Format {} is not valid before Python 2.7."""
         code = '"{0}".format(0)'
         old, new = '{0}', '{}'
         old_code, new_code = format_str(code, old, new)
@@ -1300,20 +1344,21 @@ class ValueErrorTests(GetSuggestionsTests):
 
 
 class IOErrorTests(GetSuggestionsTests):
-    """ Class for tests related to IOError ."""
+
+    """Class for tests related to IOError."""
 
     def test_no_such_file(self):
-        """ File does not exist. """
+        """File does not exist."""
         code = 'with open("doesnotexist") as f:\n\tpass'
         self.throws(code, NOFILE_IO)
 
     def test_no_such_file2(self):
-        """ File does not exist. """
+        """File does not exist."""
         code = 'os.listdir("doesnotexist")'
         self.throws(code, NOFILE_OS)
 
     def test_no_such_file_user(self):
-        """ Suggestions when one needs to expanduser . """
+        """Suggestion when one needs to expanduser."""
         code = 'os.listdir("{0}")'
         typo, sugg = "~", os.path.expanduser("~")
         bad_code, good_code = format_str(code, typo, sugg)
@@ -1323,7 +1368,7 @@ class IOErrorTests(GetSuggestionsTests):
         self.runs(good_code)
 
     def test_no_such_file_vars(self):
-        """ Suggestions when one needs to expandvars . """
+        """Suggestion when one needs to expandvars."""
         code = 'os.listdir("{0}")'
         key = 'HOME'
         typo, sugg = "$" + key, os.path.expanduser("~")
@@ -1340,7 +1385,7 @@ class IOErrorTests(GetSuggestionsTests):
             os.environ[key] = original_home
 
     def create_tmp_dir_with_files(self, filelist):
-        """ Creates a temporary directory with files in it."""
+        """Create a temporary directory with files in it."""
         tmpdir = tempfile.mkdtemp()
         absfiles = [os.path.join(tmpdir, f) for f in filelist]
         for name in absfiles:
@@ -1348,7 +1393,7 @@ class IOErrorTests(GetSuggestionsTests):
         return (tmpdir, absfiles)
 
     def test_is_dir_empty(self):
-        """ Suggestions when file is an empty directory. """
+        """Suggestion when file is an empty directory."""
         # Create empty temp dir
         tmpdir, _ = self.create_tmp_dir_with_files([])
         code = 'with open("{0}") as f:\n\tpass'
@@ -1358,7 +1403,7 @@ class IOErrorTests(GetSuggestionsTests):
         rmtree(tmpdir)
 
     def test_is_dir_small(self):
-        """ Suggestions when file is directory with a few files. """
+        """Suggestion when file is directory with a few files."""
         # Create temp dir with a few files
         nb_files = 3
         files = sorted([str(i) + ".txt" for i in range(nb_files)])
@@ -1372,7 +1417,7 @@ class IOErrorTests(GetSuggestionsTests):
         rmtree(tmpdir)
 
     def test_is_dir_big(self):
-        """ Suggestions when file is directory with many files. """
+        """Suggestion when file is directory with many files."""
         # Create temp dir with many files
         tmpdir = tempfile.mkdtemp()
         nb_files = 30
@@ -1388,7 +1433,7 @@ class IOErrorTests(GetSuggestionsTests):
         rmtree(tmpdir)
 
     def test_is_not_dir(self):
-        """ Suggestions when file is not a directory. """
+        """Suggestion when file is not a directory."""
         code = 'with open("{0}") as f:\n\tpass'
         code = 'os.listdir("{0}")'
         typo, sugg = __file__, os.path.dirname(__file__)
@@ -1399,7 +1444,7 @@ class IOErrorTests(GetSuggestionsTests):
         self.runs(good_code)
 
     def test_dir_is_not_empty(self):
-        """ Suggestions when directory is not empty. """
+        """Suggestion when directory is not empty."""
         # NICE_TO_HAVE
         nb_files = 3
         files = sorted([str(i) + ".txt" for i in range(nb_files)])
@@ -1409,11 +1454,15 @@ class IOErrorTests(GetSuggestionsTests):
 
 
 class AnyErrorTests(GetSuggestionsTests):
-    """ Class for tests not related to an error type in particular. """
+
+    """Class for tests not related to an error type in particular."""
 
     def test_wrong_except(self):
-        """ Common mistake : "except Exc1, Exc2" doesn't catch Exc2 .
-        Adding parenthesis solves the issue. """
+        """Test where except is badly used and thus does not catch.
+
+        Common mistake : "except Exc1, Exc2" doesn't catch Exc2.
+        Adding parenthesis solves the issue.
+        """
         # NICE_TO_HAVE
         version = (3, 0)
         raised_exc, other_exc = KeyError, TypeError

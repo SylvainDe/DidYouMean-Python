@@ -7,6 +7,7 @@ import sys
 
 def didyoumean_decorator(func):
     """Decorator to add suggestions to exceptions.
+
     To use it, decorate one of the functions called, for instance 'main()':
     @didyoumean_decorator
     def main():
@@ -25,8 +26,11 @@ def didyoumean_decorator(func):
 
 
 def didyoumean_postmortem():
-    """Post postem function to add suggestions to last exception thrown
-    (in interactive mode) and return it (which should print it)."""
+    """Post postem function to add suggestions to last exception thrown.
+
+    Add suggestions to last exception thrown (in interactive mode) and
+    return it (which should print it).
+    """
     if hasattr(sys, 'last_type'):
         typ, val, trace = sys.last_type, sys.last_value, sys.last_traceback
         add_suggestions_to_exception(typ, val, trace)
@@ -35,20 +39,26 @@ def didyoumean_postmortem():
 
 
 class didyoumean_contextmanager(object):
-    """ Context manager to add suggestions to exceptions.
+
+    """Context manager to add suggestions to exceptions.
+
     To use it, create a context:
     with didyoumean_contextmanager():
         some_code.
     """
 
     def __enter__(self):
-        """ Method called when entering the context manager.
-        Not relevant here (does not do anything). """
+        """Method called when entering the context manager.
+
+        Not relevant here (does not do anything).
+        """
         pass
 
     def __exit__(self, type_, value, traceback):
-        """ Method called when exiting the context manager.
-        Add suggestions to the exception (if any). """
+        """Method called when exiting the context manager.
+
+        Add suggestions to the exception (if any).
+        """
         assert (type_ is None) == (value is None)
         if value is not None:
             if isinstance(value, type_):

@@ -1,3 +1,5 @@
+"""Setup."""
+
 try:
         from setuptools import setup
 except ImportError:

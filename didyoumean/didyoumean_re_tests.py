@@ -8,13 +8,15 @@ NO_GROUP = ((), dict())
 
 
 class RegexTests(unittest2.TestCase):
+
     """Tests to check that error messages match the regexps."""
 
     def re_matches(self, text, regexp, results):
-        """Check that text matches regexp and gives the right match groups
+        """Check that text matches regexp and gives the right match groups.
 
         result is a tuple containing the expected return values for groups()
-        and groupdict()."""
+        and groupdict().
+        """
         groups, named_groups = results
         self.assertRegexpMatches(text, regexp)   # does pretty printing
         match = re.match(regexp, text)
@@ -23,7 +25,7 @@ class RegexTests(unittest2.TestCase):
         self.assertEqual(named_groups, match.groupdict())
 
     def test_unbound_assignment(self):
-        """ Test UNBOUNDERROR_RE ."""
+        """Test UNBOUNDERROR_RE."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
         msg = "local variable 'some_var' referenced before assignment"
         groups = ('some_var',)
@@ -31,7 +33,7 @@ class RegexTests(unittest2.TestCase):
         self.re_matches(msg, re.UNBOUNDERROR_RE, (groups, named_groups))
 
     def test_name_not_defined(self):
-        """ Test NAMENOTDEFINED_RE ."""
+        """Test NAMENOTDEFINED_RE."""
         msgs = [
             # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy3
             "name 'some_name' is not defined",
@@ -44,7 +46,7 @@ class RegexTests(unittest2.TestCase):
             self.re_matches(msg, re.NAMENOTDEFINED_RE, (groups, named_groups))
 
     def test_attribute_error(self):
-        """ Test ATTRIBUTEERROR_RE ."""
+        """Test ATTRIBUTEERROR_RE."""
         group_msg = {
             ('some.class', 'attri'): [
                 # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
@@ -64,14 +66,14 @@ class RegexTests(unittest2.TestCase):
                 self.re_matches(msg, re.ATTRIBUTEERROR_RE, (group, dict()))
 
     def test_module_attribute_error(self):
-        """ Test MODULEHASNOATTRIBUTE_RE ."""
+        """Test MODULEHASNOATTRIBUTE_RE."""
         # Python 3.5
         msg = "module 'some_module' has no attribute 'attri'"
         group = ('some_module', 'attri')
         self.re_matches(msg, re.MODULEHASNOATTRIBUTE_RE, (group, dict()))
 
     def test_cannot_import(self):
-        """ Test CANNOTIMPORT_RE ."""
+        """Test CANNOTIMPORT_RE."""
         msgs = [
             # Python 2.6/2.7/3.2/3.3
             "cannot import name pie",
@@ -83,7 +85,7 @@ class RegexTests(unittest2.TestCase):
             self.re_matches(msg, re.CANNOTIMPORT_RE, (groups, dict()))
 
     def test_no_module_named(self):
-        """ Test NOMODULE_RE ."""
+        """Test NOMODULE_RE."""
         msgs = [
             # Python 2.6/2.7/3.2/PyPy/PyPy3
             "No module named fake_module",
@@ -95,13 +97,13 @@ class RegexTests(unittest2.TestCase):
             self.re_matches(msg, re.NOMODULE_RE, (groups, dict()))
 
     def test_index_out_of_range(self):
-        """ Test INDEXOUTOFRANGE_RE ."""
+        """Test INDEXOUTOFRANGE_RE."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
         msg = "list index out of range"
         self.re_matches(msg, re.INDEXOUTOFRANGE_RE, NO_GROUP)
 
     def test_unsubscriptable(self):
-        """ Test UNSUBSCRIBTABLE_RE ."""
+        """Test UNSUBSCRIBTABLE_RE."""
         msgs = [
             # Python 2.6
             "'function' object is unsubscriptable",
@@ -115,26 +117,26 @@ class RegexTests(unittest2.TestCase):
             self.re_matches(msg, re.UNSUBSCRIBTABLE_RE, (groups, dict()))
 
     def test_unexpected_kw_arg(self):
-        """ Test UNEXPECTED_KEYWORDARG_RE ."""
+        """Test UNEXPECTED_KEYWORDARG_RE."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
         msg = "some_func() got an unexpected keyword argument 'a'"
         groups = ('some_func', 'a')
         self.re_matches(msg, re.UNEXPECTED_KEYWORDARG_RE, (groups, dict()))
 
     def test_zero_length_field(self):
-        """ Test ZERO_LEN_FIELD_RE ."""
+        """Test ZERO_LEN_FIELD_RE."""
         # Python 2.6
         msg = "zero length field name in format"
         self.re_matches(msg, re.ZERO_LEN_FIELD_RE, NO_GROUP)
 
     def test_math_domain_error(self):
-        """ Test MATH_DOMAIN_ERROR_RE ."""
+        """Test MATH_DOMAIN_ERROR_RE."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
         msg = "math domain error"
         self.re_matches(msg, re.MATH_DOMAIN_ERROR_RE, NO_GROUP)
 
     def test_too_many_values(self):
-        """ Test TOO_MANY_VALUES_UNPACK_RE ."""
+        """Test TOO_MANY_VALUES_UNPACK_RE."""
         msgs = [
             # Python 2.6/2.7
             "too many values to unpack",
@@ -145,7 +147,7 @@ class RegexTests(unittest2.TestCase):
             self.re_matches(msg, re.TOO_MANY_VALUES_UNPACK_RE, NO_GROUP)
 
     def test_unhashable_type(self):
-        """ Test UNHASHABLE_RE ."""
+        """Test UNHASHABLE_RE."""
         msgs = [
             # Python 2.6/2.7/3.2/3.3/3.4/3.5
             "unhashable type: 'list'",
@@ -157,7 +159,7 @@ class RegexTests(unittest2.TestCase):
             self.re_matches(msg, re.UNHASHABLE_RE, (groups, dict()))
 
     def test_outside_function(self):
-        """ Test OUTSIDE_FUNCTION_RE ."""
+        """Test OUTSIDE_FUNCTION_RE."""
         msgs = [
             # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
             "'return' outside function",
@@ -169,7 +171,7 @@ class RegexTests(unittest2.TestCase):
             self.re_matches(msg, re.OUTSIDE_FUNCTION_RE, (groups, dict()))
 
     def test_nb_positional_argument(self):
-        """ Test NB_ARG_RE ."""
+        """Test NB_ARG_RE."""
         msgs = [
             # Python 2.6/2.7/PyPy/PyPy3
             "some_func() takes exactly 1 argument (2 given)",
@@ -186,7 +188,7 @@ class RegexTests(unittest2.TestCase):
             self.re_matches(msg, re.NB_ARG_RE, (groups, dict()))
 
     def test_missing_positional_arg(self):
-        """ Test MISSING_POS_ARG_RE ."""
+        """Test MISSING_POS_ARG_RE."""
         msgs = [
             # Python 3.3/3.4/3.5
             "some_func() missing 2 required positional arguments: "
@@ -199,7 +201,7 @@ class RegexTests(unittest2.TestCase):
             self.re_matches(msg, re.MISSING_POS_ARG_RE, (groups, dict()))
 
     def test_need_more_values_to_unpack(self):
-        """ Test NEED_MORE_VALUES_RE ."""
+        """Test NEED_MORE_VALUES_RE."""
         msgs = [
             # Python 2.6/2.7/3.2/3.3/3.4/3.5(?)/PyPy3
             "need more than 2 values to unpack",
@@ -210,40 +212,40 @@ class RegexTests(unittest2.TestCase):
             self.re_matches(msg, re.NEED_MORE_VALUES_RE, NO_GROUP)
 
     def test_missing_parentheses(self):
-        """ Test MISSING_PARENT_RE ."""
+        """Test MISSING_PARENT_RE."""
         # Python 3.4/3.5
         msg = "Missing parentheses in call to 'exec'"
         groups = ('exec',)
         self.re_matches(msg, re.MISSING_PARENT_RE, (groups, dict()))
 
     def test_invalid_literal(self):
-        """ Test INVALID_LITERAL_RE ."""
+        """Test INVALID_LITERAL_RE."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
         msg = "invalid literal for int() with base 10: 'toto'"
         groups = ('int', 'toto')
         self.re_matches(msg, re.INVALID_LITERAL_RE, (groups, dict()))
 
     def test_invalid_syntax(self):
-        """ Test INVALID_SYNTAX_RE ."""
+        """Test INVALID_SYNTAX_RE."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy3
         msg = "invalid syntax"
         self.re_matches(msg, re.INVALID_SYNTAX_RE, NO_GROUP)
 
     def test_invalid_comp(self):
-        """ Test INVALID_COMP_RE ."""
+        """Test INVALID_COMP_RE."""
         # PyPy3
         msg = "invalid comparison"
         self.re_matches(msg, re.INVALID_COMP_RE, NO_GROUP)
 
     def test_expected_length(self):
-        """ Test EXPECTED_LENGTH_RE ."""
+        """Test EXPECTED_LENGTH_RE."""
         # PyPy
         msg = "expected length 3, got 2"
         groups = ('3', '2')
         self.re_matches(msg, re.EXPECTED_LENGTH_RE, (groups, dict()))
 
     def test_future_first(self):
-        """ Test FUTURE_FIRST_RE. """
+        """Test FUTURE_FIRST_RE."""
         msgs = [
             # Python 2.6/2.7/3.2/3.3/3.4/3.5
             "from __future__ imports must occur at the beginning of the file",
@@ -254,21 +256,21 @@ class RegexTests(unittest2.TestCase):
             self.re_matches(msg, re.FUTURE_FIRST_RE, NO_GROUP)
 
     def test_future_feature_not_def(self):
-        """ Test FUTURE_FEATURE_NOT_DEF_RE. """
+        """Test FUTURE_FEATURE_NOT_DEF_RE."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
         msg = "future feature divisio is not defined"
         groups = ('divisio',)
         self.re_matches(msg, re.FUTURE_FEATURE_NOT_DEF_RE, (groups, dict()))
 
     def test_result_has_too_many_items(self):
-        """ Test RESULT_TOO_MANY_ITEMS_RE. """
+        """Test RESULT_TOO_MANY_ITEMS_RE."""
         # Python 2.6
         msg = "range() result has too many items"
         groups = ('range',)
         self.re_matches(msg, re.RESULT_TOO_MANY_ITEMS_RE, (groups, dict()))
 
     def test_unqualified_exec(self):
-        """ Test UNQUALIFIED_EXEC_RE. """
+        """Test UNQUALIFIED_EXEC_RE."""
         msgs = [
             # Python 2.6
             "unqualified exec is not allowed in function 'func_name' "
@@ -287,7 +289,7 @@ class RegexTests(unittest2.TestCase):
             self.re_matches(msg, re.UNQUALIFIED_EXEC_RE, NO_GROUP)
 
     def test_import_star(self):
-        """ Test IMPORTSTAR_RE. """
+        """Test IMPORTSTAR_RE."""
         msgs = [
             # Python 2.6
             "import * is not allowed in function 'func_name' because it "
@@ -308,44 +310,44 @@ class RegexTests(unittest2.TestCase):
             self.re_matches(msg, re.IMPORTSTAR_RE, NO_GROUP)
 
     def test_does_not_support(self):
-        """ Test OBJ_DOES_NOT_SUPPORT_RE. """
+        """Test OBJ_DOES_NOT_SUPPORT_RE."""
         msg = "'range' object does not support item assignment"
         groups = ('range',)
         self.re_matches(msg, re.OBJ_DOES_NOT_SUPPORT_RE, (groups, dict()))
 
     def test_cant_convert(self):
-        """ Test CANT_CONVERT_RE. """
+        """Test CANT_CONVERT_RE."""
         msg = "Can't convert 'int' object to str implicitly"
         groups = ('int', 'str')
         self.re_matches(msg, re.CANT_CONVERT_RE, (groups, dict()))
 
     def test_cannot_concat(self):
-        """ Test CANNOT_CONCAT_RE. """
+        """Test CANNOT_CONCAT_RE."""
         msg = "cannot concatenate 'str' and 'int' objects"
         groups = ('str', 'int')
         self.re_matches(msg, re.CANNOT_CONCAT_RE, (groups, dict()))
 
     def test_unsupported_operand(self):
-        """ Test UNSUPPORTED_OP_RE. """
+        """Test UNSUPPORTED_OP_RE."""
         msg = "unsupported operand type(s) for +: 'int' and 'str'"
         groups = ('+', 'int', 'str')
         self.re_matches(msg, re.UNSUPPORTED_OP_RE, (groups, dict()))
 
     def test_not_callable(self):
-        """ Test NOT_CALLABLE_RE. """
+        """Test NOT_CALLABLE_RE."""
         msg = "'list' object is not callable"
         groups = ('list',)
         self.re_matches(msg, re.NOT_CALLABLE_RE, (groups, dict()))
 
     def test_descriptor_requires(self):
-        """ Test DESCRIPT_REQUIRES_TYPE_RE ."""
+        """Test DESCRIPT_REQUIRES_TYPE_RE."""
         msg = "descriptor 'add' requires a 'set' object but received a 'int'"
         groups = ('add', 'set', 'int')
         self.re_matches(
             msg, re.DESCRIPT_REQUIRES_TYPE_RE, (groups, dict()))
 
     def test_argument_not_iterable(self):
-        """ Test ARG_NOT_ITERABLE_RE ."""
+        """Test ARG_NOT_ITERABLE_RE."""
         msgs = [
             # Python 2.6/2.7/3.2/3.3/3.4/3.5
             "argument of type 'type' is not iterable",
@@ -357,7 +359,7 @@ class RegexTests(unittest2.TestCase):
             self.re_matches(msg, re.ARG_NOT_ITERABLE_RE, (groups, dict()))
 
     def test_must_be_called_with_instance(self):
-        """ Test MUST_BE_CALLED_WITH_INST_RE ."""
+        """Test MUST_BE_CALLED_WITH_INST_RE."""
         msg = "unbound method add() must be called with set " \
               "instance as first argument (got int instance instead)"
         groups = ('add', 'set', 'int')
@@ -365,7 +367,7 @@ class RegexTests(unittest2.TestCase):
             msg, re.MUST_BE_CALLED_WITH_INST_RE, (groups, dict()))
 
     def test_object_has_no(self):
-        """ Test OBJECT_HAS_NO_FUNC_RE ."""
+        """Test OBJECT_HAS_NO_FUNC_RE."""
         msgs = {
             # Python 2.6/2.7/3.2/3.3/3.4/3.5
             'len': "object of type 'generator' has no len()",
@@ -377,13 +379,13 @@ class RegexTests(unittest2.TestCase):
             self.re_matches(msg, re.OBJECT_HAS_NO_FUNC_RE, (groups, dict()))
 
     def test_nobinding_nonlocal(self):
-        """ Test NO_BINDING_NONLOCAL_RE ."""
+        """Test NO_BINDING_NONLOCAL_RE."""
         msg = "no binding for nonlocal 'foo' found"
         groups = ('foo',)
         self.re_matches(msg, re.NO_BINDING_NONLOCAL_RE, (groups, dict()))
 
     def test_nosuchfile(self):
-        """ Test NO_SUCH_FILE_RE ."""
+        """Test NO_SUCH_FILE_RE."""
         msg = "No such file or directory"
         self.re_matches(msg, re.NO_SUCH_FILE_RE, NO_GROUP)
 

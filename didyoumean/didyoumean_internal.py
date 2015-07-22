@@ -38,8 +38,12 @@ def quote(string):
 
 
 def get_close_matches(word, possibilities):
-    """Wrapper around difflib.get_close_matches() to be able to
-    change default values or implementation details easily."""
+    """
+    Return a list of the best "good enough" matches.
+
+    Wrapper around difflib.get_close_matches() to be able to
+    change default values or implementation details easily.
+    """
     return difflib.get_close_matches(word, possibilities, 3, 0.7)
 
 
@@ -51,8 +55,10 @@ def get_suggestion_string(sugg):
 
 # Helper functions for code introspection
 def get_subclasses(klass):
-    """Get the set of direct/indirect subclasses of a class
-    including itself."""
+    """Get the subclasses of a class.
+
+    Get the set of direct/indirect subclasses of a class including itself.
+    """
     if hasattr(klass, '__subclasses__'):
         try:
             subclasses = set(klass.__subclasses__())
@@ -73,8 +79,9 @@ def get_types_for_str_using_inheritance(name):
     """Get types corresponding to a string name.
 
     This goes through all defined classes. Therefore, it :
-     - does not include old style classes on Python 2.x
-     - is to be called as late as possible to ensure wanted type is defined."""
+    - does not include old style classes on Python 2.x
+    - is to be called as late as possible to ensure wanted type is defined.
+    """
     return set(c for c in get_subclasses(object) if c.__name__ == name)
 
 
@@ -82,7 +89,8 @@ def get_types_for_str_using_names(name, frame):
     """Get types corresponding to a string name using names in frame.
 
     This does not find everything as builtin types for instance may not
-    be in the names."""
+    be in the names.
+    """
     return set(obj
                for obj, _ in get_objects_in_frame(frame).get(name, [])
                if inspect.isclass(obj) and obj.__name__ == name)
@@ -90,6 +98,7 @@ def get_types_for_str_using_names(name, frame):
 
 def get_types_for_str(tp_name, frame):
     """Get a list of candidate types from a string.
+
     String corresponds to the tp_name as described in :
     https://docs.python.org/2/c-api/typeobj.html#c.PyTypeObject.tp_name
     as it is the name used in exception messages. It may include full path
@@ -100,7 +109,8 @@ def get_types_for_str(tp_name, frame):
     old style classes on Python 2 and second does find them.
     Just like get_types_for_str_using_inheritance, this needs to be called
     as late as possible but because it requires a frame, there is not much
-    choice anyway."""
+    choice anyway.
+    """
     name = tp_name.split('.')[-1]
     res = set.union(
         get_types_for_str_using_inheritance(name),
@@ -111,7 +121,9 @@ def get_types_for_str(tp_name, frame):
 
 def merge_dict(*dicts):
     """Merge dicts and return a dictionnary mapping key to list of values.
-    Order of the values corresponds to the order of the original dicts."""
+
+    Order of the values corresponds to the order of the original dicts.
+    """
     ret = dict()
     for dict_ in dicts:
         for key, val in dict_.items():
@@ -122,13 +134,15 @@ ScopedObj = namedtuple('ScopedObj', 'obj scope')
 
 
 def add_scope_to_dict(dict_, scope):
-    """ Convert name:obj dict to name:ScopedObj(obj,scope) dict."""
+    """Convert name:obj dict to name:ScopedObj(obj,scope) dict."""
     return dict((k, ScopedObj(v, scope)) for k, v in dict_.items())
 
 
 def get_objects_in_frame(frame):
     """Get objects defined in a given frame.
-    This includes variable, types, builtins, etc."""
+
+    This includes variable, types, builtins, etc.
+    """
     # https://www.python.org/dev/peps/pep-0227/ PEP227 Statically Nested Scopes
     # "Under this proposal, it will not be possible to gain dictionary-style
     #      access to all visible scopes."
@@ -166,7 +180,9 @@ def suggest_name_not_defined(value, frame, groups):
 
 def suggest_name_as_attribute(name, objdict):
     """Suggest that name could be an attribute of an object.
-    Example: 'do_stuff()' -> 'self.do_stuff()'."""
+
+    Example: 'do_stuff()' -> 'self.do_stuff()'.
+    """
     for nameobj, objs in objdict.items():
         prev_scope = None
         for obj, scope in objs:
@@ -180,7 +196,9 @@ def suggest_name_as_attribute(name, objdict):
 
 def suggest_name_as_missing_import(name, objdict, frame):
     """Suggest that name could come from missing import.
-    Example: 'foo' -> 'import mod, mod.foo'."""
+
+    Example: 'foo' -> 'import mod, mod.foo'.
+    """
     for mod in STAND_MODULES:
         if mod not in objdict and name in dir(import_from_frame(mod, frame)):
             yield "'{0}' from {1} (not imported)".format(name, mod)
@@ -188,27 +206,33 @@ def suggest_name_as_missing_import(name, objdict, frame):
 
 def suggest_name_as_standard_module(name):
     """Suggest that name could be a non-imported standard module.
-    Example: 'os.whatever' -> 'import os' and then 'os.whatever'."""
+
+    Example: 'os.whatever' -> 'import os' and then 'os.whatever'.
+    """
     if name in STAND_MODULES:
         yield 'to import {0} first'.format(name)
 
 
 def suggest_name_as_name_typo(name, objdict):
     """Suggest that name could be a typo (misspelled existing name).
-    Example: 'foobaf' -> 'foobar'."""
+
+    Example: 'foobaf' -> 'foobar'.
+    """
     for name in get_close_matches(name, objdict.keys()):
         yield quote(name) + ' (' + objdict[name][0].scope + ')'
 
 
 def suggest_name_as_keyword_typo(name):
     """Suggest that name could be a typo (misspelled keyword).
-    Example: 'yieldd' -> 'yield'."""
+
+    Example: 'yieldd' -> 'yield'.
+    """
     for name in get_close_matches(name, keyword.kwlist):
         yield quote(name) + " (keyword)"
 
 
 def suggest_name_as_special_case(name):
-    """ Suggest that name could correspond to a typo with special handling."""
+    """Suggest that name could correspond to a typo with special handling."""
     special_cases = {
         # Imaginary unit is '1j' in Python
         'i': quote('1j') + " (imaginary unit)",
@@ -226,14 +250,14 @@ def suggest_name_as_special_case(name):
 
 # Functions related to AttributeError
 def suggest_attribute_error(value, frame, groups):
-    """ Suggestions in case of ATTRIBUTEERROR. """
+    """Get suggestions in case of ATTRIBUTEERROR."""
     del value  # unused param
     type_str, attr = groups
     return get_attribute_suggestions(type_str, attr, frame)
 
 
 def suggest_module_has_no_attr(value, frame, groups):
-    """ Suggestions in case of MODULEHASNOATTRIBUTE. """
+    """Get suggestions in case of MODULEHASNOATTRIBUTE."""
     del value  # unused param
     _, attr = groups  # name ignored for the time being
     return get_attribute_suggestions('module', attr, frame)
@@ -266,7 +290,9 @@ def get_attribute_suggestions(type_str, attribute, frame):
 
 def suggest_attribute_as_builtin(attribute, type_str, frame):
     """Suggest that a builtin was used as an attribute.
-    Example: 'lst.len()' -> 'len(lst)'."""
+
+    Example: 'lst.len()' -> 'len(lst)'.
+    """
     if attribute in frame.f_builtins:
         yield quote(attribute + '(' + type_str + ')')
 
@@ -279,7 +305,9 @@ def suggest_attribute_as_removed(attribute, type_str, attributes):
 
 def suggest_attribute_synonyms(attribute, attributes):
     """Suggest that a method with a similar meaning was used.
-    Example: 'lst.add(e)' -> 'lst.append(e)'."""
+
+    Example: 'lst.add(e)' -> 'lst.append(e)'.
+    """
     for set_sub in SYNONYMS_SETS:
         if attribute in set_sub:
             for syn in set_sub & attributes:
@@ -288,7 +316,9 @@ def suggest_attribute_synonyms(attribute, attributes):
 
 def suggest_attribute_as_typo(attribute, attributes):
     """Suggest the attribute could be a typo.
-    Example: 'a.do_baf()' -> 'a.do_bar()'."""
+
+    Example: 'a.do_baf()' -> 'a.do_bar()'.
+    """
     for name in get_close_matches(attribute, attributes):
         # Handle Private name mangling
         if name.startswith('_') and '__' in name and not name.endswith('__'):
@@ -300,7 +330,9 @@ def suggest_attribute_as_typo(attribute, attributes):
 # Functions related to ImportError
 def suggest_no_module(value, frame, groups):
     """Get the suggestions closest to the failing module import.
-    Example: 'import maths' -> 'import math'."""
+
+    Example: 'import maths' -> 'import math'.
+    """
     del value, frame  # unused param
     module_str, = groups
     for name in get_close_matches(module_str, STAND_MODULES):
@@ -319,7 +351,9 @@ def suggest_cannot_import(value, frame, groups):
 
 def suggest_imported_name_as_typo(imported_name, module_name, frame):
     """Suggest that imported name could be a typo from actual name in module.
-    Example: 'from math import pie' -> 'from math import pi'."""
+
+    Example: 'from math import pie' -> 'from math import pi'.
+    """
     dir_mod = dir(import_from_frame(module_name, frame))
     for name in get_close_matches(imported_name, dir_mod):
         yield quote(name)
@@ -327,7 +361,9 @@ def suggest_imported_name_as_typo(imported_name, module_name, frame):
 
 def suggest_import_from_module(imported_name, frame):
     """Suggest than name could be found in a standard module.
-    Example: 'from itertools import pi' -> 'from math import pi'."""
+
+    Example: 'from itertools import pi' -> 'from math import pi'.
+    """
     for mod in STAND_MODULES:
         if imported_name in dir(import_from_frame(mod, frame)):
             yield quote('from {0} import {1}'.format(mod, imported_name))
@@ -335,7 +371,7 @@ def suggest_import_from_module(imported_name, frame):
 
 # Functions related to TypeError
 def suggest_unsubscriptable(value, frame, groups):
-    """ Suggestions in case of UNSUBSCRIBTABLE error."""
+    """Get suggestions in case of UNSUBSCRIBTABLE error."""
     del value  # unused param
     type_str, = groups
     types = get_types_for_str(type_str, frame)
@@ -344,7 +380,7 @@ def suggest_unsubscriptable(value, frame, groups):
 
 
 def suggest_unexpected_keywordarg(value, frame, groups):
-    """ Suggestions in case of UNEXPECTED_KEYWORDARG error."""
+    """Get suggestions in case of UNEXPECTED_KEYWORDARG error."""
     del value  # unused param
     func_name, kw_arg = groups
     objs = get_objects_in_frame(frame)
@@ -355,7 +391,7 @@ def suggest_unexpected_keywordarg(value, frame, groups):
 
 
 def suggest_not_callable(value, frame, groups):
-    """ Suggestions in case of NOT_CALLABLE error."""
+    """Get suggestions in case of NOT_CALLABLE error."""
     del value  # unused param
     type_str, = groups
     types = get_types_for_str(type_str, frame)
@@ -365,14 +401,14 @@ def suggest_not_callable(value, frame, groups):
 
 # Functions related to ValueError
 def suggest_zero_len_field(value, frame, groups):
-    """ Suggestions in case of ZERO_LEN_FIELD. """
+    """Get suggestions in case of ZERO_LEN_FIELD."""
     del value, frame, groups  # unused param
     yield '{0}'
 
 
 # Functions related to SyntaxError
 def suggest_outside_func_error(value, frame, groups):
-    """ Suggestions in case of OUTSIDE_FUNCTION error."""
+    """Get suggestions in case of OUTSIDE_FUNCTION error."""
     del value, frame  # unused param
     yield "to indent it"
     word, = groups
@@ -381,20 +417,20 @@ def suggest_outside_func_error(value, frame, groups):
 
 
 def suggest_future_feature(value, frame, groups):
-    """ Suggestions in case of FUTURE_FEATURE_NOT_DEF error."""
+    """Get suggestions in case of FUTURE_FEATURE_NOT_DEF error."""
     del value  # unused param
     feature, = groups
     return suggest_imported_name_as_typo(feature, '__future__', frame)
 
 
 def suggest_invalid_comp(value, frame, groups):
-    """ Suggestions in case of INVALID_COMP error."""
+    """Get suggestions in case of INVALID_COMP error."""
     del value, frame, groups  # unused param
     yield quote('!=')
 
 
 def suggest_invalid_syntax(value, frame, groups):
-    """ Suggestions in case of INVALID_SYNTAX error."""
+    """Get suggestions in case of INVALID_SYNTAX error."""
     del frame, groups  # unused param
     offset = value.offset
     if offset is not None and offset > 2:
@@ -415,7 +451,7 @@ def get_memory_error_sugg(value, frame):
 
 # Functions related to OverflowError
 def suggest_too_many_items(value, frame, groups):
-    """ Suggest for TOO_MANY_ITEMS error. """
+    """Suggest for TOO_MANY_ITEMS error."""
     del value  # unused param
     func, = groups
     objs = get_objects_in_frame(frame)
@@ -423,7 +459,7 @@ def suggest_too_many_items(value, frame, groups):
 
 
 def suggest_memory_friendly_equi(name, objs):
-    """ Suggest name of a memory friendly equivalent for a function. """
+    """Suggest name of a memory friendly equivalent for a function."""
     suggs = {'range': ['xrange']}
     return [quote(s) for s in suggs.get(name, []) if s in objs]
 
@@ -444,7 +480,7 @@ def get_io_os_error_sugg(value, frame):
 
 
 def suggest_if_file_does_not_exist(value):
-    """ Suggestions when a file does not exist."""
+    """Get suggestions when a file does not exist."""
     # TODO: Add fuzzy match
     filename = value.filename
     for func, name in (
@@ -456,13 +492,13 @@ def suggest_if_file_does_not_exist(value):
 
 
 def suggest_if_file_is_not_dir(value):
-    """ Suggestions when a file should have been a dir and is not. """
+    """Get suggestions when a file should have been a dir and is not."""
     filename = value.filename
     yield quote(os.path.dirname(filename)) + " (calling os.path.dirname)"
 
 
 def suggest_if_file_is_dir(value):
-    """ Suggestions when a file is a dir and should not. """
+    """Get suggestions when a file is a dir and should not."""
     filename = value.filename
     listdir = sorted(os.listdir(filename))
     if listdir:
@@ -513,8 +549,11 @@ IMPORTERRORS = {
 
 
 def get_suggestions_for_error(value, frame, re_dict):
-    """ Call relevant suggestion generator based on error message
-    and regex dictionnary. """
+    """Get suggestions for a given error `value`.
+
+    Call relevant suggestion generator based on error message
+    and regex dictionnary.
+    """
     error_msg = value.args[0]
     for regex, generator in re_dict.items():
         match = re.match(regex, error_msg)
@@ -528,7 +567,7 @@ def get_suggestions_for_exception(value, traceback):
     frame = get_last_frame(traceback)
 
     def partial_app(re_dict):
-        """ Partial application of get_suggestions_for_error to re_dict."""
+        """Partial application of get_suggestions_for_error to re_dict."""
         return (lambda val, fram:
                 get_suggestions_for_error(val, fram, re_dict))
 
@@ -586,7 +625,9 @@ def get_last_frame(traceback):
 
 def add_suggestions_to_exception(type_, value, traceback):
     """Add suggestion to an exception.
-    Arguments are such as provided by sys.exc_info()."""
+
+    Arguments are such as provided by sys.exc_info().
+    """
     assert isinstance(value, type_)
     add_string_to_exception(
         value,

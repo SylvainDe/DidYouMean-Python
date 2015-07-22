@@ -10,14 +10,15 @@ import os
 
 
 class ApiTest(TestWithStringFunction):
-    """ Tests about the didyoumean APIs. """
+
+    """Tests about the didyoumean APIs."""
 
     def run_with_api(self, code):
-        """ Abstract method to run code with tested API."""
+        """Abstract method to run code with tested API."""
         raise NotImplementedError()
 
     def get_exc_with_api(self, code):
-        """ Get exception raised with running code with tested API."""
+        """Get exception raised with running code with tested API."""
         try:
             self.run_with_api(code)
         except:
@@ -25,8 +26,11 @@ class ApiTest(TestWithStringFunction):
         assert False, "No exception thrown"
 
     def get_exc_as_str(self, code, type_arg):
-        """ Retrieve string representations of exceptions raised by code
-        without and with the API. """
+        """Retrieve string representations of exceptions raised by code.
+
+        String representations are provided for the same code run
+        with and without the API.
+        """
         type1, value1, _ = get_exception(code)
         self.assertTrue(isinstance(value1, type1))
         self.assertEqual(type_arg, type1)
@@ -93,10 +97,11 @@ class ApiTest(TestWithStringFunction):
 
 
 class DecoratorTest(unittest2.TestCase, ApiTest):
-    """ Tests about the didyoumean decorator. """
+
+    """Tests about the didyoumean decorator."""
 
     def run_with_api(self, code):
-        """ Run code with didyoumean decorator."""
+        """Run code with didyoumean decorator."""
         @didyoumean_decorator
         def my_func():
             no_exception(code)
@@ -104,19 +109,21 @@ class DecoratorTest(unittest2.TestCase, ApiTest):
 
 
 class ContextManagerTest(unittest2.TestCase, ApiTest):
-    """ Tests about the didyoumean context manager. """
+
+    """Tests about the didyoumean context manager."""
 
     def run_with_api(self, code):
-        """ Run code with didyoumean context manager."""
+        """Run code with didyoumean context manager."""
         with didyoumean_contextmanager():
             no_exception(code)
 
 
 class PostMortemTest(unittest2.TestCase, ApiTest):
-    """Tests about the didyoumean post mortem . """
+
+    """Tests about the didyoumean post mortem."""
 
     def run_with_api(self, code):
-        """ Run code with didyoumean post mortem."""
+        """Run code with didyoumean post mortem."""
         # A bit of an ugly way to proceed, in real life scenario
         # the sys.last_<something> members are set automatically.
         for a in ('last_type', 'last_value', 'last_traceback'):
@@ -132,7 +139,9 @@ class PostMortemTest(unittest2.TestCase, ApiTest):
 
 
 class HookTest(unittest2.TestCase):
-    """ Tests about the didyoumean hook. """
+
+    """Tests about the didyoumean hook."""
+
     pass  # Can't write tests as the hook seems to be ignored.
 
 

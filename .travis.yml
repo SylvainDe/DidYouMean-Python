@@ -14,6 +14,7 @@ python:
 
 install:
   - pip install pep8
+  - pip install pep257
   - pip install --upgrade pyflakes
   - pip install unittest2
   - pip install coveralls
@@ -21,6 +22,7 @@ install:
 
 before_script:
  - pep8 *.py */*.py
+ - pep257 *.py */*.py
 
 script:
  - coverage run -m unittest2.__main__ discover --start-directory=didyoumean --pattern=*.py

@@ -18,14 +18,16 @@ global_var = 42  # Please don't change the value
 
 
 class GetObjectInFrameTests(unittest2.TestCase):
-    """ Class for tests related to frame/backtrace/etc inspection.
+
+    """Class for tests related to frame/backtrace/etc inspection.
 
     Tested functions are : get_objects_in_frame.
     No tests about 'nonlocal' is written because it is only supported
-    from Python 3."""
+    from Python 3.
+    """
 
     def name_corresponds_to(self, name, expected):
-        """ Helper functions to test get_objects_in_frame.
+        """Helper functions to test get_objects_in_frame.
 
         Check that the name corresponds to the expected objects (and their
         scope) in the frame of calling function.
@@ -33,7 +35,8 @@ class GetObjectInFrameTests(unittest2.TestCase):
         an object when it is hidden by something in a closer scope.
         Also, extra care is to be taken when calling the function because
         giving value by names might affect the result (adding in local
-        scope.)"""
+        scope).
+        """
         frame = sys._getframe(1)  # frame of calling function
         lst = get_objects_in_frame(frame).get(name, [])
         self.assertEqual(len(lst), len(expected))
@@ -45,44 +48,44 @@ class GetObjectInFrameTests(unittest2.TestCase):
                 self.assertEqual(obj, expobj, name)
 
     def test_builtin(self):
-        """ Test with builtin. """
+        """Test with builtin."""
         builtin = len
         name = builtin.__name__
         self.name_corresponds_to(name, [(builtin, 'builtin')])
 
     def test_builtin2(self):
-        """ Test with builtin. """
+        """Test with builtin."""
         name = 'True'
         self.name_corresponds_to(name, [(bool(1), 'builtin')])
 
     def test_global(self):
-        """ Test with global. """
+        """Test with global."""
         name = 'global_var'
         self.name_corresponds_to(name, [(42, 'global')])
 
     def test_local(self):
-        """ Test with local. """
+        """Test with local."""
         name = 'toto'
         self.name_corresponds_to(name, [])
         toto = 0
         self.name_corresponds_to(name, [(0, 'local')])
 
     def test_local_and_global(self):
-        """ Test with local hiding a global. """
+        """Test with local hiding a global."""
         name = 'global_var'
         self.name_corresponds_to(name, [(42, 'global')])
         global_var = 1
         self.name_corresponds_to(name, [(1, 'local'), (42, 'global')])
 
     def test_global_keword(self):
-        """ Test with global keyword. """
+        """Test with global keyword."""
         name = 'global_var'
         global_var = 42  # value is unchanged
         self.name_corresponds_to(name, [(42, 'global')])
         global global_var  # has an effect even at the end
 
     def test_del_local(self):
-        """ Test with deleted local. """
+        """Test with deleted local."""
         name = 'toto'
         self.name_corresponds_to(name, [])
         toto = 0
@@ -91,7 +94,7 @@ class GetObjectInFrameTests(unittest2.TestCase):
         self.name_corresponds_to(name, [])
 
     def test_del_local_hiding_global(self):
-        """ Test with deleted local hiding a global. """
+        """Test with deleted local hiding a global."""
         name = 'global_var'
         glob_desc = [(42, 'global')]
         local_desc = [(1, 'local')]
@@ -102,7 +105,7 @@ class GetObjectInFrameTests(unittest2.TestCase):
         self.name_corresponds_to(name, glob_desc)
 
     def test_enclosing(self):
-        """ Test with nested functions. """
+        """Test with nested functions."""
         foo = 1
         bar = 2
 
@@ -120,7 +123,7 @@ class GetObjectInFrameTests(unittest2.TestCase):
         self.name_corresponds_to('baz', [])
 
     def test_enclosing2(self):
-        """ Test with nested functions. """
+        """Test with nested functions."""
         bar = 2
 
         def nested_func():
@@ -132,7 +135,7 @@ class GetObjectInFrameTests(unittest2.TestCase):
         self.name_corresponds_to('nested_func', [(nested_func, 'local')])
 
     def test_enclosing3(self):
-        """ Test with nested functions. """
+        """Test with nested functions."""
         bar = 2
 
         def nested_func():
@@ -144,7 +147,7 @@ class GetObjectInFrameTests(unittest2.TestCase):
         self.name_corresponds_to('nested_func', [(nested_func, 'local')])
 
     def test_enclosing4(self):
-        """ Test with nested functions. """
+        """Test with nested functions."""
         global_var = 1
 
         def nested_func():
@@ -154,7 +157,7 @@ class GetObjectInFrameTests(unittest2.TestCase):
         self.name_corresponds_to('global_var', [(1, 'local'), (42, 'global')])
 
     def test_enclosing5(self):
-        """ Test with nested functions. """
+        """Test with nested functions."""
         bar = 2
         foo = 3
 
@@ -175,32 +178,40 @@ class GetObjectInFrameTests(unittest2.TestCase):
 
 
 class OldStyleBaseClass:
-    """ Dummy class for testing purposes."""
+
+    """Dummy class for testing purposes."""
+
     pass
 
 
 class OldStyleDerivedClass(OldStyleBaseClass):
-    """ Dummy class for testing purposes."""
+
+    """Dummy class for testing purposes."""
+
     pass
 
 
 class NewStyleBaseClass(object):
-    """ Dummy class for testing purposes."""
+
+    """Dummy class for testing purposes."""
+
     pass
 
 
 class NewStyleDerivedClass(NewStyleBaseClass):
-    """ Dummy class for testing purposes."""
+
+    """Dummy class for testing purposes."""
+
     pass
 
 
 def a_function():
-    """ Dummy function for testing purposes."""
+    """Dummy function for testing purposes."""
     pass
 
 
 def a_generator():
-    """ Dummy generator for testing purposes."""
+    """Dummy generator for testing purposes."""
     yield 1
 
 
@@ -220,13 +231,15 @@ CLASSES = [(c, True) for c in NEW_STYLE_CLASSES] + \
 
 
 class GetTypesForStrTests(unittest2.TestCase):
-    """Tests about get_types_for_str."""
+
+    """Test get_types_for_str."""
 
     def test_get_subclasses(self):
-        """Tests for the get_subclasses function.
+        """Test the get_subclasses function.
 
         All types are found when looking for subclasses of object, except
-        for the old style classes on Python 2.x."""
+        for the old style classes on Python 2.x.
+        """
         all_classes = get_subclasses(object)
         for typ, new in CLASSES:
             self.assertTrue(typ in get_subclasses(typ))
@@ -237,13 +250,14 @@ class GetTypesForStrTests(unittest2.TestCase):
         self.assertFalse(0 in all_classes)
 
     def test_get_types_for_str_using_inheritance(self):
-        """Tests for the get_types_for_str_using_inheritance function.
+        """Test the get_types_for_str_using_inheritance function.
 
         All types are found when looking for subclasses of object, except
         for the old style classes on Python 2.x.
 
         Also, it seems like the returns is (almost) always precise as the
-        returned set contains only the expected type and nothing else."""
+        returned set contains only the expected type and nothing else.
+        """
         for typ, new in CLASSES:
             types = get_types_for_str_using_inheritance(typ.__name__)
             if new or OLD_CLASS_SUPPORT:
@@ -258,7 +272,7 @@ class GetTypesForStrTests(unittest2.TestCase):
         return get_types_for_str_using_names(type_str, sys._getframe(1))
 
     def test_get_types_for_str_using_names(self):
-        """Tests for the get_types_using_names function.
+        """Test the get_types_using_names function.
 
         Old style classes are retrieved even on Python 2.x.
         However, a few builtin types are not in the names so can't be found.
@@ -279,9 +293,10 @@ class GetTypesForStrTests(unittest2.TestCase):
         return get_types_for_str(type_str, sys._getframe(1))
 
     def test_get_types_for_str(self):
-        """Tests for the get_types_for_str.
+        """Test the get_types_for_str function.
 
-        Checks that for all tested types, the proper type is retrieved."""
+        Check that for all tested types, the proper type is retrieved.
+        """
         for typ, _ in CLASSES:
             types = self.get_types_for_str(typ.__name__)
             self.assertEqual(types, set([typ]), typ)
@@ -289,10 +304,11 @@ class GetTypesForStrTests(unittest2.TestCase):
         self.assertEqual(self.get_types_for_str('faketype'), set())
 
     def test_get_types_for_str2(self):
-        """Tests for the get_types_for_str.
+        """Test the get_types_for_str function.
 
-        Checks that for all tested strings, a single type is retrived.
-        This is useful to ensure that we are using the right names."""
+        Check that for all tested strings, a single type is retrived.
+        This is useful to ensure that we are using the right names.
+        """
         for n in ['module', 'NoneType', 'function',
                   'NewStyleBaseClass', 'NewStyleDerivedClass',
                   'OldStyleBaseClass', 'OldStyleDerivedClass']:
@@ -303,8 +319,11 @@ class GetTypesForStrTests(unittest2.TestCase):
             self.assertEqual(len(types), 2 if IS_PYPY else 1, n)
 
     def test_old_class_not_in_namespace(self):
-        # FIXME: At the moment, CommonTestOldStyleClass is not found
-        # because it is not in the namespace.
+        """Test the get_types_for_str function.
+
+        Check that at the moment, CommonTestOldStyleClass is not found
+        because it is not in the namespace. This behavior is to be improved.
+        """
         typ = common.CommonTestOldStyleClass
         expect_with_inherit = set([typ]) if OLD_CLASS_SUPPORT else set()
         name = typ.__name__
@@ -317,35 +336,41 @@ class GetTypesForStrTests(unittest2.TestCase):
 
 
 class GetSuggStringTests(unittest2.TestCase):
-    """ Tests about get_suggestion_string. """
+
+    """Tests about get_suggestion_string."""
 
     def test_no_sugg(self):
-        """ Empty list of suggestions. """
+        """Empty list of suggestions."""
         self.assertEqual(get_suggestion_string(()), "")
 
     def test_one_sugg(self):
-        """ Single suggestion. """
+        """Single suggestion."""
         self.assertEqual(get_suggestion_string(('0',)), ". Did you mean 0?")
 
     def test_same_sugg(self):
-        """ Identical suggestion. """
+        """Identical suggestion."""
         self.assertEqual(
             get_suggestion_string(('0', '0')), ". Did you mean 0, 0?")
 
     def test_multiple_suggs(self):
-        """ Multiple suggestions. """
+        """Multiple suggestions."""
         self.assertEqual(
             get_suggestion_string(('0', '1')), ". Did you mean 0, 1?")
 
 
 class AddStringToExcTest(common.TestWithStringFunction):
-    """ Generic class for tests about add_string_to_exception. """
+
+    """Generic class for tests about add_string_to_exception."""
+
     prefix_repr = ""
     suffix_repr = ""
 
     def get_exc_before_and_after(self, string, func):
-        """ Retrieve string representations of exceptions raised by code
-        before and after calling add_string_to_exception. """
+        """Retrieve string representations of exceptions.
+
+        Retrieve string representations of exceptions raised by code
+        before and after calling add_string_to_exception.
+        """
         code = self.code
         error_type = self.error_type
         type_, value, _ = common.get_exception(code)
@@ -356,59 +381,80 @@ class AddStringToExcTest(common.TestWithStringFunction):
         return (before, after)
 
     def check_string_added(self, func, string, prefix="", suffix=""):
-        """ Check that add_string_to_exception adds the strings. """
+        """Check that add_string_to_exception adds the strings."""
         s1, s2 = self.get_exc_before_and_after(string, func)
         self.assertStringAdded(prefix + string + suffix, s1, s2)
 
     def test_add_empty_string_to_str(self):
-        """ Empty string added to error's str value. """
+        """Empty string added to error's str value."""
         self.check_string_added(str, "")
 
     def test_add_empty_string_to_repr(self):
-        """ Empty string added to error's repr value. """
+        """Empty string added to error's repr value."""
         self.check_string_added(repr, "")
 
     def test_add_string_to_str(self):
-        """ Non-empty string added to error's str value. """
+        """Non-empty string added to error's str value."""
         self.check_string_added(str, "ABCDEstr")
 
     def test_add_string_to_repr(self):
-        """ Non-empty string added to error's repr value. """
+        """Non-empty string added to error's repr value."""
         self.check_string_added(
             repr, "ABCDErepr", self.prefix_repr, self.suffix_repr)
 
 
 class AddStringToNameErrorTest(unittest2.TestCase, AddStringToExcTest):
+
+    """Class for tests of add_string_to_exception on NameError."""
+
     code = 'babar = 0\nbaba'
     error_type = NameError
 
 
 class AddStringToTypeErrorTest(unittest2.TestCase, AddStringToExcTest):
+
+    """Class for tests of add_string_to_exception on TypeError."""
+
     code = '[0](0)'
     error_type = TypeError
 
 
 class AddStringToImportErrorTest(unittest2.TestCase, AddStringToExcTest):
+
+    """Class for tests of add_string_to_exception on ImportError."""
+
     code = 'import maths'
     error_type = ImportError
 
 
 class AddStringToKeyErrorTest(unittest2.TestCase, AddStringToExcTest):
+
+    """Class for tests of add_string_to_exception on KeyError."""
+
     code = 'dict()["ffdsqmjklfqsd"]'
     error_type = KeyError
 
 
 class AddStringToAttributeErrorTest(unittest2.TestCase, AddStringToExcTest):
+
+    """Class for tests of add_string_to_exception on AttributeError."""
+
     code = '[].does_not_exist'
     error_type = AttributeError
 
 
 class AddStringToSyntaxErrorTest(unittest2.TestCase, AddStringToExcTest):
+
+    """Class for tests of add_string_to_exception on SyntaxError."""
+
     code = 'return'
     error_type = SyntaxError
 
 
 class AddStringToMemoryErrorTest(unittest2.TestCase, AddStringToExcTest):
+
+    """Class for tests of add_string_to_exception on MemoryError."""
+
     code = '[0] * 999999999999999'
     error_type = MemoryError
     prefix_repr = "'"
@@ -416,6 +462,9 @@ class AddStringToMemoryErrorTest(unittest2.TestCase, AddStringToExcTest):
 
 
 class AddStringToIOErrorTest(unittest2.TestCase, AddStringToExcTest):
+
+    """Class for tests of add_string_to_exception on NoFileIoError."""
+
     code = 'with open("/does_not_exist") as f:\n\tpass'
     error_type = common.NoFileIoError
 

@@ -64,8 +64,11 @@ NO_SUCH_FILE_RE = r"^No such file or directory$"
 
 
 def match(pattern, string):
-    """ Wrapper around re.match to be able to import this module as re
-    without having name collisions."""
+    """Wrap function from the re module.
+
+    Wrapper around re.match to be able to import this module as re
+    without having name collisions.
+    """
     return re.match(pattern, string)
 
 

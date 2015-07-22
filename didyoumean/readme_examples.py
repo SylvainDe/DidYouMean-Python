@@ -6,8 +6,11 @@ import os
 
 
 def standardise(string):
-    """ Replace strings from the environment by the name of the environment
-    variable. """
+    """Standardise string by removing elements from the environment.
+
+    Replace strings from the environment by the name of the environment
+    variable.
+    """
     for var in ['USER']:
         val = os.environ.get(var)
         if val is not None:

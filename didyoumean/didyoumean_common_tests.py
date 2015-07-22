@@ -36,33 +36,44 @@ def get_exception(code):
 
 
 class CommonTestOldStyleClass:
-    """ Dummy class for testing purposes."""
+
+    """Dummy class for testing purposes."""
+
     pass
 
 
 class CommonTestOldStyleClass2:
-    """ Dummy class for testing purposes."""
+
+    """Dummy class for testing purposes."""
+
     pass
 
 
 class CommonTestNewStyleClass(object):
-    """ Dummy class for testing purposes."""
+
+    """Dummy class for testing purposes."""
+
     pass
 
 
 class CommonTestNewStyleClass2(object):
-    """ Dummy class for testing purposes."""
+
+    """Dummy class for testing purposes."""
+
     pass
 
 
 class TestWithStringFunction(object):
-    """ Unit test class with an helper method. """
+
+    """Unit test class with an helper method."""
 
     def assertStringAdded(self, string, before, after):
-        """ Check that `string` has been added to `before` to get `after`.
+        """Check that `string` has been added to `before` to get `after`.
+
         In some representation, string is not added via pure concatenation but
         can be added anywhere. Reusing as many already defined assert methods
-        to have the pretty printing. """
+        to have the pretty printing.
+        """
         if string:
             self.assertNotEqual(before, after)
             self.assertFalse(string in before, before)
