@@ -1104,6 +1104,15 @@ class ImportErrorTests(GetSuggestionsTests):
         self.throws(bad_code, NOMODULE, "'" + sugg + "'")
         self.runs(good_code)
 
+    def test_no_module5(self):
+        """Should be 'math'."""
+        code = '__import__("{0}")'
+        typo, sugg = 'maths', 'math'
+        self.assertTrue(sugg in STAND_MODULES)
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, NOMODULE, "'" + sugg + "'")
+        self.runs(good_code)
+
     def test_import_future_nomodule(self):
         """Should be '__future__'."""
         code = 'import {0}'
