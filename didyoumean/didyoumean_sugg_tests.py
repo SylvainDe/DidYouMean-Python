@@ -520,6 +520,14 @@ class NameErrorTests(GetSuggestionsTests):
                 'ProcessLookupError': ["'LookupError' (builtin)"],
                 'TimeoutError': [],
                 '__loader__': [],
+                }.items():
+            self.runs(name, from_version(version))
+            self.throws(name, NAMEERROR, suggs, up_to_version(version))
+
+    def test_added_3_4(self):
+        """Test for names added in 3.4."""
+        version = (3, 4)
+        for name, suggs in {
                 '__spec__': [],
                 }.items():
             self.runs(name, from_version(version))
