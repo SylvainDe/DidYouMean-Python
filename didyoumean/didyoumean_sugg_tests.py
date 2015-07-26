@@ -518,13 +518,22 @@ class NameErrorTests(GetSuggestionsTests):
                 'NotADirectoryError': [],
                 'PermissionError': ["'ZeroDivisionError' (builtin)"],
                 'ProcessLookupError': ["'LookupError' (builtin)"],
-                'StopAsyncIteration': ["'StopIteration' (builtin)"],
                 'TimeoutError': [],
                 '__loader__': [],
                 '__spec__': [],
                 }.items():
             self.runs(name, from_version(version))
             self.throws(name, NAMEERROR, suggs, up_to_version(version))
+
+    def test_added_3_5(self):
+        """Test for names added in 3.5."""
+        version = (3, 5)
+        for name, suggs in {
+                'StopAsyncIteration': ["'StopIteration' (builtin)"],
+                }.items():
+            self.runs(name, from_version(version))
+            self.throws(name, NAMEERROR, suggs, up_to_version(version))
+
 
     def test_import_sugg(self):
         """Should import module first."""
