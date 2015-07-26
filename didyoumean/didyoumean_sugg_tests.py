@@ -378,6 +378,11 @@ class NameErrorTests(GetSuggestionsTests):
         """No suggestion."""
         self.throws('a = ldkjhfnvdlkjhvgfdhgf', NAMEERROR)
 
+    # For added/removed names, following functions with one name
+    # per functions were added in the early stages of the project.
+    # In the future, I'd like to have them replaced by something
+    # a bit more concise using relevant data structure. In the
+    # meantime, I am keeping both versions because safer is better.
     def test_removed_cmp(self):
         """Builtin cmp is removed."""
         # NICE_TO_HAVE
@@ -453,6 +458,73 @@ class NameErrorTests(GetSuggestionsTests):
         version = (3, 0)
         self.runs(code, up_to_version(version))
         self.throws(code, NAMEERROR, [], from_version(version))
+
+    def test_added_2_7(self):
+        """Test for names added in 2.7."""
+        version = (2, 7)
+        for name in ['memoryview']:
+            self.runs(name, from_version(version))
+            self.throws(name, NAMEERROR, [], up_to_version(version))
+
+    def test_removed_3_0(self):
+        """Test for names removed in 3.0."""
+        version = (3, 0)
+        for name, suggs in {
+                'StandardError': [],  # Exception
+                'apply': [],
+                'basestring': [],
+                'buffer': [],
+                'cmp': [],
+                'coerce': [],
+                'execfile': [],
+                'file': ["'filter' (builtin)"],
+                'intern': ["'iter' (builtin)", "'sys.intern'"],
+                'long': [],
+                'raw_input': ["'input' (builtin)"],
+                'reduce': ["'reduce' from functools (not imported)"],
+                'reload': [],
+                'unichr': [],
+                'unicode': ["'code' (local)"],
+                'xrange': ["'range' (builtin)"],
+                }.items():
+            self.throws(name, NAMEERROR, suggs, from_version(version))
+            self.runs(name, up_to_version(version))
+
+    def test_added_3_0(self):
+        """Test for names added in 3.0."""
+        version = (3, 0)
+        for name, suggs in {
+                'ascii': [],
+                'ResourceWarning': ["'FutureWarning' (builtin)"],
+                '__build_class__': [],
+                }.items():
+            self.runs(name, from_version(version))
+            self.throws(name, NAMEERROR, suggs, up_to_version(version))
+
+    def test_added_3_3(self):
+        """Test for names added in 3.3."""
+        version = (3, 3)
+        for name, suggs in {
+                'BrokenPipeError': [],
+                'ChildProcessError': [],
+                'ConnectionAbortedError': [],
+                'ConnectionError': ["'IndentationError' (builtin)"],
+                'ConnectionRefusedError': [],
+                'ConnectionResetError': [],
+                'FileExistsError': [],
+                'FileNotFoundError': [],
+                'InterruptedError': [],
+                'IsADirectoryError': [],
+                'NotADirectoryError': [],
+                'PermissionError': ["'ZeroDivisionError' (builtin)"],
+                'ProcessLookupError': ["'LookupError' (builtin)"],
+                'StopAsyncIteration': ["'StopIteration' (builtin)"],
+                'TimeoutError': [],
+                '__loader__': [],
+                '__spec__': [],
+                }.items():
+            self.runs(name, from_version(version))
+            self.throws(name, NAMEERROR, suggs, up_to_version(version))
 
     def test_import_sugg(self):
         """Should import module first."""
