@@ -534,7 +534,6 @@ class NameErrorTests(GetSuggestionsTests):
             self.runs(name, from_version(version))
             self.throws(name, NAMEERROR, suggs, up_to_version(version))
 
-
     def test_import_sugg(self):
         """Should import module first."""
         module = 'collections'
