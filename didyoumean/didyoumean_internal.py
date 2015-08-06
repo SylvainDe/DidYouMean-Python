@@ -594,9 +594,9 @@ def add_string_to_exception(value, string):
     # or converted to string - may it be via `str()`, `repr()` or when the
     # exception is uncaught and displayed (which seems to use `str()`).
     # In an ideal world, one just needs to update `args` but apparently it
-    # is not enough for SyntaxError, IOError (and others?) where other
-    # attributes (like `msg` or `strerror`) are to be updated too (for
-    # str()`, not for `repr()`).
+    # is not enough for SyntaxError, IOError, etc where other
+    # attributes (`msg`, `strerror`, `reason`, etc) are to be updated too
+    # (for `str()`, not for `repr()`).
     # Also, elements in args might not be strings or args might me empty
     # so we add to the first string and add the element otherwise.
     assert type(value.args) == tuple
@@ -610,10 +610,10 @@ def add_string_to_exception(value, string):
             # if no string arg, add the string anyway
             lst_args.append(string)
         value.args = tuple(lst_args)
-        if hasattr(value, 'msg'):
-            value.msg += string
-        if hasattr(value, 'strerror'):
-            value.strerror += string
+        for attr in ['msg', 'strerror', 'reason']:
+            attrval = getattr(value, attr, None)
+            if attrval is not None:
+                setattr(value, attr, attrval + string)
 
 
 def get_last_frame(traceback):

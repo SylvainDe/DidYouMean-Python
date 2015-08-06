@@ -14,6 +14,8 @@ import sys
 
 OLD_CLASS_SUPPORT = sys.version_info >= (3, 0)
 IS_PYPY = hasattr(sys, "pypy_translation_info")
+U_PREFIX_SUPPORT = not ((3, 0) <= sys.version_info < (3, 3))
+U_PREFIX = "u" if U_PREFIX_SUPPORT else ""
 global_var = 42  # Please don't change the value
 
 
@@ -467,6 +469,22 @@ class AddStringToIOErrorTest(unittest2.TestCase, AddStringToExcTest):
 
     code = 'with open("/does_not_exist") as f:\n\tpass'
     error_type = common.NoFileIoError
+
+
+class AddStringToUnicodeDecodeTest(unittest2.TestCase, AddStringToExcTest):
+
+    """Class for tests of add_string_to_exception on UnicodeDecodeError."""
+
+    code = "'foo'.encode('utf-16').decode('utf-8')"
+    error_type = UnicodeDecodeError
+
+
+class AddStringToUnicodeEncodeTest(unittest2.TestCase, AddStringToExcTest):
+
+    """Class for tests of add_string_to_exception on UnicodeEncodeError."""
+
+    code = U_PREFIX + '"\u0411".encode("iso-8859-15")'
+    error_type = UnicodeEncodeError
 
 
 if __name__ == '__main__':
