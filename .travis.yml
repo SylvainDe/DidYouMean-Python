@@ -8,12 +8,12 @@ python:
   - "3.5-dev"
   - "3.5.0b2"
   - "3.5.0b3"
-#  - "nightly" Problem with Python 3.6 and pep8
+  - "nightly"
   - "pypy"
   - "pypy3"
 
 install:
-  - pip install pep8
+  - pip install --upgrade pep8
   - pip install pep257
   - pip install --upgrade pyflakes
   - pip install unittest2
