@@ -4,6 +4,7 @@ from didyoumean_internal import get_suggestions_for_exception, STAND_MODULES
 import didyoumean_common_tests as common
 import unittest2
 import didyoumean_re as re
+import warnings
 import sys
 import math
 import os
@@ -1325,8 +1326,10 @@ class SyntaxErrorTests(GetSuggestionsTests):
             "def func1():\n\tfrom math import *"
             "\n\tdef func2():\n\t\tTrue",
         ]
-        for code in codes:
-            self.throws(code, IMPORTSTAR, [])
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=SyntaxWarning)
+            for code in codes:
+                self.throws(code, IMPORTSTAR, [])
 
     def test_unpack(self):
         """Extended tuple unpacking does not work prior to Python 3."""

@@ -82,10 +82,13 @@ class GetObjectInFrameTests(unittest2.TestCase):
 
     def test_global_keword(self):
         """Test with global keyword."""
+        # Funny detail : the global keyword works even if at the end of
+        # the function (after the code it affects) but this raises a
+        # SyntaxWarning.
+        global global_var
         name = 'global_var'
         global_var = 42  # value is unchanged
         self.name_corresponds_to(name, [(42, 'global')])
-        global global_var  # has an effect even at the end
 
     def test_del_local(self):
         """Test with deleted local."""
