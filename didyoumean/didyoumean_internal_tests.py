@@ -9,6 +9,7 @@ import didyoumean_common_tests as common
 from didyoumean_common_tests import CommonTestOldStyleClass2,\
     CommonTestNewStyleClass2  # to have these 2 in defined names
 import unittest2
+import itertools
 import sys
 
 
@@ -366,6 +367,11 @@ class AddStringToExcTest(common.TestWithStringFunction):
 
     prefix_repr = ""
     suffix_repr = ""
+    check_str_sum = True
+
+    def get_exception(self):
+        """Abstract method to get an instance of exception."""
+        raise NotImplementedError
 
     def get_exc_before_and_after(self, string, func):
         """Retrieve string representations of exceptions.
@@ -373,10 +379,7 @@ class AddStringToExcTest(common.TestWithStringFunction):
         Retrieve string representations of exceptions raised by code
         before and after calling add_string_to_exception.
         """
-        code = self.code
-        error_type = self.error_type
-        type_, value, _ = common.get_exception(code)
-        self.assertEqual(error_type, type_)
+        value = self.get_exception()
         before = func(value)
         add_string_to_exception(value, string)
         after = func(value)
@@ -385,7 +388,8 @@ class AddStringToExcTest(common.TestWithStringFunction):
     def check_string_added(self, func, string, prefix="", suffix=""):
         """Check that add_string_to_exception adds the strings."""
         s1, s2 = self.get_exc_before_and_after(string, func)
-        self.assertStringAdded(prefix + string + suffix, s1, s2)
+        self.assertStringAdded(
+            prefix + string + suffix, s1, s2, self.check_str_sum)
 
     def test_add_empty_string_to_str(self):
         """Empty string added to error's str value."""
@@ -405,7 +409,24 @@ class AddStringToExcTest(common.TestWithStringFunction):
             repr, "ABCDErepr", self.prefix_repr, self.suffix_repr)
 
 
-class AddStringToNameErrorTest(unittest2.TestCase, AddStringToExcTest):
+class AddStringToExcFromCodeTest(AddStringToExcTest):
+
+    """Generic class for tests about add_string_to_exception.
+
+    The tested function is called on an exception created by running
+    some failing code (`self.code`) and catching what it throws.
+    """
+
+    code = NotImplemented
+
+    def get_exception(self):
+        """Get the exception by running the code and catching errors."""
+        type_, value, _ = common.get_exception(self.code)
+        self.assertEqual(self.error_type, type_)
+        return value
+
+
+class AddStringToNameErrorTest(unittest2.TestCase, AddStringToExcFromCodeTest):
 
     """Class for tests of add_string_to_exception on NameError."""
 
@@ -413,7 +434,7 @@ class AddStringToNameErrorTest(unittest2.TestCase, AddStringToExcTest):
     error_type = NameError
 
 
-class AddStringToTypeErrorTest(unittest2.TestCase, AddStringToExcTest):
+class AddStringToTypeErrorTest(unittest2.TestCase, AddStringToExcFromCodeTest):
 
     """Class for tests of add_string_to_exception on TypeError."""
 
@@ -421,7 +442,8 @@ class AddStringToTypeErrorTest(unittest2.TestCase, AddStringToExcTest):
     error_type = TypeError
 
 
-class AddStringToImportErrorTest(unittest2.TestCase, AddStringToExcTest):
+class AddStringToImportErrorTest(
+        unittest2.TestCase, AddStringToExcFromCodeTest):
 
     """Class for tests of add_string_to_exception on ImportError."""
 
@@ -429,7 +451,8 @@ class AddStringToImportErrorTest(unittest2.TestCase, AddStringToExcTest):
     error_type = ImportError
 
 
-class AddStringToKeyErrorTest(unittest2.TestCase, AddStringToExcTest):
+class AddStringToKeyErrorTest(
+        unittest2.TestCase, AddStringToExcFromCodeTest):
 
     """Class for tests of add_string_to_exception on KeyError."""
 
@@ -437,7 +460,8 @@ class AddStringToKeyErrorTest(unittest2.TestCase, AddStringToExcTest):
     error_type = KeyError
 
 
-class AddStringToAttributeErrorTest(unittest2.TestCase, AddStringToExcTest):
+class AddStringToAttributeErrorTest(
+        unittest2.TestCase, AddStringToExcFromCodeTest):
 
     """Class for tests of add_string_to_exception on AttributeError."""
 
@@ -445,7 +469,8 @@ class AddStringToAttributeErrorTest(unittest2.TestCase, AddStringToExcTest):
     error_type = AttributeError
 
 
-class AddStringToSyntaxErrorTest(unittest2.TestCase, AddStringToExcTest):
+class AddStringToSyntaxErrorTest(
+        unittest2.TestCase, AddStringToExcFromCodeTest):
 
     """Class for tests of add_string_to_exception on SyntaxError."""
 
@@ -453,7 +478,8 @@ class AddStringToSyntaxErrorTest(unittest2.TestCase, AddStringToExcTest):
     error_type = SyntaxError
 
 
-class AddStringToMemoryErrorTest(unittest2.TestCase, AddStringToExcTest):
+class AddStringToMemoryErrorTest(
+        unittest2.TestCase, AddStringToExcFromCodeTest):
 
     """Class for tests of add_string_to_exception on MemoryError."""
 
@@ -463,7 +489,8 @@ class AddStringToMemoryErrorTest(unittest2.TestCase, AddStringToExcTest):
     suffix_repr = "',"
 
 
-class AddStringToIOErrorTest(unittest2.TestCase, AddStringToExcTest):
+class AddStringToIOErrorTest(
+        unittest2.TestCase, AddStringToExcFromCodeTest):
 
     """Class for tests of add_string_to_exception on NoFileIoError."""
 
@@ -471,7 +498,8 @@ class AddStringToIOErrorTest(unittest2.TestCase, AddStringToExcTest):
     error_type = common.NoFileIoError
 
 
-class AddStringToUnicodeDecodeTest(unittest2.TestCase, AddStringToExcTest):
+class AddStringToUnicodeDecodeTest(
+        unittest2.TestCase, AddStringToExcFromCodeTest):
 
     """Class for tests of add_string_to_exception on UnicodeDecodeError."""
 
@@ -479,12 +507,85 @@ class AddStringToUnicodeDecodeTest(unittest2.TestCase, AddStringToExcTest):
     error_type = UnicodeDecodeError
 
 
-class AddStringToUnicodeEncodeTest(unittest2.TestCase, AddStringToExcTest):
+class AddStringToUnicodeEncodeTest(
+        unittest2.TestCase, AddStringToExcFromCodeTest):
 
     """Class for tests of add_string_to_exception on UnicodeEncodeError."""
 
     code = U_PREFIX + '"\u0411".encode("iso-8859-15")'
     error_type = UnicodeEncodeError
+
+
+class AddStringToExcFromInstanceTest(AddStringToExcTest):
+
+    """Generic class for tests about add_string_to_exception.
+
+    The tested function is called on an exception created by calling the
+    constructor (`self.exc_type`) with the right arguments (`self.args`).
+    """
+
+    check_str_sum = False
+    exc_type = NotImplemented
+    args = NotImplemented
+
+    def get_exception(self):
+        """Get the exception by calling the constructor with correct args."""
+        return self.exc_type(*self.args)
+
+
+class AddStringToZeroDivisionError(
+        unittest2.TestCase, AddStringToExcFromInstanceTest):
+
+    """Class for tests of add_string_to_exception on ZeroDivisionError."""
+
+    exc_type = ZeroDivisionError
+    args = ('', '', '', '', '')
+
+
+def get_instance(klass):
+    """Get instance for class by bruteforcing the parameters.
+
+    Construction is attempted with a decreasing number of arguments so that
+    the instanciated object has as many non-null attributes set as possible.
+    This is important not for the creation but when the object gets used
+    later on. Also, the order of the values has its importance for similar
+    reasons.
+    """
+    my_unicode = str if sys.version_info >= (3, 0) else unicode
+    values_tried = [my_unicode(), bytes(), 0]
+    for nb_arg in reversed(range(6)):
+        for p in itertools.product(values_tried, repeat=nb_arg):
+            try:
+                return klass(*p), p
+            except (TypeError, AttributeError) as e:
+                pass
+            except Exception as e:
+                print(type(e), e)
+    return None
+
+
+def generate_add_string_to_exc_tests():
+    """Generate tests for add_string_to_exception.
+
+    This function dynamically creates tests cases for the function
+    add_string_to_exception for as many Exception subclasses as possible.
+    This is not used at the moment because the generated classes need to
+    be added in the global namespace and there is no good way to do this.
+    However, it may be a good idea to call this when new versions of
+    Python are released to ensure we handle all exceptions properly (and
+    find the tests to be added manually if need be).
+    """
+    for klass in get_subclasses(Exception):
+        r = get_instance(klass)
+        if r is not None:
+            _, p = r
+            class_name = ("NameForAddStringToExcFromInstanceTest" +
+                          klass.__name__ + str(id(klass)))
+            assert class_name not in globals(), "%s" % class_name
+            globals()[class_name] = type(
+                    class_name,
+                    (AddStringToExcFromInstanceTest, unittest2.TestCase),
+                    {'exc_type': klass, 'args': p})
 
 
 if __name__ == '__main__':

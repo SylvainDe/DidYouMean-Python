@@ -54,8 +54,8 @@ class ApiTest(TestWithStringFunction):
         code = 'babar = 0\nbaba'
         str1, repr1, str2, repr2 = self.get_exc_as_str(
             code, type_)
-        self.assertStringAdded(sugg, str1, str2)
-        self.assertStringAdded(sugg, repr1, repr2)
+        self.assertStringAdded(sugg, str1, str2, True)
+        self.assertStringAdded(sugg, repr1, repr2, True)
 
     def test_api_no_suggestion(self):
         """Check the case with no suggestion."""
@@ -64,8 +64,8 @@ class ApiTest(TestWithStringFunction):
         code = 'babar = 0\nfdjhflsdsqfjlkqs'
         str1, repr1, str2, repr2 = self.get_exc_as_str(
             code, type_)
-        self.assertStringAdded(sugg, str1, str2)
-        self.assertStringAdded(sugg, repr1, repr2)
+        self.assertStringAdded(sugg, str1, str2, True)
+        self.assertStringAdded(sugg, repr1, repr2, True)
 
     def test_api_syntax(self):
         """Check the case with syntax error suggestion."""
@@ -74,12 +74,13 @@ class ApiTest(TestWithStringFunction):
         code = 'return'
         str1, repr1, str2, repr2 = self.get_exc_as_str(
             code, type_)
-        self.assertStringAdded(sugg, str1, str2)
+        self.assertStringAdded(sugg, str1, str2, True)
         # normalise quotes as they get changed at some point on PyPy
         self.assertStringAdded(
             sugg.replace("'", '"'),
             repr1.replace("'", '"'),
-            repr2.replace("'", '"'))
+            repr2.replace("'", '"'),
+            True)
 
     def test_api_ioerror(self):
         """Check the case with IO error suggestion."""
@@ -89,11 +90,12 @@ class ApiTest(TestWithStringFunction):
         code = 'with open("~") as f:\n\tpass'
         str1, repr1, str2, repr2 = self.get_exc_as_str(
             code, type_)
-        self.assertStringAdded(sugg, str1, str2)
+        self.assertStringAdded(sugg, str1, str2, True)
         self.assertStringAdded(
             sugg.replace("'", '"'),
             repr1.replace("'", '"'),
-            repr2.replace("'", '"'))
+            repr2.replace("'", '"'),
+            True)
 
 
 class DecoratorTest(unittest2.TestCase, ApiTest):

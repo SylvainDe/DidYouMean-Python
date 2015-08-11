@@ -67,12 +67,13 @@ class TestWithStringFunction(object):
 
     """Unit test class with an helper method."""
 
-    def assertStringAdded(self, string, before, after):
+    def assertStringAdded(self, string, before, after, check_str_sum):
         """Check that `string` has been added to `before` to get `after`.
 
-        In some representation, string is not added via pure concatenation but
-        can be added anywhere. Reusing as many already defined assert methods
-        to have the pretty printing.
+        If the `check_str_sum` argument is True, we check that adding `string`
+        somewhere in the `before` string gives the `after` string. If the
+        argument is false, we just check that `string` can be found in `after`
+        but not in `before`.
         """
         if string:
             self.assertNotEqual(before, after)
@@ -81,7 +82,8 @@ class TestWithStringFunction(object):
             # Removing string and checking that we get the original string
             begin, mid, end = after.partition(string)
             self.assertEqual(mid, string)
-            self.assertEqual(begin + end, before)
+            if check_str_sum:
+                self.assertEqual(begin + end, before)
         else:
             self.assertEqual(before, after)
 
