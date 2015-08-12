@@ -374,7 +374,7 @@ class AddStringToExcTest(common.TestWithStringFunction):
 
     def get_exception(self):
         """Abstract method to get an instance of exception."""
-        raise NotImplementedError
+        raise NotImplementedError("'get_exception' needs to be implemented")
 
     def get_exc_before_and_after(self, string, func):
         """Retrieve string representations of exceptions.
@@ -525,6 +525,10 @@ class AddStringToExcFromInstanceTest(AddStringToExcTest):
 
     The tested function is called on an exception created by calling the
     constructor (`self.exc_type`) with the right arguments (`self.args`).
+    Because of the way it creates exception, the tests are somewhat artificial
+    (compared to AddStringToExcFromCodeTest for instance). However, the major
+    advantage is that they can be easily generated (to have all subclasses of
+    Exception tested).
     """
 
     check_str_sum = False
@@ -584,7 +588,7 @@ def generate_add_string_to_exc_tests():
             _, p = r
             class_name = ("NameForAddStringToExcFromInstanceTest" +
                           klass.__name__ + str(id(klass)))
-            assert class_name not in globals(), "%s" % class_name
+            assert class_name not in globals(), class_name
             globals()[class_name] = type(
                     class_name,
                     (AddStringToExcFromInstanceTest, unittest2.TestCase),
