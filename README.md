@@ -26,7 +26,7 @@ The logic adding suggestions can be invoked in different ways :
 
  - a post-mortem function for interactive session
 
- - a context-manager.
+ - a function decorator.
 
 
 See also :
@@ -264,7 +264,7 @@ I haven't done anything fancy for the installation (yet). You'll have to clone t
 
 Once you have the code, it can be used in different ways :
 
- * hook on `sys.excepthook` : just `import didyoumean_hook` and you'll have the suggestions for any exception happening
+ * hook on `sys.excepthook` : just `import didyoumean_hook` and you'll have the suggestions for any exception happening.
 
  * decorator : just `import didyoumean_decorator` and add the `@didyoumean` decorator before any function (the `main()` could be a good choice) and you'll have the suggestions for any exception happening through a call to that method.
 
@@ -292,5 +292,6 @@ Also, pull-requests are welcome to :
 As for the technical details :
 
  * this is under MIT License : you can do anything you want as long as you provide attribution back to this project.
- * I try to follow [PEP 8](http://legacy.python.org/dev/peps/pep-0008/) as much as possible
- * I try to have most of the code covered by unit tests
+ * I try to follow [PEP 8](http://legacy.python.org/dev/peps/pep-0008/) and [PEP 257](https://www.python.org/dev/peps/pep-0257/) as much as possible. Compliancy is checked during continuous integration using the [pep8](https://pypi.python.org/pypi/pep8) and [pep257](https://pypi.python.org/pypi/pep257) checkers.
+ * I try to have most of the code covered by unit tests.
+ * I try to write the code in such a way that it works on all Python versions from 2.6 (included).
