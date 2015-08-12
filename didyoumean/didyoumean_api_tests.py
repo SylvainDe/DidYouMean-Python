@@ -15,7 +15,7 @@ class ApiTest(TestWithStringFunction):
 
     def run_with_api(self, code):
         """Abstract method to run code with tested API."""
-        raise NotImplementedError()
+        raise NotImplementedError("'run_with_api' needs to be implemented")
 
     def get_exc_with_api(self, code):
         """Get exception raised with running code with tested API."""
@@ -41,6 +41,24 @@ class ApiTest(TestWithStringFunction):
         str2, repr2 = str(value2), repr(value2)
         return (str1, repr1, str2, repr2)
 
+    def check_sugg_added(self, code, type_, sugg, normalise_quotes=False):
+        """Check that the suggestion gets added to the exception.
+
+        Get the string representations for the exception before and after
+        and check that the suggestion `sugg` is added to `before` to get
+        `after`. `normalise_quotes` can be provided to replace all quotes
+        by double quotes before checking the `repr()` representations as
+        they may get changed sometimes.
+        """
+        str1, repr1, str2, repr2 = self.get_exc_as_str(
+            code, type_)
+        self.assertStringAdded(sugg, str1, str2, True)
+        if normalise_quotes:
+            sugg = sugg.replace("'", '"')
+            repr1 = repr1.replace("'", '"')
+            repr2 = repr2.replace("'", '"')
+        self.assertStringAdded(sugg, repr1, repr2, True)
+
     def test_api_no_exception(self):
         """Check the case with no exception."""
         code = 'babar = 0\nbabar'
@@ -52,35 +70,21 @@ class ApiTest(TestWithStringFunction):
         type_ = NameError
         sugg = ". Did you mean 'babar' (local)?"
         code = 'babar = 0\nbaba'
-        str1, repr1, str2, repr2 = self.get_exc_as_str(
-            code, type_)
-        self.assertStringAdded(sugg, str1, str2, True)
-        self.assertStringAdded(sugg, repr1, repr2, True)
+        self.check_sugg_added(code, type_, sugg)
 
     def test_api_no_suggestion(self):
         """Check the case with no suggestion."""
         type_ = NameError
         sugg = ""
         code = 'babar = 0\nfdjhflsdsqfjlkqs'
-        str1, repr1, str2, repr2 = self.get_exc_as_str(
-            code, type_)
-        self.assertStringAdded(sugg, str1, str2, True)
-        self.assertStringAdded(sugg, repr1, repr2, True)
+        self.check_sugg_added(code, type_, sugg)
 
     def test_api_syntax(self):
         """Check the case with syntax error suggestion."""
         type_ = SyntaxError
         sugg = ". Did you mean to indent it, 'sys.exit([arg])'?"
         code = 'return'
-        str1, repr1, str2, repr2 = self.get_exc_as_str(
-            code, type_)
-        self.assertStringAdded(sugg, str1, str2, True)
-        # normalise quotes as they get changed at some point on PyPy
-        self.assertStringAdded(
-            sugg.replace("'", '"'),
-            repr1.replace("'", '"'),
-            repr2.replace("'", '"'),
-            True)
+        self.check_sugg_added(code, type_, sugg, True)
 
     def test_api_ioerror(self):
         """Check the case with IO error suggestion."""
@@ -88,14 +92,7 @@ class ApiTest(TestWithStringFunction):
         home = os.path.expanduser("~")
         sugg = ". Did you mean '" + home + "' (calling os.path.expanduser)?"
         code = 'with open("~") as f:\n\tpass'
-        str1, repr1, str2, repr2 = self.get_exc_as_str(
-            code, type_)
-        self.assertStringAdded(sugg, str1, str2, True)
-        self.assertStringAdded(
-            sugg.replace("'", '"'),
-            repr1.replace("'", '"'),
-            repr2.replace("'", '"'),
-            True)
+        self.check_sugg_added(code, type_, sugg, True)
 
 
 class DecoratorTest(unittest2.TestCase, ApiTest):
