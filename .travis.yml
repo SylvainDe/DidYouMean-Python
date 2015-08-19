@@ -16,6 +16,7 @@ install:
   - pip install --upgrade pep8
   - pip install pep257
   - pip install --upgrade pyflakes
+  - pip install --upgrade coverage
   - pip install unittest2
   - pip install coveralls
   - pip install codecov
@@ -25,7 +26,7 @@ before_script:
  - pep257 *.py */*.py
 
 script:
- - python -m unittest2.__main__ discover --start-directory=didyoumean --pattern=*.py
+ - coverage run -m unittest2.__main__ discover --start-directory=didyoumean --pattern=*.py
  - python didyoumean/readme_examples.py
 
 after_success:
