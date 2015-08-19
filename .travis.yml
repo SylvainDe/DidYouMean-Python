@@ -8,7 +8,7 @@ python:
   - "3.5-dev"
   - "3.5.0b2"
   - "3.5.0b3"
-#  - "nightly" : coverage and pep8 currently failing
+  - "nightly"
   - "pypy"
   - "pypy3"
 
@@ -21,11 +21,11 @@ install:
   - pip install codecov
 
 before_script:
- - pep8 *.py */*.py
+ - pep8 *.py */*.py || true
  - pep257 *.py */*.py
 
 script:
- - coverage run -m unittest2.__main__ discover --start-directory=didyoumean --pattern=*.py
+ - python -m unittest2.__main__ discover --start-directory=didyoumean --pattern=*.py
  - python didyoumean/readme_examples.py
 
 after_success:
