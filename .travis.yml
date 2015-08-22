@@ -26,7 +26,8 @@ before_script:
  - pep257 *.py */*.py
 
 script:
- - coverage run -m unittest2.__main__ discover --start-directory=didyoumean --pattern=*.py
+ - coverage run -m unittest2.__main__ discover --start-directory=didyoumean --pattern=*.py || true
+ - python -m unittest2.__main__ discover --start-directory=didyoumean --pattern=*.py
  - python didyoumean/readme_examples.py
 
 after_success:
