@@ -1167,7 +1167,7 @@ class ImportErrorTests(GetSuggestionsTests):
             UNKNOWN_IMPORTERROR)
 
     def test_module_removed(self):
-        """Sometimes modules are deleted/moved/renamed."""
+        """Sometimes, modules are deleted/moved/renamed."""
         # NICE_TO_HAVE
         version = (3, 0)
         code = 'import {0}'
