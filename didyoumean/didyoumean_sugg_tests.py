@@ -136,7 +136,6 @@ def get_exception(code):
     assert False, "No exception thrown running\n---\n{0}\n---".format(code)
 
 
-
 # NameError for NameErrorTests
 NAMEERROR = (NameError, re.NAMENOTDEFINED_RE)
 UNKNOWN_NAMEERROR = (NameError, None)
