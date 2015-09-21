@@ -41,6 +41,8 @@ See also :
 
  - [PyDidYouMean](https://github.com/asweigart/pydidyoumean) : Improve "file/command not found" errors with suggestions.
 
+ - [danrobinson/tracestack](https://github.com/danrobinson/tracestack) : Search your Python error messages on the web.
+
 
 Example
 -------
