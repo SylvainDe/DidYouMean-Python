@@ -123,6 +123,13 @@ class RegexTests(unittest2.TestCase):
         groups = ('some_func', 'a')
         self.re_matches(msg, re.UNEXPECTED_KEYWORDARG_RE, (groups, dict()))
 
+    def test_unexpected_kw_arg2(self):
+        """Test UNEXPECTED_KEYWORDARG2_RE."""
+        msg = "'this_doesnt_exist' is an invalid " \
+            "keyword argument for this function"
+        groups = ('this_doesnt_exist', )
+        self.re_matches(msg, re.UNEXPECTED_KEYWORDARG2_RE, (groups, dict()))
+
     def test_zero_length_field(self):
         """Test ZERO_LEN_FIELD_RE."""
         # Python 2.6

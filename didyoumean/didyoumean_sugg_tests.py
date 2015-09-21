@@ -148,6 +148,7 @@ MISSINGPOSERROR = (TypeError, re.MISSING_POS_ARG_RE)
 UNHASHABLE = (TypeError, re.UNHASHABLE_RE)
 UNSUBSCRIBTABLE = (TypeError, re.UNSUBSCRIBTABLE_RE)
 UNEXPECTEDKWARG = (TypeError, re.UNEXPECTED_KEYWORDARG_RE)
+UNEXPECTEDKWARG2 = (TypeError, re.UNEXPECTED_KEYWORDARG2_RE)
 UNSUPPORTEDOPERAND = (TypeError, re.UNSUPPORTED_OP_RE)
 OBJECTDOESNOTSUPPORT = (TypeError, re.OBJ_DOES_NOT_SUPPORT_RE)
 CANNOTCONCAT = (TypeError, re.CANNOT_CONCAT_RE)
@@ -1005,6 +1006,22 @@ class TypeErrorTests(GetSuggestionsTests):
         bad_code, good_code = format_str(code, typo, sugg)
         self.throws(bad_code, UNEXPECTEDKWARG, "'" + sugg + "'")
         self.runs(good_code)
+
+    def test_keyword_builtin(self):
+        """A few builtins (like int()) have a different error message."""
+        # NICE_TO_HAVE
+        # 'max', 'input', 'len', 'abs', 'all', etc have a specific error
+        # message and are not relevant here
+        for builtin in ['int', 'float', 'bool', 'complex']:
+            self.throws(builtin + '(this_doesnt_exist=2)', UNEXPECTEDKWARG2)
+
+    def test_keyword_builtin_print(self):
+        """Builtin "print" has a different error message."""
+        # It would be NICE_TO_HAVE suggestions on keyword arguments
+        version = (3, 0)
+        print_code = "c = 'string'\nb = print(c, end_='toto')"
+        self.throws(print_code, INVALIDSYNTAX, [], up_to_version(version))
+        self.throws(print_code, UNEXPECTEDKWARG2, [], from_version(version))
 
     def test_no_implicit_str_conv(self):
         """Trying to concatenate a non-string value to a string."""

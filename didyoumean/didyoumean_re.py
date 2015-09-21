@@ -13,6 +13,8 @@ UNSUBSCRIBTABLE_RE = r"^'(\w+)' object " \
     r"(?:is (?:not |un)subscriptable|has no attribute '__getitem__')$"
 UNEXPECTED_KEYWORDARG_RE = r"^(\w+)\(\) " \
     r"got an unexpected keyword argument '(\w+)'$"
+UNEXPECTED_KEYWORDARG2_RE = r"^'(\w+)' is an " \
+    r"invalid keyword argument for this function$"
 NOMODULE_RE = r"^No module named '?(\w+)'?$"
 CANNOTIMPORT_RE = r"^cannot import name '?(\w+)'?$"
 INDEXOUTOFRANGE_RE = r"^list index out of range$"

@@ -390,6 +390,14 @@ def suggest_unexpected_keywordarg(value, frame, groups):
         yield quote(name)
 
 
+def suggest_unexpected_keywordarg2(value, frame, groups):
+    """Get suggestions in case of UNEXPECTED_KEYWORDARG2 error."""
+    del value
+    del frame  # unused param
+    del groups  # unused param
+    return []  # no implementation so far
+
+
 def suggest_not_callable(value, frame, groups):
     """Get suggestions in case of NOT_CALLABLE error."""
     del value  # unused param
@@ -524,6 +532,7 @@ ATTRIBUTEERRORS = {
 TYPEERRORS = {
     re.UNSUBSCRIBTABLE_RE: suggest_unsubscriptable,
     re.UNEXPECTED_KEYWORDARG_RE: suggest_unexpected_keywordarg,
+    re.UNEXPECTED_KEYWORDARG2_RE: suggest_unexpected_keywordarg2,
     re.NOT_CALLABLE_RE: suggest_not_callable,
 }
 
