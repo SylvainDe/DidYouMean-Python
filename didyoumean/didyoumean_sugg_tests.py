@@ -1166,6 +1166,15 @@ class ImportErrorTests(GetSuggestionsTests):
             'raise ImportError("unmatched IMPORTERROR")',
             UNKNOWN_IMPORTERROR)
 
+    def test_module_removed(self):
+        """Sometimes modules are deleted/moved/renamed."""
+        # NICE_TO_HAVE
+        version = (3, 0)
+        code = 'import {0}'
+        lower, upper = format_str(code, 'tkinter', 'Tkinter')
+        self.throws(upper, NOMODULE, [], from_version(version))
+        self.throws(lower, NOMODULE, [], up_to_version(version))
+
 
 class LookupErrorTests(GetSuggestionsTests):
 
