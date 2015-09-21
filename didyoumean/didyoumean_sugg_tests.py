@@ -133,7 +133,8 @@ def get_exception(code):
         no_exception(code)
     except:
         return sys.exc_info()
-    assert False, "No exception thrown"
+    assert False, "No exception thrown running\n---\n{0}\n---".format(code)
+
 
 
 # NameError for NameErrorTests
