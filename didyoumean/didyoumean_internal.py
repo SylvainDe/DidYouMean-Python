@@ -384,10 +384,11 @@ def suggest_unexpected_keywordarg(value, frame, groups):
     del value  # unused param
     func_name, kw_arg = groups
     objs = get_objects_in_frame(frame)
-    func = objs[func_name][0].obj
-    args = func.__code__.co_varnames
-    for name in get_close_matches(kw_arg, args):
-        yield quote(name)
+    if func_name in objs:
+        func = objs[func_name][0].obj
+        args = func.__code__.co_varnames
+        for name in get_close_matches(kw_arg, args):
+            yield quote(name)
 
 
 def suggest_unexpected_keywordarg2(value, frame, groups):
