@@ -125,10 +125,18 @@ class RegexTests(unittest2.TestCase):
 
     def test_unexpected_kw_arg2(self):
         """Test UNEXPECTED_KEYWORDARG2_RE."""
+        # Python 2.6/2.7/3.2/3.3/3.4/3.5
         msg = "'this_doesnt_exist' is an invalid " \
             "keyword argument for this function"
         groups = ('this_doesnt_exist', )
         self.re_matches(msg, re.UNEXPECTED_KEYWORDARG2_RE, (groups, dict()))
+
+    def test_unexpected_kw_arg3(self):
+        """Test UNEXPECTED_KEYWORDARG3_RE."""
+        # PyPy/PyPy3
+        msg = "invalid keyword arguments to print()"
+        groups = ('print', )
+        self.re_matches(msg, re.UNEXPECTED_KEYWORDARG3_RE, (groups, dict()))
 
     def test_zero_length_field(self):
         """Test ZERO_LEN_FIELD_RE."""

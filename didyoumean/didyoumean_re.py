@@ -15,6 +15,7 @@ UNEXPECTED_KEYWORDARG_RE = r"^(\w+)\(\) " \
     r"got an unexpected keyword argument '(\w+)'$"
 UNEXPECTED_KEYWORDARG2_RE = r"^'(\w+)' is an " \
     r"invalid keyword argument for this function$"
+UNEXPECTED_KEYWORDARG3_RE = r"^invalid keyword arguments to (\w+)\(\)$"
 NOMODULE_RE = r"^No module named '?(\w+)'?$"
 CANNOTIMPORT_RE = r"^cannot import name '?(\w+)'?$"
 INDEXOUTOFRANGE_RE = r"^list index out of range$"

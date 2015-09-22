@@ -149,6 +149,7 @@ UNHASHABLE = (TypeError, re.UNHASHABLE_RE)
 UNSUBSCRIBTABLE = (TypeError, re.UNSUBSCRIBTABLE_RE)
 UNEXPECTEDKWARG = (TypeError, re.UNEXPECTED_KEYWORDARG_RE)
 UNEXPECTEDKWARG2 = (TypeError, re.UNEXPECTED_KEYWORDARG2_RE)
+UNEXPECTEDKWARG3 = (TypeError, re.UNEXPECTED_KEYWORDARG3_RE)
 UNSUPPORTEDOPERAND = (TypeError, re.UNSUPPORTED_OP_RE)
 OBJECTDOESNOTSUPPORT = (TypeError, re.OBJ_DOES_NOT_SUPPORT_RE)
 CANNOTCONCAT = (TypeError, re.CANNOT_CONCAT_RE)
@@ -1013,15 +1014,18 @@ class TypeErrorTests(GetSuggestionsTests):
         # 'max', 'input', 'len', 'abs', 'all', etc have a specific error
         # message and are not relevant here
         for builtin in ['int', 'float', 'bool', 'complex']:
-            self.throws(builtin + '(this_doesnt_exist=2)', UNEXPECTEDKWARG2)
+            code = builtin + '(this_doesnt_exist=2)'
+            self.throws(code, UNEXPECTEDKWARG2, [], ALL_VERSIONS, 'cython')
+            self.throws(code, UNEXPECTEDKWARG, [], ALL_VERSIONS, 'pypy')
 
     def test_keyword_builtin_print(self):
         """Builtin "print" has a different error message."""
         # It would be NICE_TO_HAVE suggestions on keyword arguments
-        version = (3, 0)
-        print_code = "c = 'string'\nb = print(c, end_='toto')"
-        self.throws(print_code, INVALIDSYNTAX, [], up_to_version(version))
-        self.throws(print_code, UNEXPECTEDKWARG2, [], from_version(version))
+        v3 = (3, 0)
+        code = "c = 'string'\nb = print(c, end_='toto')"
+        self.throws(code, INVALIDSYNTAX, [], up_to_version(v3))
+        self.throws(code, UNEXPECTEDKWARG2, [], from_version(v3), 'cython')
+        self.throws(code, UNEXPECTEDKWARG3, [], from_version(v3), 'pypy')
 
     def test_no_implicit_str_conv(self):
         """Trying to concatenate a non-string value to a string."""
