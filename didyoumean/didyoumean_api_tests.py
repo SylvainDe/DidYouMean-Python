@@ -10,7 +10,6 @@ import os
 
 
 class ApiTest(TestWithStringFunction):
-
     """Tests about the didyoumean APIs."""
 
     def run_with_api(self, code):
@@ -96,7 +95,6 @@ class ApiTest(TestWithStringFunction):
 
 
 class DecoratorTest(unittest2.TestCase, ApiTest):
-
     """Tests about the didyoumean decorator."""
 
     def run_with_api(self, code):
@@ -108,7 +106,6 @@ class DecoratorTest(unittest2.TestCase, ApiTest):
 
 
 class ContextManagerTest(unittest2.TestCase, ApiTest):
-
     """Tests about the didyoumean context manager."""
 
     def run_with_api(self, code):
@@ -118,7 +115,6 @@ class ContextManagerTest(unittest2.TestCase, ApiTest):
 
 
 class PostMortemTest(unittest2.TestCase, ApiTest):
-
     """Tests about the didyoumean post mortem."""
 
     def run_with_api(self, code):
@@ -138,7 +134,6 @@ class PostMortemTest(unittest2.TestCase, ApiTest):
 
 
 class HookTest(ApiTest):
-
     """Tests about the didyoumean hooks.
 
     These tests are somewhat artificial as one needs to explicitely catch
@@ -154,7 +149,6 @@ class HookTest(ApiTest):
 
 
 class ExceptHookTest(unittest2.TestCase, HookTest):
-
     """Tests about the didyoumean excepthook."""
 
     def run_with_api(self, code):
@@ -176,7 +170,6 @@ class ExceptHookTest(unittest2.TestCase, HookTest):
 
 
 class DummyShell:
-
     """Dummy class to emulate the iPython interactive shell.
 
     https://ipython.org/ipython-doc/dev/api/generated/IPython.core.interactiveshell.html
@@ -215,7 +208,6 @@ class DummyShell:
 
 
 class IPythonHookTest(unittest2.TestCase, HookTest):
-
     """Tests about the didyoumean custom exception handler for iPython.
 
     These tests need a dummy shell to be create to be able to use/define

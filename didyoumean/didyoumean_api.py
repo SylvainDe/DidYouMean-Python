@@ -39,7 +39,6 @@ def didyoumean_postmortem():
 
 
 class didyoumean_contextmanager(object):
-
     """Context manager to add suggestions to exceptions.
 
     To use it, create a context:

@@ -40,7 +40,6 @@ def my_generator():
 
 
 class FoobarClass():
-
     """Dummy class for testing purposes."""
 
     def __init__(self):
@@ -203,7 +202,6 @@ DIRNOTEMPTY_OS = (OSError, "^Directory not empty$")
 
 
 class GetSuggestionsTests(unittest2.TestCase):
-
     """Generic class to test get_suggestions_for_exception.
 
     Many tests do not correspond to any handled exceptions but are
@@ -258,7 +256,6 @@ class GetSuggestionsTests(unittest2.TestCase):
 
 
 class NameErrorTests(GetSuggestionsTests):
-
     """Class for tests related to NameError."""
 
     def test_local(self):
@@ -620,7 +617,6 @@ class NameErrorTests(GetSuggestionsTests):
 
 
 class UnboundLocalErrorTests(GetSuggestionsTests):
-
     """Class for tests related to UnboundLocalError."""
 
     def test_unbound_typo(self):
@@ -648,7 +644,6 @@ class UnboundLocalErrorTests(GetSuggestionsTests):
 
 
 class AttributeErrorTests(GetSuggestionsTests):
-
     """Class for tests related to AttributeError."""
 
     def test_nonetype(self):
@@ -868,7 +863,6 @@ class AttributeErrorTests(GetSuggestionsTests):
 
 
 class TypeErrorTests(GetSuggestionsTests):
-
     """Class for tests related to TypeError."""
 
     def test_unhashable(self):
@@ -1083,7 +1077,6 @@ class TypeErrorTests(GetSuggestionsTests):
 
 
 class ImportErrorTests(GetSuggestionsTests):
-
     """Class for tests related to ImportError."""
 
     def test_no_module_no_sugg(self):
@@ -1199,12 +1192,10 @@ class ImportErrorTests(GetSuggestionsTests):
 
 
 class LookupErrorTests(GetSuggestionsTests):
-
     """Class for tests related to LookupError."""
 
 
 class KeyErrorTests(LookupErrorTests):
-
     """Class for tests related to KeyError."""
 
     def test_no_sugg(self):
@@ -1213,7 +1204,6 @@ class KeyErrorTests(LookupErrorTests):
 
 
 class IndexErrorTests(LookupErrorTests):
-
     """Class for tests related to IndexError."""
 
     def test_no_sugg(self):
@@ -1222,7 +1212,6 @@ class IndexErrorTests(LookupErrorTests):
 
 
 class SyntaxErrorTests(GetSuggestionsTests):
-
     """Class for tests related to SyntaxError."""
 
     def test_no_error(self):
@@ -1404,7 +1393,6 @@ class SyntaxErrorTests(GetSuggestionsTests):
 
 
 class MemoryErrorTests(GetSuggestionsTests):
-
     """Class for tests related to MemoryError."""
 
     def test_out_of_memory(self):
@@ -1435,7 +1423,6 @@ class MemoryErrorTests(GetSuggestionsTests):
 
 
 class ValueErrorTests(GetSuggestionsTests):
-
     """Class for tests related to ValueError."""
 
     def test_too_many_values(self):
@@ -1475,7 +1462,6 @@ class ValueErrorTests(GetSuggestionsTests):
 
 
 class IOErrorTests(GetSuggestionsTests):
-
     """Class for tests related to IOError."""
 
     def test_no_such_file(self):
@@ -1585,7 +1571,6 @@ class IOErrorTests(GetSuggestionsTests):
 
 
 class AnyErrorTests(GetSuggestionsTests):
-
     """Class for tests not related to an error type in particular."""
 
     def test_wrong_except(self):

@@ -21,7 +21,6 @@ global_var = 42  # Please don't change the value
 
 
 class GetObjectInFrameTests(unittest2.TestCase):
-
     """Class for tests related to frame/backtrace/etc inspection.
 
     Tested functions are : get_objects_in_frame.
@@ -184,28 +183,24 @@ class GetObjectInFrameTests(unittest2.TestCase):
 
 
 class OldStyleBaseClass:
-
     """Dummy class for testing purposes."""
 
     pass
 
 
 class OldStyleDerivedClass(OldStyleBaseClass):
-
     """Dummy class for testing purposes."""
 
     pass
 
 
 class NewStyleBaseClass(object):
-
     """Dummy class for testing purposes."""
 
     pass
 
 
 class NewStyleDerivedClass(NewStyleBaseClass):
-
     """Dummy class for testing purposes."""
 
     pass
@@ -237,7 +232,6 @@ CLASSES = [(c, True) for c in NEW_STYLE_CLASSES] + \
 
 
 class GetTypesForStrTests(unittest2.TestCase):
-
     """Test get_types_for_str."""
 
     def test_get_subclasses(self):
@@ -342,7 +336,6 @@ class GetTypesForStrTests(unittest2.TestCase):
 
 
 class GetSuggStringTests(unittest2.TestCase):
-
     """Tests about get_suggestion_string."""
 
     def test_no_sugg(self):
@@ -365,7 +358,6 @@ class GetSuggStringTests(unittest2.TestCase):
 
 
 class AddStringToExcTest(common.TestWithStringFunction):
-
     """Generic class for tests about add_string_to_exception."""
 
     prefix_repr = ""
@@ -413,7 +405,6 @@ class AddStringToExcTest(common.TestWithStringFunction):
 
 
 class AddStringToExcFromCodeTest(AddStringToExcTest):
-
     """Generic class for tests about add_string_to_exception.
 
     The tested function is called on an exception created by running
@@ -430,7 +421,6 @@ class AddStringToExcFromCodeTest(AddStringToExcTest):
 
 
 class AddStringToNameErrorTest(unittest2.TestCase, AddStringToExcFromCodeTest):
-
     """Class for tests of add_string_to_exception on NameError."""
 
     code = 'babar = 0\nbaba'
@@ -438,7 +428,6 @@ class AddStringToNameErrorTest(unittest2.TestCase, AddStringToExcFromCodeTest):
 
 
 class AddStringToTypeErrorTest(unittest2.TestCase, AddStringToExcFromCodeTest):
-
     """Class for tests of add_string_to_exception on TypeError."""
 
     code = '[0](0)'
@@ -447,7 +436,6 @@ class AddStringToTypeErrorTest(unittest2.TestCase, AddStringToExcFromCodeTest):
 
 class AddStringToImportErrorTest(
         unittest2.TestCase, AddStringToExcFromCodeTest):
-
     """Class for tests of add_string_to_exception on ImportError."""
 
     code = 'import maths'
@@ -456,7 +444,6 @@ class AddStringToImportErrorTest(
 
 class AddStringToKeyErrorTest(
         unittest2.TestCase, AddStringToExcFromCodeTest):
-
     """Class for tests of add_string_to_exception on KeyError."""
 
     code = 'dict()["ffdsqmjklfqsd"]'
@@ -465,7 +452,6 @@ class AddStringToKeyErrorTest(
 
 class AddStringToAttributeErrorTest(
         unittest2.TestCase, AddStringToExcFromCodeTest):
-
     """Class for tests of add_string_to_exception on AttributeError."""
 
     code = '[].does_not_exist'
@@ -474,7 +460,6 @@ class AddStringToAttributeErrorTest(
 
 class AddStringToSyntaxErrorTest(
         unittest2.TestCase, AddStringToExcFromCodeTest):
-
     """Class for tests of add_string_to_exception on SyntaxError."""
 
     code = 'return'
@@ -483,7 +468,6 @@ class AddStringToSyntaxErrorTest(
 
 class AddStringToMemoryErrorTest(
         unittest2.TestCase, AddStringToExcFromCodeTest):
-
     """Class for tests of add_string_to_exception on MemoryError."""
 
     code = '[0] * 999999999999999'
@@ -494,7 +478,6 @@ class AddStringToMemoryErrorTest(
 
 class AddStringToIOErrorTest(
         unittest2.TestCase, AddStringToExcFromCodeTest):
-
     """Class for tests of add_string_to_exception on NoFileIoError."""
 
     code = 'with open("/does_not_exist") as f:\n\tpass'
@@ -503,7 +486,6 @@ class AddStringToIOErrorTest(
 
 class AddStringToUnicodeDecodeTest(
         unittest2.TestCase, AddStringToExcFromCodeTest):
-
     """Class for tests of add_string_to_exception on UnicodeDecodeError."""
 
     code = "'foo'.encode('utf-16').decode('utf-8')"
@@ -512,7 +494,6 @@ class AddStringToUnicodeDecodeTest(
 
 class AddStringToUnicodeEncodeTest(
         unittest2.TestCase, AddStringToExcFromCodeTest):
-
     """Class for tests of add_string_to_exception on UnicodeEncodeError."""
 
     code = U_PREFIX + '"\u0411".encode("iso-8859-15")'
@@ -520,7 +501,6 @@ class AddStringToUnicodeEncodeTest(
 
 
 class AddStringToExcFromInstanceTest(AddStringToExcTest):
-
     """Generic class for tests about add_string_to_exception.
 
     The tested function is called on an exception created by calling the
@@ -542,7 +522,6 @@ class AddStringToExcFromInstanceTest(AddStringToExcTest):
 
 class AddStringToZeroDivisionError(
         unittest2.TestCase, AddStringToExcFromInstanceTest):
-
     """Class for tests of add_string_to_exception on ZeroDivisionError."""
 
     exc_type = ZeroDivisionError

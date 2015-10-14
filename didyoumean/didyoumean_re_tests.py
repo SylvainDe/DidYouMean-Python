@@ -8,7 +8,6 @@ NO_GROUP = ((), dict())
 
 
 class RegexTests(unittest2.TestCase):
-
     """Tests to check that error messages match the regexps."""
 
     def re_matches(self, text, regexp, results):

@@ -36,35 +36,30 @@ def get_exception(code):
 
 
 class CommonTestOldStyleClass:
-
     """Dummy class for testing purposes."""
 
     pass
 
 
 class CommonTestOldStyleClass2:
-
     """Dummy class for testing purposes."""
 
     pass
 
 
 class CommonTestNewStyleClass(object):
-
     """Dummy class for testing purposes."""
 
     pass
 
 
 class CommonTestNewStyleClass2(object):
-
     """Dummy class for testing purposes."""
 
     pass
 
 
 class TestWithStringFunction(object):
-
     """Unit test class with an helper method."""
 
     def assertStringAdded(self, string, before, after, check_str_sum):
