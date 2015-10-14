@@ -20,13 +20,15 @@ Inspired by "Did you mean" for Ruby ([Explanation](http://www.yukinishijima.net/
 
 The logic adding suggestions can be invoked in different ways :
 
- - a hook on `sys.excepthook`
+ - a call to `didyoumean_enablehook()`/`didyoumean_disablehook()` ensuring that the magic happens automatically (by changing `sys.excepthook` and the relevant iPython function).
 
- - a context manager
+ - a context manager `didyoumean_contextmanager`.
 
- - a post-mortem function for interactive session
+ - a post-mortem function for interactive session `didyoumean_postmortem()`.
 
- - a function decorator.
+ - a function decorator `@didyoumean_decorator`.
+
+Examples to be added.
 
 
 See also :
@@ -266,11 +268,16 @@ I haven't done anything fancy for the installation (yet). You'll have to clone t
 
 Once you have the code, it can be used in different ways :
 
- * hook on `sys.excepthook` : just `import didyoumean_hook` and you'll have the suggestions for any exception happening.
+ * hook on `sys.excepthook` : just call `didyoumean_enablehook` and you'll have the suggestions for any uncaught exception.
 
- * decorator : just `import didyoumean_decorator` and add the `@didyoumean` decorator before any function (the `main()` could be a good choice) and you'll have the suggestions for any exception happening through a call to that method.
+ * decorator : just add the `@didyoumean` decorator before any function (the `main()` could be a good choice) and you'll have the suggestions for any exception happening through a call to that method.
 
- * I should complete/fix this once it is actually installable because names will most probably change anyway.
+ * context manager.
+
+ * post mortem.
+
+Please refer to the examples to be added in the introduction.
+
 
 Implementation
 --------------

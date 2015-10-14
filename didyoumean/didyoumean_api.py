@@ -81,19 +81,36 @@ class didyoumean_contextmanager(object):
 
 def didyoumean_hook(type_, value, traceback, prev_hook=sys.excepthook):
     """Hook to be substituted to sys.excepthook to enhance exceptions."""
-    # Additional information about excepthook :
-    # http://stackoverflow.com/questions/1261668/cannot-override-sys-excepthook
-    # (includes fix for IPython)
-    # http://stackoverflow.com/questions/1237379/how-do-i-set-sys-excepthook-to-invoke-pdb-globally-in-python
     add_suggestions_to_exception(type_, value, traceback)
     return prev_hook(type_, value, traceback)
 
 
+def didyoumean_custom_exc(shell, etype, evalue, tb, tb_offset=None):
+    """Custom exception handler to replace the iPython one."""
+    add_suggestions_to_exception(etype, evalue, tb)
+    return shell.showtraceback((etype, evalue, tb), tb_offset=tb_offset)
+
+
+def set_ipython_custom_exc(func):
+    """Try to set the custom exception handler for iPython."""
+    # https://mail.scipy.org/pipermail/ipython-dev/2012-April/008945.html
+    # http://stackoverflow.com/questions/1261668/cannot-override-sys-excepthook
+    try:
+        get_ipython().set_custom_exc((Exception,), func)
+    except NameError:
+        pass  # get_ipython does not exist - ignore
+
+
 def didyoumean_enablehook():
-    """Function to set the excepthook to be didyoumean_hook."""
+    """Function to set hooks to their custom value."""
     sys.excepthook = didyoumean_hook
+    set_ipython_custom_exc(didyoumean_custom_exc)
 
 
 def didyoumean_disablehook():
-    """Function to set the excepthook to its normal value."""
+    """Function to set hooks to their normal value."""
     sys.excepthook = sys.__excepthook__
+    set_ipython_custom_exc(None)
+
+# NOTE: It could be funny to have a magic command in Python
+# https://ipython.org/ipython-doc/dev/config/custommagics.html

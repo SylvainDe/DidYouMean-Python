@@ -1,7 +1,7 @@
 # -*- coding: utf-8
 """Unit tests for didyoumean APIs."""
 from didyoumean_api import didyoumean_decorator, didyoumean_contextmanager,\
-    didyoumean_postmortem
+    didyoumean_postmortem, didyoumean_enablehook, didyoumean_disablehook
 from didyoumean_common_tests import TestWithStringFunction,\
     get_exception, no_exception, NoFileIoError
 import unittest2
@@ -137,11 +137,111 @@ class PostMortemTest(unittest2.TestCase, ApiTest):
             raise ret
 
 
-class HookTest(unittest2.TestCase):
+class HookTest(ApiTest):
 
-    """Tests about the didyoumean hook."""
+    """Tests about the didyoumean hooks.
+
+    These tests are somewhat artificial as one needs to explicitely catch
+    the exception, simulate a call to the function that would have been
+    called for an uncatched exception and reraise it (so that then it gets
+    caught by yet another try-except).
+    Realistically it might not catch any real-life problems (because these
+    would happen when the shell does not behave as expected) but it might be
+    useful to prevent regressions.
+    """
 
     pass  # Can't write tests as the hook seems to be ignored.
+
+
+class ExceptHookTest(unittest2.TestCase, HookTest):
+
+    """Tests about the didyoumean excepthook."""
+
+    def run_with_api(self, code):
+        """Run code with didyoumean after enabling didyoumean hook."""
+        prev_hook = sys.excepthook
+        self.assertEqual(prev_hook, sys.excepthook)
+        didyoumean_enablehook()
+        self.assertNotEqual(prev_hook, sys.excepthook)
+        try:
+            no_exception(code)
+        except:
+            last_type, last_value, last_traceback = sys.exc_info()
+            sys.excepthook(last_type, last_value, last_traceback)
+            raise
+        finally:
+            self.assertNotEqual(prev_hook, sys.excepthook)
+            didyoumean_disablehook()
+            self.assertEqual(prev_hook, sys.excepthook)
+
+
+class DummyShell:
+
+    """Dummy class to emulate the iPython interactive shell.
+
+    https://ipython.org/ipython-doc/dev/api/generated/IPython.core.interactiveshell.html
+    """
+
+    def __init__(self):
+        """Init."""
+        self.handler = None
+        self.exc_tuple = None
+
+    def set_custom_exc(self, exc_tuple, handler):
+        """Emulate the interactiveshell.set_custom_exc method."""
+        self.handler = handler
+        self.exc_tuple = exc_tuple
+
+    def showtraceback(self, exc_tuple=None,
+                      filename=None, tb_offset=None, exception_only=False):
+        """Emulate the interactiveshell.showtraceback method.
+
+        Calls the custom exception handler if is it set.
+        """
+        if self.handler is not None and self.exc_tuple is not None:
+            etype, evalue, tb = exc_tuple
+            func, self.handler = self.handler, None  # prevent recursive calls
+            func(self, etype, evalue, tb, tb_offset)
+            self.handler = func
+
+    def set(self, module):
+        """Make shell accessible in module via 'get_ipython'."""
+        assert 'get_ipython' not in dir(module)
+        module.get_ipython = lambda: self
+
+    def remove(self, module):
+        """Make shell un-accessible in module via 'get_ipython'."""
+        del module.get_ipython
+
+
+class IPythonHookTest(unittest2.TestCase, HookTest):
+
+    """Tests about the didyoumean custom exception handler for iPython.
+
+    These tests need a dummy shell to be create to be able to use/define
+    its functions related to the custom exception handlers.
+    """
+
+    def run_with_api(self, code):
+        """Run code with didyoumean after enabling didyoumean hook."""
+        prev_handler = None
+        shell = DummyShell()
+        module = sys.modules['didyoumean_api']
+        shell.set(module)
+        self.assertEqual(shell.handler, prev_handler)
+        didyoumean_enablehook()
+        self.assertNotEqual(shell.handler, prev_handler)
+        try:
+            no_exception(code)
+        except:
+            shell.showtraceback(sys.exc_info())
+            raise
+        finally:
+            self.assertNotEqual(shell.handler, prev_handler)
+            didyoumean_disablehook()
+            self.assertEqual(shell.handler, prev_handler)
+            shell.remove(module)
+            shell = None
 
 
 if __name__ == '__main__':
