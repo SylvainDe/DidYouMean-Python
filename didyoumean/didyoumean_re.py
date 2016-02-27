@@ -3,8 +3,8 @@
 import re
 
 
-UNBOUNDERROR_RE = r"^local variable '(?P<name>\w+)' " \
-    r"referenced before assignment$"
+VARREFBEFOREASSIGN_RE = r"^(?:local|free) variable '(?P<name>\w+)' " \
+    r"referenced before assignment(?: in enclosing scope)?$"
 NAMENOTDEFINED_RE = r"^(?:global )?name '(?P<name>\w+)' is not defined$"
 ATTRIBUTEERROR_RE = r"^(?:class |type object )?'?([\w\.]+)'? " \
     r"(?:object |instance )?has no attribute '(\w+)'$"

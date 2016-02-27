@@ -521,7 +521,7 @@ def suggest_if_file_is_dir(value):
 
 
 NAMEERRORS = {
-    re.UNBOUNDERROR_RE: suggest_name_not_defined,
+    re.VARREFBEFOREASSIGN_RE: suggest_name_not_defined,
     re.NAMENOTDEFINED_RE: suggest_name_not_defined,
 }
 

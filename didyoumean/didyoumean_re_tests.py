@@ -24,12 +24,16 @@ class RegexTests(unittest2.TestCase):
         self.assertEqual(named_groups, match.groupdict())
 
     def test_unbound_assignment(self):
-        """Test UNBOUNDERROR_RE."""
-        # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
-        msg = "local variable 'some_var' referenced before assignment"
+        """Test VARREFBEFOREASSIGN_RE."""
+        msgs = [
+            # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
+            "local variable 'some_var' referenced before assignment",
+            "free variable 'some_var' referenced before assignment in enclosing scope",
+        ]
         groups = ('some_var',)
         named_groups = {'name': 'some_var'}
-        self.re_matches(msg, re.UNBOUNDERROR_RE, (groups, named_groups))
+        for msg in msgs:
+            self.re_matches(msg, re.VARREFBEFOREASSIGN_RE, (groups, named_groups))
 
     def test_name_not_defined(self):
         """Test NAMENOTDEFINED_RE."""

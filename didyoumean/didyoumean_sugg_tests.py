@@ -137,9 +137,10 @@ def get_exception(code):
 
 # NameError for NameErrorTests
 NAMEERROR = (NameError, re.NAMENOTDEFINED_RE)
+NAMEERRORBEFOREREF = (NameError, re.VARREFBEFOREASSIGN_RE)
 UNKNOWN_NAMEERROR = (NameError, None)
 # UnboundLocalError for UnboundLocalErrorTests
-UNBOUNDLOCAL = (UnboundLocalError, re.UNBOUNDERROR_RE)
+UNBOUNDLOCAL = (UnboundLocalError, re.VARREFBEFOREASSIGN_RE)
 UNKNOWN_UNBOUNDLOCAL = (UnboundLocalError, None)
 # TypeError for TypeErrorTests
 NBARGERROR = (TypeError, re.NB_ARG_RE)
@@ -377,6 +378,11 @@ class NameErrorTests(GetSuggestionsTests):
     def test_no_sugg(self):
         """No suggestion."""
         self.throws('a = ldkjhfnvdlkjhvgfdhgf', NAMEERROR)
+
+    def test_free_var_before_assignment(self):
+        """No suggestion but different error message."""
+        code = 'def f():\n\tdef g():\n\t\treturn free_var\n\tg()\n\tfree_var = 0\nf()'
+        self.throws(code, NAMEERRORBEFOREREF)
 
     # For added/removed names, following functions with one name
     # per functions were added in the early stages of the project.
