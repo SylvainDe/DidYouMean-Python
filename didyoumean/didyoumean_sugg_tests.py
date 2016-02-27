@@ -381,7 +381,8 @@ class NameErrorTests(GetSuggestionsTests):
 
     def test_free_var_before_assignment(self):
         """No suggestion but different error message."""
-        code = 'def f():\n\tdef g():\n\t\treturn free_var\n\tg()\n\tfree_var = 0\nf()'
+        code = 'def f():\n\tdef g():\n\t\treturn free_var' \
+               '\n\tg()\n\tfree_var = 0\nf()'
         self.throws(code, NAMEERRORBEFOREREF)
 
     # For added/removed names, following functions with one name
