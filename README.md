@@ -216,6 +216,13 @@ my_func[1]
 #>>> Before: ValueError('zero length field name in format',)
 #>>> After: ValueError('zero length field name in format. Did you mean {0}?',)
 ```
+```python
+import datetime
+datetime.datetime.strptime("%d %b %y", "30 Nov 00")
+#> Before: ValueError("time data '%d %b %y' does not match format '30 Nov 00'",)
+#> After: ValueError("time data '%d %b %y' does not match format '30 Nov 00'. Did you mean to swap value and format parameters?",)
+```
+
 ### SyntaxError
 
 ##### Fuzzy matches when importing from __future__

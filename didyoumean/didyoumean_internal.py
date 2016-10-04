@@ -417,6 +417,7 @@ def suggest_zero_len_field(value, frame, groups):
 
 def suggest_time_data_is_wrong(value, frame, groups):
     """Get suggestions in case of TIME_DATA_DOES_NOT_MATCH_FORMAT_RE."""
+    del value, frame
     timedata, timeformat = groups
     if timedata.count('%') > timeformat.count('%%'):
         yield "to swap value and format parameters"
