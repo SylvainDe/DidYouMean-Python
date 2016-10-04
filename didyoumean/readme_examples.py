@@ -84,7 +84,8 @@ def main():
         (5, ValueError): {
             (1, "Special cases"): [
                 "'Foo{}'.format('bar')",
-                'import datetime\ndatetime.datetime.strptime("%d %b %y", "30 Nov 00")',
+                'import datetime\n'
+                'datetime.datetime.strptime("%d %b %y", "30 Nov 00")',
             ],
         },
         (6, SyntaxError): {
