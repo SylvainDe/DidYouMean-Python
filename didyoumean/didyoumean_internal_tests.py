@@ -416,7 +416,10 @@ class AddStringToExcFromCodeTest(AddStringToExcTest):
     def get_exception(self):
         """Get the exception by running the code and catching errors."""
         type_, value, _ = common.get_exception(self.code)
-        self.assertEqual(self.error_type, type_)
+        self.assertTrue(
+            issubclass(type_, self.error_type),
+            "{0} ({1}) not a subclass of {2}"
+            .format(type_, value, self.error_type))
         return value
 
 
