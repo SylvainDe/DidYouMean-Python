@@ -154,6 +154,7 @@ UNSUPPORTEDOPERAND = (TypeError, re.UNSUPPORTED_OP_RE)
 OBJECTDOESNOTSUPPORT = (TypeError, re.OBJ_DOES_NOT_SUPPORT_RE)
 CANNOTCONCAT = (TypeError, re.CANNOT_CONCAT_RE)
 CANTCONVERT = (TypeError, re.CANT_CONVERT_RE)
+MUSTBETYPENOTTYPE = (TypeError, re.MUST_BE_TYPE1_NOT_TYPE2_RE)
 NOTCALLABLE = (TypeError, re.NOT_CALLABLE_RE)
 DESCREXPECT = (TypeError, re.DESCRIPT_REQUIRES_TYPE_RE)
 ARGNOTITERABLE = (TypeError, re.ARG_NOT_ITERABLE_RE)
@@ -1045,10 +1046,13 @@ class TypeErrorTests(GetSuggestionsTests):
         typo, sugg = '12', 'str(12)'
         bad_code, good_code = format_str(code, typo, sugg)
         version = (3, 0)
+        version2 = (3, 6)
         self.throws(
             bad_code, CANNOTCONCAT, [], up_to_version(version), 'cython')
         self.throws(
-            bad_code, CANTCONVERT, [], from_version(version), 'cython')
+            bad_code, CANTCONVERT, [], (version, version2), 'cython')
+        self.throws(
+            bad_code, MUSTBETYPENOTTYPE, [], from_version(version2), 'cython')
         self.throws(
             bad_code, UNSUPPORTEDOPERAND, [], ALL_VERSIONS, 'pypy')
         self.runs(good_code)

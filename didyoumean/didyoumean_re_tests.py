@@ -341,6 +341,12 @@ class RegexTests(unittest2.TestCase):
         groups = ('int', 'str')
         self.re_matches(msg, re.CANT_CONVERT_RE, (groups, dict()))
 
+    def test_must_be_type1_not_type2(self):
+        """Test MUST_BE_TYPE1_NOT_TYPE2_RE."""
+        msg = "must be str, not int"
+        groups = ('str', 'int')
+        self.re_matches(msg, re.MUST_BE_TYPE1_NOT_TYPE2_RE, (groups, dict()))
+
     def test_cannot_concat(self):
         """Test CANNOT_CONCAT_RE."""
         msg = "cannot concatenate 'str' and 'int' objects"
