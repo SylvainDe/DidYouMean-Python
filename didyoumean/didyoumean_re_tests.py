@@ -409,6 +409,16 @@ class RegexTests(unittest2.TestCase):
         msg = "No such file or directory"
         self.re_matches(msg, re.NO_SUCH_FILE_RE, NO_GROUP)
 
+    def test_timedata_does_not_match_format(self):
+        """Test TIME_DATA_DOES_NOT_MATCH_FORMAT_RE."""
+        msg = "time data '%d %b %y' does not match format '30 Nov 00'"
+        # 'time data "%d \'%b %y" does not match format \'30 Nov 00\''
+        groups = ("'%d %b %y'", "'30 Nov 00'")
+        named_groups = {'format': "'30 Nov 00'", 'timedata': "'%d %b %y'"}
+        self.re_matches(msg,
+                        re.TIME_DATA_DOES_NOT_MATCH_FORMAT_RE,
+                        (groups, named_groups))
+
 
 if __name__ == '__main__':
     print(sys.version_info)

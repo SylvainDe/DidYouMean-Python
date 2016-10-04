@@ -415,6 +415,13 @@ def suggest_zero_len_field(value, frame, groups):
     yield '{0}'
 
 
+def suggest_time_data_is_wrong(value, frame, groups):
+    """Get suggestions in case of TIME_DATA_DOES_NOT_MATCH_FORMAT_RE."""
+    timedata, timeformat = groups
+    if timedata.count('%') > timeformat.count('%%'):
+        yield "to swap value and format parameters"
+
+
 # Functions related to SyntaxError
 def suggest_outside_func_error(value, frame, groups):
     """Get suggestions in case of OUTSIDE_FUNCTION error."""
@@ -539,6 +546,7 @@ TYPEERRORS = {
 
 VALUEERRORS = {
     re.ZERO_LEN_FIELD_RE: suggest_zero_len_field,
+    re.TIME_DATA_DOES_NOT_MATCH_FORMAT_RE: suggest_time_data_is_wrong,
 }
 
 SYNTAXERRORS = {

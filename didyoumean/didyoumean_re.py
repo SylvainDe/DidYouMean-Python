@@ -64,6 +64,8 @@ MUST_BE_CALLED_WITH_INST_RE = r"^unbound method (\w+)\(\) must be called " \
 OBJECT_HAS_NO_FUNC_RE = r"^(?:object of type )?'(\w+)' has no (\w+)(?:\(\))?$"
 NO_BINDING_NONLOCAL_RE = r"^no binding for nonlocal '(\w+)' found$"
 NO_SUCH_FILE_RE = r"^No such file or directory$"
+TIME_DATA_DOES_NOT_MATCH_FORMAT_RE = r"^time data " \
+    r"(?P<timedata>.*) does not match format (?P<format>.*)$"
 
 
 def match(pattern, string):

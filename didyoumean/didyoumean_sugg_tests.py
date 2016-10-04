@@ -175,6 +175,7 @@ EXPECTEDLENGTH = (ValueError, re.EXPECTED_LENGTH_RE)
 MATHDOMAIN = (ValueError, re.MATH_DOMAIN_ERROR_RE)
 ZEROLENERROR = (ValueError, re.ZERO_LEN_FIELD_RE)
 INVALIDLITERAL = (ValueError, re.INVALID_LITERAL_RE)
+TIMEDATAFORMAT = (ValueError, re.TIME_DATA_DOES_NOT_MATCH_FORMAT_RE)
 # AttributeError for AttributeErrorTests
 ATTRIBUTEERROR = (AttributeError, re.ATTRIBUTEERROR_RE)
 MODATTRIBUTEERROR = (AttributeError, re.MODULEHASNOATTRIBUTE_RE)
@@ -1466,6 +1467,16 @@ class ValueErrorTests(GetSuggestionsTests):
         self.runs(old_code)
         self.throws(new_code, ZEROLENERROR, '{0}', up_to_version(version))
         self.runs(new_code, from_version(version))
+
+    def test_timedata_does_not_match(self):
+        """Strptime arguments are in wrong order."""
+        code = 'import datetime\ndatetime.datetime.strptime({0}, {1})'
+        timedata, timeformat = '"30 Nov 00"', '"%d %b %y"'
+        good_code = code.format(*(timedata, timeformat))
+        bad_code = code.format(*(timeformat, timedata))
+        self.runs(good_code)
+        self.throws(bad_code, TIMEDATAFORMAT,
+                    ['to swap value and format parameters'])
 
 
 class IOErrorTests(GetSuggestionsTests):
