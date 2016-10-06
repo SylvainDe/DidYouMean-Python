@@ -1421,7 +1421,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         self.runs(code, from_version(version))
 
     def test_ellipsis(self):
-        """Ellipsis (...) can be used anywhere in Python 3."""
+        """Triple dot (...) aka Ellipsis can be used anywhere in Python 3."""
         version = (3, 0)
         code = '...'
         self.throws(bad, INVALIDSYNTAX, [], up_to_version(version))
