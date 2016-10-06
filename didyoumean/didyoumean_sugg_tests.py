@@ -183,6 +183,7 @@ MODATTRIBUTEERROR = (AttributeError, re.MODULEHASNOATTRIBUTE_RE)
 UNKNOWN_ATTRIBUTEERROR = (AttributeError, None)
 # SyntaxError for SyntaxErrorTests
 INVALIDSYNTAX = (SyntaxError, re.INVALID_SYNTAX_RE)
+INVALIDTOKEN = (SyntaxError, re.INVALID_TOKEN_RE)
 NOBINDING = (SyntaxError, re.NO_BINDING_NONLOCAL_RE)
 OUTSIDEFUNC = (SyntaxError, re.OUTSIDE_FUNCTION_RE)
 MISSINGPARENT = (SyntaxError, re.MISSING_PARENT_RE)
@@ -1402,6 +1403,29 @@ class SyntaxErrorTests(GetSuggestionsTests):
         code = 'foo = 1\ndef func():\n\tdef nested():\n\t\tnonlocal foo'
         self.throws(code, NOBINDING, [], from_version(version))
         self.throws(code, INVALIDSYNTAX, [], up_to_version(version))
+
+    def test_octal_literal(self):
+        """Syntax for octal liberals has changed."""
+        # NICE_TO_HAVE
+        version = (3, 0)
+        bad, good = '0720', '0o720'
+        self.runs(good)
+        self.runs(bad, up_to_version(version))
+        self.throws(bad, INVALIDTOKEN, [], from_version(version))
+
+    def test_extended_unpacking(self):
+        """Extended iterable unpacking is added with Python 3."""
+        version = (3, 0)
+        code = '(a, *rest, b) = range(5)'
+        self.throws(bad, INVALIDSYNTAX, [], up_to_version(version))
+        self.runs(code, from_version(version))
+
+    def test_ellipsis(self):
+        """Ellipsis (...) can be used anywhere in Python 3."""
+        version = (3, 0)
+        code = '...'
+        self.throws(bad, INVALIDSYNTAX, [], up_to_version(version))
+        self.runs(code, from_version(version))
 
 
 class MemoryErrorTests(GetSuggestionsTests):

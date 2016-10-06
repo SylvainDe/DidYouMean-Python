@@ -35,6 +35,7 @@ MISSING_POS_ARG_RE = r"^(\w+)\(\) missing \d+ required positional " \
     r"arguments?: .*$"
 INVALID_SYNTAX_RE = r"^invalid syntax$"
 INVALID_COMP_RE = r"^invalid comparison$"
+INVALID_TOKEN_RE = r"^invalid token$"
 EXPECTED_LENGTH_RE = r"^expected length (\d+), got (\d+)$"
 FUTURE_FIRST_RE = r"^(?:from )?__future__ (?:imports|statements) must " \
     r"(?:occur|appear) at (?:the )?beginning of (?:the )?file$"

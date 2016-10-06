@@ -425,6 +425,10 @@ class RegexTests(unittest2.TestCase):
                         re.TIME_DATA_DOES_NOT_MATCH_FORMAT_RE,
                         (groups, named_groups))
 
+    def test_invalid_token(self):
+        """Test INVALID_TOKEN_RE."""
+        msg = 'invalid token'
+        self.re_matches(msg, re.INVALID_TOKEN_RE, NO_GROUP)
 
 if __name__ == '__main__':
     print(sys.version_info)
