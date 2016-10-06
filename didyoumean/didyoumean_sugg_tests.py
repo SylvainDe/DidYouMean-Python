@@ -1417,14 +1417,14 @@ class SyntaxErrorTests(GetSuggestionsTests):
         """Extended iterable unpacking is added with Python 3."""
         version = (3, 0)
         code = '(a, *rest, b) = range(5)'
-        self.throws(bad, INVALIDSYNTAX, [], up_to_version(version))
+        self.throws(code, INVALIDSYNTAX, [], up_to_version(version))
         self.runs(code, from_version(version))
 
     def test_ellipsis(self):
         """Triple dot (...) aka Ellipsis can be used anywhere in Python 3."""
         version = (3, 0)
         code = '...'
-        self.throws(bad, INVALIDSYNTAX, [], up_to_version(version))
+        self.throws(code, INVALIDSYNTAX, [], up_to_version(version))
         self.runs(code, from_version(version))
 
 
