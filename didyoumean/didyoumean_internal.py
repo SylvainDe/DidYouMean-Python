@@ -165,7 +165,41 @@ def import_from_frame(module_name, frame):
         frame.f_locals)
 
 
+# To be used in `get_suggestions_for_exception`.
+SUGGESTION_FUNCTIONS = dict()
+
+
+def register_suggestion_for(error_type, regex):
+    """Decorator to register a function to be called to get suggestions
+    for a specific error type and if the error message matches a given
+    regex.
+
+    The decorated function is expected to yield any number (0 included) of
+    suggestions (as string).
+    The parameters are: (value, frame, groups):
+     - value: Exception object
+     - frame: Last frame of the traceback (may be None when the traceback is
+        None which happens only in edge cases)
+     - groups: Groups from the error message matched by the error message.
+    """
+    def internal_decorator(func):
+        def registered_function(value, frame):
+            if regex is None:
+                return func(value, frame, [])
+            error_msg = value.args[0]
+            match = re.match(regex, error_msg)
+            if match:
+                return func(value, frame, match.groups())
+            return []
+        SUGGESTION_FUNCTIONS.setdefault(error_type, []) \
+            .append(registered_function)
+        return func  # return original function
+    return internal_decorator
+
+
 # Functions related to NameError
+@register_suggestion_for(NameError, re.VARREFBEFOREASSIGN_RE)
+@register_suggestion_for(NameError, re.NAMENOTDEFINED_RE)
 def suggest_name_not_defined(value, frame, groups):
     """Get the suggestions for name in case of NameError."""
     del value  # unused param
@@ -250,27 +284,8 @@ def suggest_name_as_special_case(name):
         yield result
 
 
-def example_of_suggest_function(value, frame, groups):
-    """Example of function to provide suggestion.
-
-    Most functions below are called in a generic way from:
-        def get_suggestions_for_error(value, frame, re_dict):
-    via
-        def get_suggestions_for_exception(value, traceback):
-    and thus need to have the same signature and behavior.
-    The function is expected to yield any number (0 included) of suggestions
-    (as string).
-    The parameters are: (value, frame, groups):
-     - value: Exception object
-     - frame: Last frame of the traceback (may be None when the traceback is
-        None which happens only in edge cases)
-     - groups: Groups from the error message matched by the error message.
-    """
-    yield 'this is a suggestion'
-    yield 'this is another suggestion'
-
-
 # Functions related to AttributeError
+@register_suggestion_for(AttributeError, re.ATTRIBUTEERROR_RE)
 def suggest_attribute_error(value, frame, groups):
     """Get suggestions in case of ATTRIBUTEERROR."""
     del value  # unused param
@@ -278,6 +293,7 @@ def suggest_attribute_error(value, frame, groups):
     return get_attribute_suggestions(type_str, attr, frame)
 
 
+@register_suggestion_for(AttributeError, re.MODULEHASNOATTRIBUTE_RE)
 def suggest_module_has_no_attr(value, frame, groups):
     """Get suggestions in case of MODULEHASNOATTRIBUTE."""
     del value  # unused param
@@ -350,6 +366,7 @@ def suggest_attribute_as_typo(attribute, attributes):
 
 
 # Functions related to ImportError
+@register_suggestion_for(ImportError, re.NOMODULE_RE)
 def suggest_no_module(value, frame, groups):
     """Get the suggestions closest to the failing module import.
 
@@ -361,6 +378,7 @@ def suggest_no_module(value, frame, groups):
         yield quote(name)
 
 
+@register_suggestion_for(ImportError, re.CANNOTIMPORT_RE)
 def suggest_cannot_import(value, frame, groups):
     """Get the suggestions closest to the failing import."""
     del value  # unused param
@@ -392,6 +410,7 @@ def suggest_import_from_module(imported_name, frame):
 
 
 # Functions related to TypeError
+@register_suggestion_for(TypeError, re.UNSUBSCRIBTABLE_RE)
 def suggest_unsubscriptable(value, frame, groups):
     """Get suggestions in case of UNSUBSCRIBTABLE error."""
     del value  # unused param
@@ -401,6 +420,7 @@ def suggest_unsubscriptable(value, frame, groups):
         yield quote(type_str + '(value)')
 
 
+@register_suggestion_for(TypeError, re.UNEXPECTED_KEYWORDARG_RE)
 def suggest_unexpected_keywordarg(value, frame, groups):
     """Get suggestions in case of UNEXPECTED_KEYWORDARG error."""
     del value  # unused param
@@ -413,6 +433,7 @@ def suggest_unexpected_keywordarg(value, frame, groups):
             yield quote(name)
 
 
+@register_suggestion_for(TypeError, re.UNEXPECTED_KEYWORDARG2_RE)
 def suggest_unexpected_keywordarg2(value, frame, groups):
     """Get suggestions in case of UNEXPECTED_KEYWORDARG2 error."""
     del value
@@ -421,6 +442,7 @@ def suggest_unexpected_keywordarg2(value, frame, groups):
     return []  # no implementation so far
 
 
+@register_suggestion_for(TypeError, re.NOT_CALLABLE_RE)
 def suggest_not_callable(value, frame, groups):
     """Get suggestions in case of NOT_CALLABLE error."""
     del value  # unused param
@@ -431,12 +453,14 @@ def suggest_not_callable(value, frame, groups):
 
 
 # Functions related to ValueError
+@register_suggestion_for(ValueError, re.ZERO_LEN_FIELD_RE)
 def suggest_zero_len_field(value, frame, groups):
     """Get suggestions in case of ZERO_LEN_FIELD."""
     del value, frame, groups  # unused param
     yield '{0}'
 
 
+@register_suggestion_for(ValueError, re.TIME_DATA_DOES_NOT_MATCH_FORMAT_RE)
 def suggest_time_data_is_wrong(value, frame, groups):
     """Get suggestions in case of TIME_DATA_DOES_NOT_MATCH_FORMAT_RE."""
     del value, frame
@@ -446,6 +470,7 @@ def suggest_time_data_is_wrong(value, frame, groups):
 
 
 # Functions related to SyntaxError
+@register_suggestion_for(SyntaxError, re.OUTSIDE_FUNCTION_RE)
 def suggest_outside_func_error(value, frame, groups):
     """Get suggestions in case of OUTSIDE_FUNCTION error."""
     del value, frame  # unused param
@@ -455,6 +480,7 @@ def suggest_outside_func_error(value, frame, groups):
         yield "'sys.exit([arg])'"
 
 
+@register_suggestion_for(SyntaxError, re.FUTURE_FEATURE_NOT_DEF_RE)
 def suggest_future_feature(value, frame, groups):
     """Get suggestions in case of FUTURE_FEATURE_NOT_DEF error."""
     del value  # unused param
@@ -462,12 +488,14 @@ def suggest_future_feature(value, frame, groups):
     return suggest_imported_name_as_typo(feature, '__future__', frame)
 
 
+@register_suggestion_for(SyntaxError, re.INVALID_COMP_RE)
 def suggest_invalid_comp(value, frame, groups):
     """Get suggestions in case of INVALID_COMP error."""
     del value, frame, groups  # unused param
     yield quote('!=')
 
 
+@register_suggestion_for(SyntaxError, re.INVALID_SYNTAX_RE)
 def suggest_invalid_syntax(value, frame, groups):
     """Get suggestions in case of INVALID_SYNTAX error."""
     del frame, groups  # unused param
@@ -479,9 +507,10 @@ def suggest_invalid_syntax(value, frame, groups):
 
 
 # Functions related to MemoryError
-def get_memory_error_sugg(value, frame):
+@register_suggestion_for(MemoryError, None)
+def get_memory_error_sugg(value, frame, groups):
     """Get suggestions for MemoryError exception."""
-    assert isinstance(value, MemoryError)
+    del groups  # unused param
     objs = get_objects_in_frame(frame)
     return itertools.chain.from_iterable(
         suggest_memory_friendly_equi(name, objs)
@@ -489,6 +518,7 @@ def get_memory_error_sugg(value, frame):
 
 
 # Functions related to OverflowError
+@register_suggestion_for(OverflowError, re.RESULT_TOO_MANY_ITEMS_RE)
 def suggest_too_many_items(value, frame, groups):
     """Suggest for TOO_MANY_ITEMS error."""
     del value  # unused param
@@ -504,11 +534,11 @@ def suggest_memory_friendly_equi(name, objs):
 
 
 # Functions related to IOError/OSError
-def get_io_os_error_sugg(value, frame):
+@register_suggestion_for((IOError, OSError), None)
+def get_io_os_error_sugg(value, frame, groups):
     """Get suggestions for IOError/OSError exception."""
     # https://www.python.org/dev/peps/pep-3151/
-    del frame  # unused param
-    assert isinstance(value, (IOError, OSError))
+    del frame, groups  # unused param
     err, _ = value.args
     errnos = {
         errno.ENOENT: suggest_if_file_does_not_exist,
@@ -550,83 +580,14 @@ def suggest_if_file_is_dir(value):
         yield "to add content to {0} first".format(filename)
 
 
-NAMEERRORS = {
-    re.VARREFBEFOREASSIGN_RE: suggest_name_not_defined,
-    re.NAMENOTDEFINED_RE: suggest_name_not_defined,
-}
-
-ATTRIBUTEERRORS = {
-    re.ATTRIBUTEERROR_RE: suggest_attribute_error,
-    re.MODULEHASNOATTRIBUTE_RE: suggest_module_has_no_attr,
-}
-
-TYPEERRORS = {
-    re.UNSUBSCRIBTABLE_RE: suggest_unsubscriptable,
-    re.UNEXPECTED_KEYWORDARG_RE: suggest_unexpected_keywordarg,
-    re.UNEXPECTED_KEYWORDARG2_RE: suggest_unexpected_keywordarg2,
-    re.NOT_CALLABLE_RE: suggest_not_callable,
-}
-
-VALUEERRORS = {
-    re.ZERO_LEN_FIELD_RE: suggest_zero_len_field,
-    re.TIME_DATA_DOES_NOT_MATCH_FORMAT_RE: suggest_time_data_is_wrong,
-}
-
-SYNTAXERRORS = {
-    re.OUTSIDE_FUNCTION_RE: suggest_outside_func_error,
-    re.FUTURE_FEATURE_NOT_DEF_RE: suggest_future_feature,
-    re.INVALID_COMP_RE: suggest_invalid_comp,
-    re.INVALID_SYNTAX_RE: suggest_invalid_syntax,
-}
-
-OVERFLOWERRORS = {
-    re.RESULT_TOO_MANY_ITEMS_RE: suggest_too_many_items
-}
-
-IMPORTERRORS = {
-    re.NOMODULE_RE: suggest_no_module,
-    re.CANNOTIMPORT_RE: suggest_cannot_import,
-}
-
-
-def get_suggestions_for_error(value, frame, re_dict):
-    """Get suggestions for a given error `value`.
-
-    Call relevant suggestion generator based on error message
-    and regex dictionnary.
-    """
-    error_msg = value.args[0]
-    for regex, generator in re_dict.items():
-        match = re.match(regex, error_msg)
-        if match:
-            return generator(value, frame, match.groups())
-    return []
-
-
 def get_suggestions_for_exception(value, traceback):
     """Get suggestions for an exception."""
     frame = get_last_frame(traceback)
-
-    def partial_app(re_dict):
-        """Partial application of get_suggestions_for_error to re_dict."""
-        return (lambda val, fram:
-                get_suggestions_for_error(val, fram, re_dict))
-
-    error_types = {
-        NameError: partial_app(NAMEERRORS),
-        AttributeError: partial_app(ATTRIBUTEERRORS),
-        TypeError: partial_app(TYPEERRORS),
-        ValueError: partial_app(VALUEERRORS),
-        ImportError: partial_app(IMPORTERRORS),
-        SyntaxError: partial_app(SYNTAXERRORS),
-        OverflowError: partial_app(OVERFLOWERRORS),
-        MemoryError: get_memory_error_sugg,
-        (IOError, OSError): get_io_os_error_sugg,
-    }
     return itertools.chain.from_iterable(
-        generator(value, frame)
-        for error_type, generator in error_types.items()
-        if isinstance(value, error_type))
+            func(value, frame)
+            for error_type, functions in SUGGESTION_FUNCTIONS.items()
+            if isinstance(value, error_type)
+            for func in functions)
 
 
 def add_string_to_exception(value, string):
