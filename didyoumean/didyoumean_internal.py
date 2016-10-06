@@ -170,9 +170,12 @@ SUGGESTION_FUNCTIONS = dict()
 
 
 def register_suggestion_for(error_type, regex):
-    """Decorator to register a function to be called to get suggestions
-    for a specific error type and if the error message matches a given
-    regex.
+    """Decorator to register a function to be called to get suggestions.
+
+    Parameters correspond to the fact that the registration is done for a
+    specific error type and if the error message matches a given regex
+    (if the regex is None, the error message is assumed to match before being
+    retrieved).
 
     The decorated function is expected to yield any number (0 included) of
     suggestions (as string).
