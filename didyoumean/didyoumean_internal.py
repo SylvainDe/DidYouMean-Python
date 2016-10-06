@@ -157,6 +157,8 @@ def get_objects_in_frame(frame):
 
 def import_from_frame(module_name, frame):
     """Wrapper around import to use information from frame."""
+    if frame is None:
+        return None
     return __import__(
         module_name,
         frame.f_globals,
@@ -246,6 +248,26 @@ def suggest_name_as_special_case(name):
     result = special_cases.get(name)
     if result is not None:
         yield result
+
+
+def example_of_suggest_function(value, frame, groups):
+    """Example of function to provide suggestion.
+
+    Most functions below are called in a generic way from:
+        def get_suggestions_for_error(value, frame, re_dict):
+    via
+        def get_suggestions_for_exception(value, traceback):
+    and thus need to have the same signature and behavior.
+    The function is expected to yield any number (0 included) of suggestions
+    (as string).
+    The parameters are: (value, frame, groups):
+     - value: Exception object
+     - frame: Last frame of the traceback (may be None when the traceback is
+        None which happens only in edge cases)
+     - groups: Groups from the error message matched by the error message.
+    """
+    yield 'this is a suggestion'
+    yield 'this is another suggestion'
 
 
 # Functions related to AttributeError
@@ -637,6 +659,9 @@ def add_string_to_exception(value, string):
 
 def get_last_frame(traceback):
     """Extract last frame from a traceback."""
+    # In some rare case, the give traceback might be None
+    if traceback is None:
+        return None
     while traceback.tb_next:
         traceback = traceback.tb_next
     return traceback.tb_frame
