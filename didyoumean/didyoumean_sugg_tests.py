@@ -1411,7 +1411,8 @@ class SyntaxErrorTests(GetSuggestionsTests):
         bad, good = '0720', '0o720'
         self.runs(good)
         self.runs(bad, up_to_version(version))
-        self.throws(bad, INVALIDTOKEN, [], from_version(version))
+        self.throws(bad, INVALIDTOKEN, [], from_version(version), 'cython')
+        self.throws(bad, INVALIDSYNTAX, [], from_version(version), 'pypy')
 
     def test_extended_unpacking(self):
         """Extended iterable unpacking is added with Python 3."""
