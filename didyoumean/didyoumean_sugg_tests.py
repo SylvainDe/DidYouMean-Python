@@ -876,11 +876,10 @@ class AttributeErrorTests(GetSuggestionsTests):
         """Test what happens when join is used incorrectly.
 
         This can be frustrating to call join on an iterable instead of a
-        string, a suggestion could be nice.
+        string.
         """
-        # NICE_TO_HAVE
         code = "['a', 'b'].join('-')"
-        self.throws(code, ATTRIBUTEERROR)
+        self.throws(code, ATTRIBUTEERROR, "'my_string.join(list)'")
 
     def test_set_dict_comprehension(self):
         """{} creates a dict and not an empty set leading to errors."""

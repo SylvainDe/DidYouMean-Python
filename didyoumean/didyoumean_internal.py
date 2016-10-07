@@ -340,14 +340,15 @@ def suggest_attribute_as_builtin(attribute, type_str, frame):
 
 def suggest_attribute_alternative(attribute, type_str, attributes):
     """Suggest alternative to the non-found attribute."""
+    is_iterable = '__iter__' in attributes or \
+                  ('__getitem__' in attributes and '__len__' in attributes)
     if attribute == 'has_key' and '__contains__' in attributes:
         yield quote('key in ' + type_str) + ' (has_key is removed)'
     elif attribute == 'get' and '__getitem__' in attributes:
         yield quote('obj[key]') + \
             ' with a len() check or try: except: KeyError or IndexError'
     elif attribute in ('__setitem__', '__delitem__'):
-        if '__iter__' in attributes or \
-                ('__getitem__' in attributes and '__len__' in attributes):
+        if is_iterable:
             msg = 'convert to list to edit the list'
             if 'join' in attributes:
                 msg += ' and use "join()" on the list'
@@ -358,6 +359,9 @@ def suggest_attribute_alternative(attribute, type_str, attributes):
     elif attribute == '__call__':
         if '__getitem__' in attributes:
             yield quote(type_str + '[value]')
+    elif attribute == 'join':
+        if is_iterable:
+            yield quote('my_string.join(' + type_str + ')')
 
 
 def suggest_attribute_synonyms(attribute, attributes):
