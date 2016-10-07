@@ -1202,7 +1202,8 @@ class TypeErrorTests(GetSuggestionsTests):
             format_str(code, '"a"', "set()", "FoobarClass()")
         self.runs(good_code)
         self.throws(set_code, OBJECTDOESNOTSUPPORT, [], ALL_VERSIONS, 'cython')
-        self.throws(set_code, UNSUBSCRIBTABLE, "'set(value)'", ALL_VERSIONS, 'pypy')
+        self.throws(set_code,
+                    UNSUBSCRIBTABLE, "'set(value)'", ALL_VERSIONS, 'pypy')
         self.throws(custom_code, UNSUBSCRIBTABLE, [], ALL_VERSIONS, 'pypy')
         self.throws(custom_code,
                     ATTRIBUTEERROR, [], up_to_version(version), 'cython')
