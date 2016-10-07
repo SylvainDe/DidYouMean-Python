@@ -1196,15 +1196,20 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_object_indexing(self):
         """Index from object does not work if __getitem__ is not defined."""
+        version = (3, 0)
         code = "{0}[0]"
         good_code, set_code, custom_code = \
             format_str(code, '"a"', "set()", "FoobarClass()")
         self.runs(good_code)
         self.throws(set_code, OBJECTDOESNOTSUPPORT)
+        self.throws(custom_code, UNSUBSCRIBTABLE, [], ALL_VERSIONS, 'pypy')
+        self.throws(custom_code,
+                    ATTRIBUTEERROR, [], up_to_version(version), 'cython')
         self.throws(
             custom_code,
             OBJECTDOESNOTSUPPORT,
-            'implement "__getitem__" on FoobarClass')
+            'implement "__getitem__" on FoobarClass',
+            from_version(version), 'cython')
 
     def test_not_callable(self):
         """Sometimes, one uses parenthesis instead of brackets."""
