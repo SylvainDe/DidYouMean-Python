@@ -324,7 +324,7 @@ def get_attribute_suggestions(type_str, attribute, frame):
 
     return itertools.chain(
         suggest_attribute_as_builtin(attribute, type_str, frame),
-        suggest_attribute_as_removed(attribute, type_str, attributes),
+        suggest_attribute_alternative(attribute, type_str, attributes),
         suggest_attribute_synonyms(attribute, attributes),
         suggest_attribute_as_typo(attribute, attributes))
 
@@ -338,10 +338,13 @@ def suggest_attribute_as_builtin(attribute, type_str, frame):
         yield quote(attribute + '(' + type_str + ')')
 
 
-def suggest_attribute_as_removed(attribute, type_str, attributes):
-    """Suggest that attribute is removed (and give an alternative)."""
+def suggest_attribute_alternative(attribute, type_str, attributes):
+    """Suggest alternative to the non-found attribute."""
     if attribute == 'has_key' and '__contains__' in attributes:
-        yield quote('key in ' + type_str)
+        yield quote('key in ' + type_str) + ' (has_key is removed)'
+    elif attribute == 'get' and '__getitem__' in attributes:
+        yield quote('obj[key]') + \
+            ' with a len() check or try: except: KeyError or IndexError'
 
 
 def suggest_attribute_synonyms(attribute, attributes):

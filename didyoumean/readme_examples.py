@@ -59,6 +59,7 @@ def main():
             ],
             (3, "Trying to find method with similar meaning (hardcoded)"): [
                 "lst = [1, 2, 3]\nlst.add(4)",
+                "lst = [1, 2, 3]\nlst.get(5, None)",
             ],
         },
         (3, ImportError): {

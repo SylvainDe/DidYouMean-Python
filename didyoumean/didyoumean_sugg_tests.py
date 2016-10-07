@@ -798,6 +798,18 @@ class AttributeErrorTests(GetSuggestionsTests):
         self.runs(bad_sugg)
         self.runs(good_sugg)
 
+    def test_get_on_nondict_cont(self):
+        """Method get does not exist on all containers."""
+        code = '{0}().get(0, None)'
+        dictcode, tuplecode, listcode, setcode = \
+            format_str(code, 'dict', 'tuple', 'list', 'set')
+        self.runs(dictcode)
+        self.throws(setcode, ATTRIBUTEERROR)
+        for bad_code in tuplecode, listcode:
+            self.throws(bad_code, ATTRIBUTEERROR,
+                        "'obj[key]' with a len() check or "
+                        "try: except: KeyError or IndexError")
+
     def test_removed_has_key(self):
         """Method has_key is removed from dict."""
         code = 'dict().has_key(1)'
@@ -807,7 +819,8 @@ class AttributeErrorTests(GetSuggestionsTests):
         self.throws(
             code,
             ATTRIBUTEERROR,
-            "'key in dict'", from_version(version))
+            "'key in dict' (has_key is removed)",
+            from_version(version))
         self.runs(new_code)
 
     def test_removed_xreadlines(self):

@@ -158,6 +158,12 @@ lst.add(4)
 #>>> Before: AttributeError("'list' object has no attribute 'add'",)
 #>>> After: AttributeError("'list' object has no attribute 'add'. Did you mean 'append'?",)
 ```
+```python
+lst = [1, 2, 3]
+lst.get(5, None)
+#>>> Before: AttributeError("'list' object has no attribute 'get'",)
+#>>> After: AttributeError("'list' object has no attribute 'get'. Did you mean 'obj[key]' with a len() check or try: except: KeyError or IndexError?",)
+```
 ### ImportError
 
 ##### Fuzzy matches on existing modules
