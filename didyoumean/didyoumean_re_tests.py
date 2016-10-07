@@ -200,6 +200,8 @@ class RegexTests(unittest2.TestCase):
                 '3', '1'),
             ("some_func() takes no arguments (1 given)",
                 'no', '1'),
+            ("some_func() takes at least 2 non-keyword arguments (0 given)",
+                '2', '0'),
             # Python 3.2
             ("some_func() takes exactly 1 positional argument (2 given)",
                 '1', '2'),

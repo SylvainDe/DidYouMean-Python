@@ -1021,7 +1021,7 @@ class TypeErrorTests(GetSuggestionsTests):
     def test_nb_args6(self):
         """Should provide more args."""
         # Amusing message: 'func() takes exactly 2 arguments (2 given)'
-        version = (3, 0)
+        version = (3, 3)
         code = func_gen(param='a, b, c=3', args='{0}')
         bad_code, good_code1, good_code2 = format_str(
             code,
