@@ -435,7 +435,7 @@ def suggest_obj_does_not_support(value, frame, groups):
         types = get_types_for_str(type_str, frame)
         for t in types:
             if hasattr(t, '__iter__') or \
-                    (hasattr(t, '__getitem__') and hasattr(t, '__len')):
+                    (hasattr(t, '__getitem__') and hasattr(t, '__len__')):
                 msg = 'convert to list to edit the list'
                 if hasattr(t, 'join'):
                     msg += ' and use "join()" on the list'
