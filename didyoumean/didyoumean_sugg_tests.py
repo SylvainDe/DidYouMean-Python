@@ -1204,7 +1204,11 @@ class TypeErrorTests(GetSuggestionsTests):
         self.throws(set_code, OBJECTDOESNOTSUPPORT, [], ALL_VERSIONS, 'cython')
         self.throws(set_code,
                     UNSUBSCRIBTABLE, "'set(value)'", ALL_VERSIONS, 'pypy')
-        self.throws(custom_code, UNSUBSCRIBTABLE, [], ALL_VERSIONS, 'pypy')
+        self.throws(custom_code,
+                    ATTRIBUTEERROR, [], up_to_version(version), 'pypy')
+        self.throws(custom_code,
+                    UNSUBSCRIBTABLE, "'FoobarClass(value)'",
+                    from_version(version), 'pypy')
         self.throws(custom_code,
                     ATTRIBUTEERROR, [], up_to_version(version), 'cython')
         self.throws(
