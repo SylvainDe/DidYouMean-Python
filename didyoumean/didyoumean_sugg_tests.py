@@ -1203,7 +1203,7 @@ class TypeErrorTests(GetSuggestionsTests):
         self.runs(good_code)
         self.throws(set_code, OBJECTDOESNOTSUPPORT, [], ALL_VERSIONS, 'cython')
         self.throws(set_code,
-                    UNSUBSCRIPTABLE, "'set(value)'", ALL_VERSIONS, 'pypy')
+                    UNSUBSCRIPTABLE, [], ALL_VERSIONS, 'pypy')
         self.throws(custom_code,
                     ATTRIBUTEERROR, [], up_to_version(version), 'pypy')
         self.throws(custom_code,
