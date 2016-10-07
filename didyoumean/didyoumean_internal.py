@@ -439,10 +439,12 @@ def suggest_unexpected_keywordarg(value, frame, groups):
 @register_suggestion_for(TypeError, re.NB_ARG_RE)
 def suggest_nb_arg(value, frame, groups):
     """Get suggestions in case of NB ARGUMENT error."""
+    del value  # unused param
     func_name, expected, given = groups
     expect_nb = 0 if expected == 'no' else int(expected)
     given_nb = int(given)
-    _ = get_objects_in_frame(frame)
+    objs = get_objects_in_frame(frame)
+    del expect_nb, given_nb, objs, func_name  # for later
     return []
 
 
@@ -521,7 +523,7 @@ def suggest_invalid_syntax(value, frame, groups):
 @register_suggestion_for(MemoryError, None)
 def get_memory_error_sugg(value, frame, groups):
     """Get suggestions for MemoryError exception."""
-    del groups  # unused param
+    del value, groups  # unused param
     objs = get_objects_in_frame(frame)
     return itertools.chain.from_iterable(
         suggest_memory_friendly_equi(name, objs)
