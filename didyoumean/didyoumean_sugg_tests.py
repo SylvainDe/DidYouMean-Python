@@ -1207,7 +1207,8 @@ class TypeErrorTests(GetSuggestionsTests):
         self.throws(custom_code,
                     ATTRIBUTEERROR, [], up_to_version(version), 'pypy')
         self.throws(custom_code,
-                    UNSUBSCRIPTABLE, "'FoobarClass(value)'",
+                    UNSUBSCRIPTABLE,
+                    'implement "__getitem__" on FoobarClass',
                     from_version(version), 'pypy')
         self.throws(custom_code,
                     ATTRIBUTEERROR, [], up_to_version(version), 'cython')
