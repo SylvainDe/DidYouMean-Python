@@ -52,8 +52,8 @@ IMPORTSTAR_RE = r"^import \* (?:only allowed at module level|" \
     r"(?:)contains a nested function with free variables))$"
 UNSUPPORTED_OP_RE = r"^unsupported operand type\(s\) for (.*): " \
     r"'(\w+)' and '(\w+)'$"
-OBJ_DOES_NOT_SUPPORT_RE = r"^\'(\w+)\' object does not support " \
-    r"item assignment$"
+OBJ_DOES_NOT_SUPPORT_RE = r"^\'(\w+)\' object (?:does not|doesn't) support " \
+    r"(.*)$"
 CANNOT_CONCAT_RE = r"^cannot concatenate '(\w+)' and '(\w+)' objects$"
 CANT_CONVERT_RE = r"^Can't convert '(\w+)' object to (\w+) implicitly$"
 MUST_BE_TYPE1_NOT_TYPE2_RE = r"^must be (\w+), not (\w+)$"

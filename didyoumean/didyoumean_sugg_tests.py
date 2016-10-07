@@ -1166,9 +1166,45 @@ class TypeErrorTests(GetSuggestionsTests):
         typo, sugg = 'range(4)', 'list(range(4))'
         version = (3, 0)
         bad_code, good_code = format_str(code, typo, sugg)
-        self.runs(bad_code, up_to_version(version))
-        self.throws(bad_code, OBJECTDOESNOTSUPPORT, [], from_version(version))
         self.runs(good_code)
+        self.runs(bad_code, up_to_version(version))
+        self.throws(
+            bad_code,
+            OBJECTDOESNOTSUPPORT,
+            'convert to list to edit the list',
+            from_version(version))
+
+    def test_assignment_to_string(self):
+        """Trying to assign to string does not work."""
+        code = "s = 'abc'\ns[1] = 'd'"
+        good_code = "s = 'abc'\nl = list(s)\nl[1] = 'd'\ns = ''.join(l)"
+        self.runs(good_code)
+        self.throws(
+            code,
+            OBJECTDOESNOTSUPPORT,
+            'convert to list to edit the list and use "join()" on the list')
+
+    def test_deletion_from_string(self):
+        """Delete from string does not work."""
+        code = "s = 'abc'\ndel s[1]"
+        good_code = "s = 'abc'\nl = list(s)\ndel l[1]\ns = ''.join(l)"
+        self.runs(good_code)
+        self.throws(
+            code,
+            OBJECTDOESNOTSUPPORT,
+            'convert to list to edit the list and use "join()" on the list')
+
+    def test_object_indexing(self):
+        """Index from object does not work if __getitem__ is not defined."""
+        code = "{0}[0]"
+        good_code, set_code, custom_code = \
+            format_str(code, '"a"', "set()", "FoobarClass()")
+        self.runs(good_code)
+        self.throws(set_code, OBJECTDOESNOTSUPPORT)
+        self.throws(
+            custom_code,
+            OBJECTDOESNOTSUPPORT,
+            'implement "__getitem__" on FoobarClass')
 
     def test_not_callable(self):
         """Sometimes, one uses parenthesis instead of brackets."""

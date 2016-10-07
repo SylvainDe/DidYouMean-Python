@@ -426,6 +426,25 @@ def suggest_unsubscriptable(value, frame, groups):
         yield quote(type_str + '(value)')
 
 
+@register_suggestion_for(TypeError, re.OBJ_DOES_NOT_SUPPORT_RE)
+def suggest_obj_does_not_support(value, frame, groups):
+    """Get suggestions in case of OBJ DOES NOT SUPPORT error."""
+    del value  # unused param
+    type_str, feature = groups
+    if feature in ('item assignment', 'item deletion'):
+        types = get_types_for_str(type_str, frame)
+        for t in types:
+            if hasattr(t, '__iter__'):
+                msg = 'convert to list to edit the list'
+                if hasattr(t, 'join'):
+                    msg += ' and use "join()" on the list'
+                yield msg
+                break
+    elif feature == 'indexing':
+        if type_str not in frame.f_builtins:
+            yield 'implement "__getitem__" on ' + type_str
+
+
 @register_suggestion_for(TypeError, re.UNEXPECTED_KEYWORDARG_RE)
 def suggest_unexpected_keywordarg(value, frame, groups):
     """Get suggestions in case of UNEXPECTED_KEYWORDARG error."""

@@ -339,9 +339,16 @@ class RegexTests(unittest2.TestCase):
 
     def test_does_not_support(self):
         """Test OBJ_DOES_NOT_SUPPORT_RE."""
-        msg = "'range' object does not support item assignment"
-        groups = ('range',)
-        self.re_matches(msg, re.OBJ_DOES_NOT_SUPPORT_RE, (groups, dict()))
+        msgs = [
+            ("'range' object does not support item assignment",
+                ("range", "item assignment")),
+            ("'str' object doesn't support item deletion",
+                ("str", "item deletion")),
+            ("'set' object does not support indexing",
+                ("set", "indexing")),
+        ]
+        for msg, groups in msgs:
+            self.re_matches(msg, re.OBJ_DOES_NOT_SUPPORT_RE, (groups, dict()))
 
     def test_cant_convert(self):
         """Test CANT_CONVERT_RE."""
