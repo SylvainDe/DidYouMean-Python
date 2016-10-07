@@ -1372,6 +1372,14 @@ class SyntaxErrorTests(GetSuggestionsTests):
         self.throws(bad_code, INVALIDSYNTAX)
         self.runs(good_code)
 
+    def test_missing_colon2(self):
+        """Missing colon is a classic mistake."""
+        # NICE_TO_HAVE
+        code = "class MyClass{0}\n\tpass"
+        bad_code, good_code = format_str(code, "", ":")
+        self.throws(bad_code, INVALIDSYNTAX)
+        self.runs(good_code)
+
     def test_simple_equal(self):
         """'=' for comparison is a classic mistake."""
         # NICE_TO_HAVE
