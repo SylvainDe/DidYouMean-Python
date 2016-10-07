@@ -1068,7 +1068,8 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_keyword_arg_method(self):
         """Should be the same as previous test but on a method."""
-        code = 'class MyClass:\n\tdef func(self, a):\n\t\tpass\nMyClass().func({0}=1)'
+        code = 'class MyClass:\n\tdef func(self, a):' \
+               '\n\t\tpass\nMyClass().func({0}=1)'
         bad_code, good_code = format_str(code, 'babar', 'a')
         self.throws(bad_code, UNEXPECTEDKWARG)
         self.runs(good_code)
@@ -1076,14 +1077,16 @@ class TypeErrorTests(GetSuggestionsTests):
     def test_keyword_arg_method2(self):
         """Should be the same as previous test but on a method."""
         # NICE_TO_HAVE
-        code = 'class MyClass:\n\tdef func(self, abcdef):\n\t\tpass\nMyClass().func({0}=1)'
+        code = 'class MyClass:\n\tdef func(self, abcdef):' \
+               '\n\t\tpass\nMyClass().func({0}=1)'
         bad_code, good_code = format_str(code, 'abcdf', 'abcdef')
         self.throws(bad_code, UNEXPECTEDKWARG)
         self.runs(good_code)
 
     def test_keyword_arg_class_method(self):
         """Should be the same as previous test but on a class method."""
-        code = 'class MyClass:\n\t@classmethod\n\tdef func(cls, a):\n\t\tpass\nMyClass.func({0}=1)'
+        code = 'class MyClass:\n\t@classmethod\n\tdef func(cls, a):' \
+               '\n\t\tpass\nMyClass.func({0}=1)'
         bad_code, good_code = format_str(code, 'babar', 'a')
         self.throws(bad_code, UNEXPECTEDKWARG)
         self.runs(good_code)
@@ -1091,7 +1094,8 @@ class TypeErrorTests(GetSuggestionsTests):
     def test_keyword_arg_class_method2(self):
         """Should be the same as previous test but on a class method."""
         # NICE_TO_HAVE
-        code = 'class MyClass:\n\t@classmethod\n\tdef func(cls, abcdef):\n\t\tpass\nMyClass.func({0}=1)'
+        code = 'class MyClass:\n\t@classmethod\n\tdef func(cls, abcdef):' \
+               '\n\t\tpass\nMyClass.func({0}=1)'
         bad_code, good_code = format_str(code, 'abcdf', 'abcdef')
         self.throws(bad_code, UNEXPECTEDKWARG)
         self.runs(good_code)
