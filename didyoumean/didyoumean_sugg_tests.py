@@ -272,7 +272,7 @@ class GetSuggestionsTests(unittest2.TestCase):
             self.assertTrue(
                 issubclass(type_caught, error_type),
                 "{0} ({1}) not a subclass of {2}"
-                .format(type_caught, value, error_type))
+                .format(type_caught, value, error_type) + details)
             msg = next((a for a in value.args if isinstance(a, str)), '')
             if error_msg is not None:
                 self.assertRegexpMatches(msg, error_msg)
@@ -1068,23 +1068,33 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_keyword_arg_method(self):
         """Should be the same as previous test but on a method."""
-        # TODO
-        pass
+        code = 'class MyClass:\n\tdef func(self, a):\n\t\tpass\nMyClass().func({0}=1)'
+        bad_code, good_code = format_str(code, 'babar', 'a')
+        self.throws(bad_code, UNEXPECTEDKWARG)
+        self.runs(good_code)
 
     def test_keyword_arg_method2(self):
         """Should be the same as previous test but on a method."""
-        # TODO
-        pass
+        # NICE_TO_HAVE
+        code = 'class MyClass:\n\tdef func(self, abcdef):\n\t\tpass\nMyClass().func({0}=1)'
+        bad_code, good_code = format_str(code, 'abcdf', 'abcdef')
+        self.throws(bad_code, UNEXPECTEDKWARG)
+        self.runs(good_code)
 
     def test_keyword_arg_class_method(self):
         """Should be the same as previous test but on a class method."""
-        # TODO
-        pass
+        code = 'class MyClass:\n\t@classmethod\n\tdef func(cls, a):\n\t\tpass\nMyClass.func({0}=1)'
+        bad_code, good_code = format_str(code, 'babar', 'a')
+        self.throws(bad_code, UNEXPECTEDKWARG)
+        self.runs(good_code)
 
     def test_keyword_arg_class_method2(self):
         """Should be the same as previous test but on a class method."""
-        # TODO
-        pass
+        # NICE_TO_HAVE
+        code = 'class MyClass:\n\t@classmethod\n\tdef func(cls, abcdef):\n\t\tpass\nMyClass.func({0}=1)'
+        bad_code, good_code = format_str(code, 'abcdf', 'abcdef')
+        self.throws(bad_code, UNEXPECTEDKWARG)
+        self.runs(good_code)
 
     def test_keyword_builtin(self):
         """A few builtins (like int()) have a different error message."""
