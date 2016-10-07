@@ -345,6 +345,13 @@ def suggest_attribute_alternative(attribute, type_str, attributes):
     elif attribute == 'get' and '__getitem__' in attributes:
         yield quote('obj[key]') + \
             ' with a len() check or try: except: KeyError or IndexError'
+    elif attribute in ('__setitem__', '__delitem__'):
+        if '__iter__' in attributes or \
+                ('__getitem__' in attributes and '__len__' in attributes):
+            msg = 'convert to list to edit the list'
+            if 'join' in attributes:
+                msg += ' and use "join()" on the list'
+            yield msg
 
 
 def suggest_attribute_synonyms(attribute, attributes):
@@ -429,21 +436,27 @@ def suggest_unsubscriptable(value, frame, groups):
 @register_suggestion_for(TypeError, re.OBJ_DOES_NOT_SUPPORT_RE)
 def suggest_obj_does_not_support(value, frame, groups):
     """Get suggestions in case of OBJ DOES NOT SUPPORT error."""
+    # 'Object does not support <feature>' exceptions
+    # can be somehow seen as attribute errors for magic
+    # methods except for the fact that we do not want to
+    # have any fuzzy logic on the magic method name.
+    # Also, we want to suggest the implementation of the
+    # missing method (it is it not on a builtin object).
     del value  # unused param
     type_str, feature = groups
-    if feature in ('item assignment', 'item deletion'):
+    FEATURES = {
+        'indexing': '__getitem__',
+        'item assignment': '__setitem__',
+        'item deletion': '__delitem__',
+    }
+    attr = FEATURES.get(feature)
+    if attr is not None:
         types = get_types_for_str(type_str, frame)
-        for t in types:
-            if hasattr(t, '__iter__') or \
-                    (hasattr(t, '__getitem__') and hasattr(t, '__len__')):
-                msg = 'convert to list to edit the list'
-                if hasattr(t, 'join'):
-                    msg += ' and use "join()" on the list'
-                yield msg
-                break
-    elif feature == 'indexing':
+        attributes = set(a for t in types for a in dir(t))
+        for s in suggest_attribute_alternative(attr, type_str, attributes):
+            yield s
         if type_str not in frame.f_builtins:
-            yield 'implement "__getitem__" on ' + type_str
+            yield 'implement "' + attr + '" on ' + type_str
 
 
 @register_suggestion_for(TypeError, re.UNEXPECTED_KEYWORDARG_RE)
