@@ -68,12 +68,34 @@ class FoobarClass():
         """Method for testing purposes."""
         pass
 
+    def some_method2(self, x):
+        """Method for testing purposes."""
+        pass
+
     def _some_semi_private_method(self):
         """Method for testing purposes."""
         pass
 
     def __some_private_method(self):
         """Method for testing purposes."""
+        pass
+
+    def some_method_missing_self_arg():
+        """Method for testing purposes."""
+        pass
+
+    def some_method_missing_self_arg2(x):
+        """Method for testing purposes."""
+        pass
+
+    @classmethod
+    def some_cls_method_missing_cls():
+        """Class method for testing purposes."""
+        pass
+
+    @classmethod
+    def some_cls_method_missing_cls2(x):
+        """Class method for testing purposes."""
         pass
 
 
@@ -996,6 +1018,38 @@ class TypeErrorTests(GetSuggestionsTests):
         self.throws(bad_code, MISSINGPOSERROR, [], from_version(version))
         self.runs(good_code)
 
+    def test_nb_args6(self):
+        """Should provide more args."""
+        # Amusing message: 'func() takes exactly 2 arguments (2 given)'
+        version = (3, 0)
+        code = func_gen(param='a, b, c=3', args='{0}')
+        bad_code, good_code1, good_code2 = format_str(
+            code,
+            'b=2, c=3',
+            'a=1, b=2, c=3',
+            '1, b=2, c=3')
+        self.throws(bad_code, NBARGERROR, [], up_to_version(version))
+        self.throws(bad_code, MISSINGPOSERROR, [], from_version(version))
+        self.runs(good_code1)
+        self.runs(good_code2)
+
+    def test_nb_arg_missing_self(self):
+        """Arg 'self' is missing."""
+        # NICE_TO_HAVE
+        obj = 'FoobarClass()'
+        self.throws(obj + '.some_method_missing_self_arg()', NBARGERROR)
+        self.throws(obj + '.some_method_missing_self_arg2(42)', NBARGERROR)
+        self.runs(obj + '.some_method()')
+        self.runs(obj + '.some_method2(42)')
+
+    def test_nb_arg_missing_cls(self):
+        """Arg 'cls' is missing."""
+        # NICE_TO_HAVE
+        for obj in ('FoobarClass()', 'FoobarClass'):
+            self.throws(obj + '.some_cls_method_missing_cls()', NBARGERROR)
+            self.throws(obj + '.some_cls_method_missing_cls2(42)', NBARGERROR)
+            self.runs(obj + '.this_is_cls_mthd()')
+
     def test_keyword_args(self):
         """Should be param 'babar' not 'a' but it's hard to guess."""
         typo, sugg = 'a', 'babar'
@@ -1011,6 +1065,26 @@ class TypeErrorTests(GetSuggestionsTests):
         bad_code, good_code = format_str(code, typo, sugg)
         self.throws(bad_code, UNEXPECTEDKWARG, "'" + sugg + "'")
         self.runs(good_code)
+
+    def test_keyword_arg_method(self):
+        """Should be the same as previous test but on a method."""
+        # TODO
+        pass
+
+    def test_keyword_arg_method2(self):
+        """Should be the same as previous test but on a method."""
+        # TODO
+        pass
+
+    def test_keyword_arg_class_method(self):
+        """Should be the same as previous test but on a class method."""
+        # TODO
+        pass
+
+    def test_keyword_arg_class_method2(self):
+        """Should be the same as previous test but on a class method."""
+        # TODO
+        pass
 
     def test_keyword_builtin(self):
         """A few builtins (like int()) have a different error message."""

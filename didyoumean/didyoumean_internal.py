@@ -436,12 +436,20 @@ def suggest_unexpected_keywordarg(value, frame, groups):
             yield quote(name)
 
 
+@register_suggestion_for(TypeError, re.NB_ARG_RE)
+def suggest_nb_arg(value, frame, groups):
+    """Get suggestions in case of NB ARGUMENT error."""
+    func_name, expected, given = groups
+    expect_nb = 0 if expected == 'no' else int(expected)
+    given_nb = int(given)
+    _ = get_objects_in_frame(frame)
+    return []
+
+
 @register_suggestion_for(TypeError, re.UNEXPECTED_KEYWORDARG2_RE)
 def suggest_unexpected_keywordarg2(value, frame, groups):
     """Get suggestions in case of UNEXPECTED_KEYWORDARG2 error."""
-    del value
-    del frame  # unused param
-    del groups  # unused param
+    del value, frame, groups  # unused param
     return []  # no implementation so far
 
 
@@ -466,7 +474,7 @@ def suggest_zero_len_field(value, frame, groups):
 @register_suggestion_for(ValueError, re.TIME_DATA_DOES_NOT_MATCH_FORMAT_RE)
 def suggest_time_data_is_wrong(value, frame, groups):
     """Get suggestions in case of TIME_DATA_DOES_NOT_MATCH_FORMAT_RE."""
-    del value, frame
+    del value, frame  # unused param
     timedata, timeformat = groups
     if timedata.count('%') > timeformat.count('%%'):
         yield "to swap value and format parameters"

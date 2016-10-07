@@ -194,17 +194,23 @@ class RegexTests(unittest2.TestCase):
         """Test NB_ARG_RE."""
         msgs = [
             # Python 2.6/2.7/PyPy/PyPy3
-            "some_func() takes exactly 1 argument (2 given)",
-            "some_func() takes exactly 3 arguments (1 given)",
-            "some_func() takes no arguments (1 given)",
+            ("some_func() takes exactly 1 argument (2 given)",
+                '1', '2'),
+            ("some_func() takes exactly 3 arguments (1 given)",
+                '3', '1'),
+            ("some_func() takes no arguments (1 given)",
+                'no', '1'),
             # Python 3.2
-            "some_func() takes exactly 1 positional argument (2 given)",
+            ("some_func() takes exactly 1 positional argument (2 given)",
+                '1', '2'),
             # Python 3.3/3.4/3.5
-            "some_func() takes 1 positional argument but 2 were given",
-            "some_func() takes 0 positional arguments but 1 was given",
+            ("some_func() takes 1 positional argument but 2 were given",
+                '1', '2'),
+            ("some_func() takes 0 positional arguments but 1 was given",
+                '0', '1'),
         ]
-        groups = ('some_func',)
-        for msg in msgs:
+        for msg, exp, nb in msgs:
+            groups = ('some_func', exp, nb)
             self.re_matches(msg, re.NB_ARG_RE, (groups, dict()))
 
     def test_missing_positional_arg(self):

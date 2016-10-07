@@ -29,8 +29,8 @@ NEED_MORE_VALUES_RE = r"^(?:need more than \d+|not enough) values to unpack" \
 UNHASHABLE_RE = r"^(?:unhashable type: )?'(\w+)'(?: objects are unhashable)?$"
 MISSING_PARENT_RE = r"^Missing parentheses in call to '(\w+)'$"
 INVALID_LITERAL_RE = r"^invalid literal for (\w+)\(\) with base \d+: '(\w+)'$"
-NB_ARG_RE = r"^(\w+)\(\) takes (?:exactly )?(?:no|\d+) " \
-    r"(?:positional )?arguments? \(?(?:but )?\d+ (?:were |was )?given\)?$"
+NB_ARG_RE = r"^(\w+)\(\) takes (?:exactly )?(no|\d+) " \
+    r"(?:positional )?arguments? \(?(?:but )?(\d+) (?:were |was )?given\)?$"
 MISSING_POS_ARG_RE = r"^(\w+)\(\) missing \d+ required positional " \
     r"arguments?: .*$"
 INVALID_SYNTAX_RE = r"^invalid syntax$"
