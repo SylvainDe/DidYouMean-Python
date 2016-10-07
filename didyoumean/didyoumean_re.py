@@ -30,7 +30,8 @@ UNHASHABLE_RE = r"^(?:unhashable type: )?'(\w+)'(?: objects are unhashable)?$"
 MISSING_PARENT_RE = r"^Missing parentheses in call to '(\w+)'$"
 INVALID_LITERAL_RE = r"^invalid literal for (\w+)\(\) with base \d+: '(\w+)'$"
 NB_ARG_RE = r"^(\w+)\(\) takes (?:exactly |at least )?(no|\d+) " \
-    r"(?:positional |non-keyword )?arguments? \(?(?:but )?(\d+) (?:were |was )?given\)?$"
+    r"(?:positional |non-keyword )?arguments? " \
+    r"\(?(?:but )?(\d+) (?:were |was )?given\)?$"
 MISSING_POS_ARG_RE = r"^(\w+)\(\) missing \d+ required positional " \
     r"arguments?: .*$"
 INVALID_SYNTAX_RE = r"^invalid syntax$"
