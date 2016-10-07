@@ -9,7 +9,7 @@ NAMENOTDEFINED_RE = r"^(?:global )?name '(?P<name>\w+)' is not defined$"
 ATTRIBUTEERROR_RE = r"^(?:class |type object )?'?([\w\.]+)'? " \
     r"(?:object |instance )?has no attribute '(\w+)'$"
 MODULEHASNOATTRIBUTE_RE = r"^module '?([\w\.]+)' has no attribute '(\w+)'$"
-UNSUBSCRIBTABLE_RE = r"^'(\w+)' object " \
+UNSUBSCRIPTABLE_RE = r"^'(\w+)' object " \
     r"(?:is (?:not |un)subscriptable|has no attribute '__getitem__')$"
 UNEXPECTED_KEYWORDARG_RE = r"^(\w+)\(\) " \
     r"got an unexpected keyword argument '(\w+)'$"

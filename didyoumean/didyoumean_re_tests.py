@@ -108,7 +108,7 @@ class RegexTests(unittest2.TestCase):
         self.re_matches(msg, re.INDEXOUTOFRANGE_RE, NO_GROUP)
 
     def test_unsubscriptable(self):
-        """Test UNSUBSCRIBTABLE_RE."""
+        """Test UNSUBSCRIPTABLE_RE."""
         msgs = [
             # Python 2.6
             "'function' object is unsubscriptable",
@@ -119,7 +119,7 @@ class RegexTests(unittest2.TestCase):
         ]
         groups = ('function',)
         for msg in msgs:
-            self.re_matches(msg, re.UNSUBSCRIBTABLE_RE, (groups, dict()))
+            self.re_matches(msg, re.UNSUBSCRIPTABLE_RE, (groups, dict()))
 
     def test_unexpected_kw_arg(self):
         """Test UNEXPECTED_KEYWORDARG_RE."""

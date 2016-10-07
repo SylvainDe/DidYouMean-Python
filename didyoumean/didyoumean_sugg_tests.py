@@ -168,7 +168,7 @@ UNKNOWN_UNBOUNDLOCAL = (UnboundLocalError, None)
 NBARGERROR = (TypeError, re.NB_ARG_RE)
 MISSINGPOSERROR = (TypeError, re.MISSING_POS_ARG_RE)
 UNHASHABLE = (TypeError, re.UNHASHABLE_RE)
-UNSUBSCRIBTABLE = (TypeError, re.UNSUBSCRIBTABLE_RE)
+UNSUBSCRIPTABLE = (TypeError, re.UNSUBSCRIPTABLE_RE)
 UNEXPECTEDKWARG = (TypeError, re.UNEXPECTED_KEYWORDARG_RE)
 UNEXPECTEDKWARG2 = (TypeError, re.UNEXPECTED_KEYWORDARG2_RE)
 UNEXPECTEDKWARG3 = (TypeError, re.UNEXPECTED_KEYWORDARG3_RE)
@@ -919,7 +919,7 @@ class TypeErrorTests(GetSuggestionsTests):
         typo, sugg = '[2]', '(2)'
         code = func_gen(param='a') + 'some_func{0}'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, UNSUBSCRIBTABLE, "'function(value)'")
+        self.throws(bad_code, UNSUBSCRIPTABLE, "'function(value)'")
         self.runs(good_code)
 
     def test_method_called_on_class(self):
@@ -1203,11 +1203,11 @@ class TypeErrorTests(GetSuggestionsTests):
         self.runs(good_code)
         self.throws(set_code, OBJECTDOESNOTSUPPORT, [], ALL_VERSIONS, 'cython')
         self.throws(set_code,
-                    UNSUBSCRIBTABLE, "'set(value)'", ALL_VERSIONS, 'pypy')
+                    UNSUBSCRIPTABLE, "'set(value)'", ALL_VERSIONS, 'pypy')
         self.throws(custom_code,
                     ATTRIBUTEERROR, [], up_to_version(version), 'pypy')
         self.throws(custom_code,
-                    UNSUBSCRIBTABLE, "'FoobarClass(value)'",
+                    UNSUBSCRIPTABLE, "'FoobarClass(value)'",
                     from_version(version), 'pypy')
         self.throws(custom_code,
                     ATTRIBUTEERROR, [], up_to_version(version), 'cython')

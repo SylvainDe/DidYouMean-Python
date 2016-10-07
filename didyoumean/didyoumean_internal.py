@@ -352,6 +352,12 @@ def suggest_attribute_alternative(attribute, type_str, attributes):
             if 'join' in attributes:
                 msg += ' and use "join()" on the list'
             yield msg
+    elif attribute == '__getitem__':
+        if '__call__' in attributes:
+            yield quote(type_str + '(value)')
+    elif attribute == '__call__':
+        if '__getitem__' in attributes:
+            yield quote(type_str + '[value]')
 
 
 def suggest_attribute_synonyms(attribute, attributes):
@@ -423,25 +429,42 @@ def suggest_import_from_module(imported_name, frame):
 
 
 # Functions related to TypeError
-@register_suggestion_for(TypeError, re.UNSUBSCRIBTABLE_RE)
-def suggest_unsubscriptable(value, frame, groups):
-    """Get suggestions in case of UNSUBSCRIBTABLE error."""
-    del value  # unused param
-    type_str, = groups
-    types = get_types_for_str(type_str, frame)
-    if any(hasattr(t, '__call__') for t in types):
-        yield quote(type_str + '(value)')
-
-
-@register_suggestion_for(TypeError, re.OBJ_DOES_NOT_SUPPORT_RE)
-def suggest_obj_does_not_support(value, frame, groups):
-    """Get suggestions in case of OBJ DOES NOT SUPPORT error."""
+def suggest_feature_not_supported(attr, type_str, frame):
+    """Get suggestion for unsupported feature."""
     # 'Object does not support <feature>' exceptions
     # can be somehow seen as attribute errors for magic
     # methods except for the fact that we do not want to
     # have any fuzzy logic on the magic method name.
     # Also, we want to suggest the implementation of the
     # missing method (it is it not on a builtin object).
+    types = get_types_for_str(type_str, frame)
+    attributes = set(a for t in types for a in dir(t))
+    for s in suggest_attribute_alternative(attr, type_str, attributes):
+        yield s
+    if type_str not in frame.f_builtins and \
+            type_str not in ('function'):
+        yield 'implement "' + attr + '" on ' + type_str
+
+
+@register_suggestion_for(TypeError, re.UNSUBSCRIPTABLE_RE)
+def suggest_unsubscriptable(value, frame, groups):
+    """Get suggestions in case of UNSUBSCRIPTABLE error."""
+    del value  # unused param
+    type_str, = groups
+    return suggest_feature_not_supported('__getitem__', type_str, frame)
+
+
+@register_suggestion_for(TypeError, re.NOT_CALLABLE_RE)
+def suggest_not_callable(value, frame, groups):
+    """Get suggestions in case of NOT_CALLABLE error."""
+    del value  # unused param
+    type_str, = groups
+    return suggest_feature_not_supported('__call__', type_str, frame)
+
+
+@register_suggestion_for(TypeError, re.OBJ_DOES_NOT_SUPPORT_RE)
+def suggest_obj_does_not_support(value, frame, groups):
+    """Get suggestions in case of OBJ DOES NOT SUPPORT error."""
     del value  # unused param
     type_str, feature = groups
     FEATURES = {
@@ -450,13 +473,9 @@ def suggest_obj_does_not_support(value, frame, groups):
         'item deletion': '__delitem__',
     }
     attr = FEATURES.get(feature)
-    if attr is not None:
-        types = get_types_for_str(type_str, frame)
-        attributes = set(a for t in types for a in dir(t))
-        for s in suggest_attribute_alternative(attr, type_str, attributes):
-            yield s
-        if type_str not in frame.f_builtins:
-            yield 'implement "' + attr + '" on ' + type_str
+    if attr is None:
+        return []
+    return suggest_feature_not_supported(attr, type_str, frame)
 
 
 @register_suggestion_for(TypeError, re.UNEXPECTED_KEYWORDARG_RE)
@@ -489,16 +508,6 @@ def suggest_unexpected_keywordarg2(value, frame, groups):
     """Get suggestions in case of UNEXPECTED_KEYWORDARG2 error."""
     del value, frame, groups  # unused param
     return []  # no implementation so far
-
-
-@register_suggestion_for(TypeError, re.NOT_CALLABLE_RE)
-def suggest_not_callable(value, frame, groups):
-    """Get suggestions in case of NOT_CALLABLE error."""
-    del value  # unused param
-    type_str, = groups
-    types = get_types_for_str(type_str, frame)
-    if any(hasattr(t, '__getitem__') for t in types):
-        yield quote(type_str + '[value]')
 
 
 # Functions related to ValueError
