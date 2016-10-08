@@ -1160,7 +1160,6 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_assignment_to_range(self):
         """Trying to assign to range works on list, not on range."""
-        # NICE_TO_HAVE
         code = '{0}[2] = 1'
         typo, sugg = 'range(4)', 'list(range(4))'
         version = (3, 0)
@@ -1464,19 +1463,21 @@ class SyntaxErrorTests(GetSuggestionsTests):
         """Trying to use '++' or '--'."""
         # NICE_TO_HAVE
         code = 'a = 0\na{0}'
-        for op in ('-', '+'):
-            typo, sugg = 2 * op, op + '=1'
-            bad_code, good_code = format_str(code, typo, sugg)
-            self.throws(bad_code, INVALIDSYNTAX)
-            self.runs(good_code)
+        # Adding pointless suffix to avoid wrong assumptions
+        for end in ('', '  ', ';', ' ;'):
+            code2 = code + end
+            for op in ('-', '+'):
+                typo, sugg = 2 * op, op + '=1'
+                bad_code, good_code = format_str(code + end, typo, sugg)
+                self.throws(bad_code, INVALIDSYNTAX)
+                self.runs(good_code)
 
     def test_wrong_bool_operator(self):
         """Trying to use '&&' or '||'."""
-        # NICE_TO_HAVE
         code = 'True {0} False'
         for typo, sugg in (('&&', 'and'), ('||', 'or')):
             bad_code, good_code = format_str(code, typo, sugg)
-            self.throws(bad_code, INVALIDSYNTAX)
+            self.throws(bad_code, INVALIDSYNTAX, "'" + sugg + "'")
             self.runs(good_code)
 
     def test_import_future_not_first(self):

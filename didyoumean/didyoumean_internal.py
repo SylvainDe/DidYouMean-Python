@@ -574,11 +574,17 @@ def suggest_invalid_comp(value, frame, groups):
 def suggest_invalid_syntax(value, frame, groups):
     """Get suggestions in case of INVALID_SYNTAX error."""
     del frame, groups  # unused param
+    alternatives = {
+        '<>': '!=',
+        '&&': 'and',
+        '||': 'or',
+    }
     offset = value.offset
     if offset is not None and offset > 2:
         two_last = value.text[offset - 2:offset]
-        if two_last == '<>':
-            yield quote('!=')
+        alt = alternatives.get(two_last)
+        if alt is not None:
+            yield quote(alt)
 
 
 # Functions related to MemoryError
