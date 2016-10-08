@@ -580,11 +580,14 @@ def suggest_invalid_syntax(value, frame, groups):
         '||': 'or',
     }
     offset = value.offset
-    if offset is not None and offset > 2:
-        two_last = value.text[offset - 2:offset]
-        alt = alternatives.get(two_last)
-        if alt is not None:
-            yield quote(alt)
+    if value.offset is not None:
+        for shift in (0, 1):
+            offset = value.offset + shift
+            two_last = value.text[offset - 2:offset]
+            alt = alternatives.get(two_last)
+            if alt is not None:
+                yield quote(alt)
+                break
 
 
 # Functions related to MemoryError
