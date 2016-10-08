@@ -490,7 +490,7 @@ def suggest_obj_has_no(value, frame, groups):
     """Get suggestions in case of OBJECT_HAS_NO_FUNC."""
     del value  # unused param
     type_str, feature = groups
-    if feature not in ('length', 'len()'):
+    if feature in ('length', 'len'):
         return suggest_feature_not_supported('__len__', type_str, frame)
     return []
 
