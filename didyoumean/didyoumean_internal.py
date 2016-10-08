@@ -359,6 +359,9 @@ def suggest_attribute_alternative(attribute, type_str, attributes):
     elif attribute == '__call__':
         if '__getitem__' in attributes:
             yield quote(type_str + '[value]')
+    elif attribute == '__len__':
+        if is_iterable:
+            yield quote('len(list(' + type_str + '))')
     elif attribute == 'join':
         if is_iterable:
             yield quote('my_string.join(' + type_str + ')')
@@ -446,7 +449,7 @@ def suggest_feature_not_supported(attr, type_str, frame):
     for s in suggest_attribute_alternative(attr, type_str, attributes):
         yield s
     if type_str not in frame.f_builtins and \
-            type_str not in ('function'):
+            type_str not in ('function', 'generator'):
         yield 'implement "' + attr + '" on ' + type_str
 
 
@@ -480,6 +483,16 @@ def suggest_obj_does_not_support(value, frame, groups):
     if attr is None:
         return []
     return suggest_feature_not_supported(attr, type_str, frame)
+
+
+@register_suggestion_for(TypeError, re.OBJECT_HAS_NO_FUNC_RE)
+def suggest_obj_has_no(value, frame, groups):
+    """Get suggestions in case of OBJECT_HAS_NO_FUNC."""
+    del value  # unused param
+    type_str, feature = groups
+    if feature not in ('length', 'len()'):
+        return suggest_feature_not_supported('__len__', type_str, frame)
+    return []
 
 
 @register_suggestion_for(TypeError, re.UNEXPECTED_KEYWORDARG_RE)

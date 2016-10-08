@@ -971,7 +971,7 @@ class TypeErrorTests(GetSuggestionsTests):
         """len() can't be called on iterable (weird but understandable)."""
         code = 'len(my_generator())'
         sugg = 'len(list(my_generator()))'
-        self.throws(code, OBJECTHASNOFUNC)
+        self.throws(code, OBJECTHASNOFUNC, "'len(list(generator))'")
         self.runs(sugg)
 
     def test_nb_args(self):
