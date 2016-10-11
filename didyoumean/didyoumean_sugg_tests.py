@@ -173,6 +173,7 @@ UNEXPECTEDKWARG = (TypeError, re.UNEXPECTED_KEYWORDARG_RE)
 UNEXPECTEDKWARG2 = (TypeError, re.UNEXPECTED_KEYWORDARG2_RE)
 UNEXPECTEDKWARG3 = (TypeError, re.UNEXPECTED_KEYWORDARG3_RE)
 UNSUPPORTEDOPERAND = (TypeError, re.UNSUPPORTED_OP_RE)
+BADOPERANDUNARY = (TypeError, re.BAD_OPERAND_UNARY_RE)
 OBJECTDOESNOTSUPPORT = (TypeError, re.OBJ_DOES_NOT_SUPPORT_RE)
 CANNOTCONCAT = (TypeError, re.CANNOT_CONCAT_RE)
 CANTCONVERT = (TypeError, re.CANT_CONVERT_RE)
@@ -966,6 +967,22 @@ class TypeErrorTests(GetSuggestionsTests):
         self.throws(typo3, UNSUPPORTEDOPERAND)
         code1 = 'dict().update(dict())'
         self.runs(code1)
+
+    def test_unary_operand(self):
+        """Test unary operand errors."""
+        ops = {
+            '+{0}': '__pos__',
+            '-{0}': '__neg__',
+            '~{0}': '__invert__',
+            'abs({0})': '__abs__',
+        }
+        for custom in (True, False):
+            obj = 'FoobarClass()' if custom else 'set()'
+            sugg = 'implement "{0}" on FoobarClass'
+            for op, magic in ops.items():
+                code = op.format(obj)
+                sugg_op = sugg.format(magic) if custom else None
+                self.throws(code, BADOPERANDUNARY, sugg_op)
 
     def test_len_on_iterable(self):
         """len() can't be called on iterable (weird but understandable)."""

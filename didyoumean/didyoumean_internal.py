@@ -497,6 +497,23 @@ def suggest_obj_has_no(value, frame, groups):
     return []
 
 
+@register_suggestion_for(TypeError, re.BAD_OPERAND_UNARY_RE)
+def suggest_bad_operand_for_unary(value, frame, groups):
+    """Get suggestions for BAD_OPERAND_UNARY."""
+    del value  # unused param
+    unary, type_str = groups
+    UNARY_OPS = {
+        '+': '__pos__',
+        '-': '__neg__',
+        '~': '__invert__',
+        'abs()': '__abs__',
+    }
+    attr = UNARY_OPS.get(unary)
+    if attr is None:
+        return []
+    return suggest_feature_not_supported(attr, type_str, frame)
+
+
 @register_suggestion_for(TypeError, re.UNEXPECTED_KEYWORDARG_RE)
 def suggest_unexpected_keywordarg(value, frame, groups):
     """Get suggestions in case of UNEXPECTED_KEYWORDARG error."""

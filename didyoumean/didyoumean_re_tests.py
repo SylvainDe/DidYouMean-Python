@@ -379,6 +379,15 @@ class RegexTests(unittest2.TestCase):
         groups = ('+', 'int', 'str')
         self.re_matches(msg, re.UNSUPPORTED_OP_RE, (groups, dict()))
 
+    def test_bad_operand_unary(self):
+        """Test BAD_OPERAND_UNARY_RE."""
+        msgs = [
+            ("bad operand type for unary ~: 'set'", ('~', 'set')),
+            ("bad operand type for abs(): 'set'", ('abs()', 'set')),
+        ]
+        for msg, group in msgs:
+            self.re_matches(msg, re.BAD_OPERAND_UNARY_RE, (group, dict()))
+
     def test_not_callable(self):
         """Test NOT_CALLABLE_RE."""
         msg = "'list' object is not callable"
