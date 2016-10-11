@@ -1123,7 +1123,7 @@ class TypeErrorTests(GetSuggestionsTests):
         self.runs(good_code)
 
     def test_keyword_arg_lambda(self):
-        """Test with lambda functions (instead of usual function)."""
+        """Test with lambda functions instead of usual function."""
         typo, sugg = 'abcdf', 'abcdef'
         code = 'f = lambda arg1, ' + sugg + ': None\nf(42, {0}=None)'
         bad_code, good_code = format_str(code, typo, sugg)
@@ -1131,7 +1131,7 @@ class TypeErrorTests(GetSuggestionsTests):
         self.runs(good_code)
 
     def test_keyword_arg_lambda_method(self):
-        """Test with lambda methods (instead of usual methods)."""
+        """Test with lambda methods instead of usual methods."""
         typo, sugg = 'abcdf', 'abcdef'
         code = 'class MyClass:\n\tfunc = lambda self, ' + sugg + ': None' \
                '\nMyClass().func({0}=1)'
