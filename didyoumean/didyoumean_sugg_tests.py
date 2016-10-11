@@ -972,18 +972,18 @@ class TypeErrorTests(GetSuggestionsTests):
         """Test unary operand errors."""
         version = (3, 0)
         ops = {
-            '+{0}': '__pos__',
-            '-{0}': '__neg__',
-            '~{0}': '__invert__',
-            'abs({0})': '__abs__',
+            '+{0}': ('__pos__', "'__doc__'"),
+            '-{0}': ('__neg__', None),
+            '~{0}': ('__invert__', "'__init__'"),
+            'abs({0})': ('__abs__', None),
         }
         for custom in (True, False):
             obj = 'FoobarClass()' if custom else 'set()'
             sugg = 'implement "{0}" on FoobarClass'
-            for op, magic in ops.items():
+            for op, suggestions in ops.items():
                 code = op.format(obj)
+                magic, sugg_attr = suggestions
                 sugg_unary = sugg.format(magic) if custom else None
-                sugg_attr = "'__init__'" if magic == '__invert__' else None
                 self.throws(code, ATTRIBUTEERROR, sugg_attr,
                             up_to_version(version), 'cython')
                 self.throws(code, BADOPERANDUNARY, sugg_unary,
