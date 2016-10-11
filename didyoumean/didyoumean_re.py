@@ -11,7 +11,7 @@ ATTRIBUTEERROR_RE = r"^(?:class |type object )?'?([\w\.]+)'? " \
 MODULEHASNOATTRIBUTE_RE = r"^module '?([\w\.]+)' has no attribute '(\w+)'$"
 UNSUBSCRIPTABLE_RE = r"^'(\w+)' object " \
     r"(?:is (?:not |un)subscriptable|has no attribute '__getitem__')$"
-UNEXPECTED_KEYWORDARG_RE = r"^(\w+)\(\) " \
+UNEXPECTED_KEYWORDARG_RE = r"^(.+)\(\) " \
     r"got an unexpected keyword argument '(\w+)'$"
 UNEXPECTED_KEYWORDARG2_RE = r"^'(\w+)' is an " \
     r"invalid keyword argument for this function$"

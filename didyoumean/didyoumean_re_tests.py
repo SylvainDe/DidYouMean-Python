@@ -124,9 +124,14 @@ class RegexTests(unittest2.TestCase):
     def test_unexpected_kw_arg(self):
         """Test UNEXPECTED_KEYWORDARG_RE."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
-        msg = "some_func() got an unexpected keyword argument 'a'"
-        groups = ('some_func', 'a')
-        self.re_matches(msg, re.UNEXPECTED_KEYWORDARG_RE, (groups, dict()))
+        msgs = [
+            ("some_func() got an unexpected keyword argument 'a'",
+                ('some_func', 'a')),
+            ("<lambda>() got an unexpected keyword argument 'a'",
+                ('<lambda>', 'a')),
+        ]
+        for msg, groups in msgs:
+            self.re_matches(msg, re.UNEXPECTED_KEYWORDARG_RE, (groups, dict()))
 
     def test_unexpected_kw_arg2(self):
         """Test UNEXPECTED_KEYWORDARG2_RE."""

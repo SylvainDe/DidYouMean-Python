@@ -142,6 +142,8 @@ def get_objects_in_frame(frame):
     """Get objects defined in a given frame.
 
     This includes variable, types, builtins, etc.
+    The function returns a dictionnary mapping names to a (non empty)
+    list of ScopedObj objects in the order following the LEGB Rule.
     """
     # https://www.python.org/dev/peps/pep-0227/ PEP227 Statically Nested Scopes
     # "Under this proposal, it will not be possible to gain dictionary-style
@@ -501,11 +503,28 @@ def suggest_unexpected_keywordarg(value, frame, groups):
     del value  # unused param
     func_name, kw_arg = groups
     objs = get_objects_in_frame(frame)
-    if func_name in objs:
-        func = objs[func_name][0].obj
-        args = func.__code__.co_varnames
-        for name in get_close_matches(kw_arg, args):
-            yield quote(name)
+    # Trying to fetch reachable objects: getting objects and attributes
+    # for objects. We would go deeper (with a fixed point algorithm) but
+    # it doesn't seem to be worth it. In any case, we'll be missing a few
+    # possible functions.
+    objects = [o.obj for lst in objs.values() for o in lst]
+    for obj in list(objects):
+        for a in dir(obj):
+            attr = getattr(obj, a, None)
+            if attr is not None:
+                objects.append(attr)
+    arg_names = set()
+    # Then, we filter for function with the correct name (the name being the
+    # name on the function object which is not always the same from the
+    # namespace).
+    for func in objects:
+        if getattr(func, '__name__', None) == func_name:
+            if hasattr(func, '__code__'):
+                args = func.__code__.co_varnames
+                for name in get_close_matches(kw_arg, args):
+                    arg_names.add(name)
+    for name in arg_names:
+        yield quote(name)
 
 
 @register_suggestion_for(TypeError, re.NB_ARG_RE)

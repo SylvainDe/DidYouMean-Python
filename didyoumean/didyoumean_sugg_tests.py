@@ -1088,11 +1088,11 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_keyword_arg_method2(self):
         """Should be the same as previous test but on a method."""
-        # NICE_TO_HAVE
-        code = 'class MyClass:\n\tdef func(self, abcdef):' \
+        typo, sugg = 'abcdf', 'abcdef'
+        code = 'class MyClass:\n\tdef func(self, ' + sugg + '):' \
                '\n\t\tpass\nMyClass().func({0}=1)'
-        bad_code, good_code = format_str(code, 'abcdf', 'abcdef')
-        self.throws(bad_code, UNEXPECTEDKWARG)
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, UNEXPECTEDKWARG, "'" + sugg + "'")
         self.runs(good_code)
 
     def test_keyword_arg_class_method(self):
@@ -1105,10 +1105,48 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_keyword_arg_class_method2(self):
         """Should be the same as previous test but on a class method."""
-        # NICE_TO_HAVE
-        code = 'class MyClass:\n\t@classmethod\n\tdef func(cls, abcdef):' \
-               '\n\t\tpass\nMyClass.func({0}=1)'
-        bad_code, good_code = format_str(code, 'abcdf', 'abcdef')
+        typo, sugg = 'abcdf', 'abcdef'
+        code = 'class MyClass:\n\t@classmethod ' \
+               '\n\tdef func(cls, ' + sugg + '):\n ' \
+               '\t\tpass\nMyClass.func({0}=1)'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, UNEXPECTEDKWARG, "'" + sugg + "'")
+        self.runs(good_code)
+
+    def test_keyword_arg_multiples_instances(self):
+        """If multiple functions are found, suggestions should be unique."""
+        typo, sugg = 'abcdf', 'abcdef'
+        code = 'class MyClass:\n\tdef func(self, ' + sugg + '):' \
+               '\n\t\tpass\na = MyClass()\nb = MyClass()\na.func({0}=1)'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, UNEXPECTEDKWARG, "'" + sugg + "'")
+        self.runs(good_code)
+
+    def test_keyword_arg_lambda(self):
+        """Test with lambda functions (instead of usual function)."""
+        typo, sugg = 'abcdf', 'abcdef'
+        code = 'f = lambda arg1, ' + sugg + ': None\nf(42, {0}=None)'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, UNEXPECTEDKWARG, "'" + sugg + "'")
+        self.runs(good_code)
+
+    def test_keyword_arg_lambda_method(self):
+        """Test with lambda methods (instead of usual methods)."""
+        typo, sugg = 'abcdf', 'abcdef'
+        code = 'class MyClass:\n\tfunc = lambda self, ' + sugg + ': None' \
+               '\nMyClass().func({0}=1)'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.throws(bad_code, UNEXPECTEDKWARG, "'" + sugg + "'")
+        self.runs(good_code)
+
+    def test_keyword_arg_other_objects_with_name(self):
+        """Mix of previous tests but with more objects defined
+
+        Non-function object with same same as the function tested are defined
+        to ensure that things do work fine."""
+        code = 'func = "not_a_func"\nclass MyClass:\n\tdef func(self, a):' \
+               '\n\t\tpass\nMyClass().func({0}=1)'
+        bad_code, good_code = format_str(code, 'babar', 'a')
         self.throws(bad_code, UNEXPECTEDKWARG)
         self.runs(good_code)
 
