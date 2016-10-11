@@ -970,6 +970,7 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_unary_operand(self):
         """Test unary operand errors."""
+        version = (3, 0)
         ops = {
             '+{0}': '__pos__',
             '-{0}': '__neg__',
@@ -982,7 +983,12 @@ class TypeErrorTests(GetSuggestionsTests):
             for op, magic in ops.items():
                 code = op.format(obj)
                 sugg_op = sugg.format(magic) if custom else None
-                self.throws(code, BADOPERANDUNARY, sugg_op)
+                self.throws(code, ATTRIBUTEERROR, [],
+                            up_to_version(version), 'cython')
+                self.throws(code, BADOPERANDUNARY, sugg_op,
+                            from_version(version), 'cython')
+                self.throws(code, ATTRIBUTEERROR, [],
+                            ALL_VERSIONS, 'pypy')
 
     def test_len_on_iterable(self):
         """len() can't be called on iterable (weird but understandable)."""
