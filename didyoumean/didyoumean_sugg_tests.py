@@ -1140,10 +1140,11 @@ class TypeErrorTests(GetSuggestionsTests):
         self.runs(good_code)
 
     def test_keyword_arg_other_objects_with_name(self):
-        """Mix of previous tests but with more objects defined
+        """Mix of previous tests but with more objects defined.
 
         Non-function object with same same as the function tested are defined
-        to ensure that things do work fine."""
+        to ensure that things do work fine.
+        """
         code = 'func = "not_a_func"\nclass MyClass:\n\tdef func(self, a):' \
                '\n\t\tpass\nMyClass().func({0}=1)'
         bad_code, good_code = format_str(code, 'babar', 'a')
