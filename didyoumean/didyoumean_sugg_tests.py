@@ -924,6 +924,7 @@ class TypeErrorTests(GetSuggestionsTests):
         bad_code, good_code = format_str(code, typo, sugg)
         suggestion = "'function(value)'"
         # Only Python 2.7 with cpython has a different error message
+        # (leading to more suggestions based on fuzzy matches)
         version1 = (2, 7)
         version2 = (3, 0)
         self.throws(bad_code, UNSUBSCRIPTABLE, suggestion,
@@ -932,7 +933,8 @@ class TypeErrorTests(GetSuggestionsTests):
                     up_to_version(version1), 'cython')
         self.throws(bad_code, UNSUBSCRIPTABLE, suggestion,
                     from_version(version2), 'cython')
-        self.throws(bad_code, NOATTRIBUTE_TYPEERROR, suggestion,
+        self.throws(bad_code, NOATTRIBUTE_TYPEERROR,
+                    ["'__get__'", "'__getattribute__'", suggestion],
                     (version1, version2), 'cython')
         self.runs(good_code)
 
