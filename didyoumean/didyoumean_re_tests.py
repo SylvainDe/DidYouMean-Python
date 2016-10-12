@@ -9,7 +9,7 @@ NO_GROUP = ((), dict())
 # the other to ensure we do not have ambiguous/double regexp matching.
 # This cannot be activated for the time being because of the current
 # definition of ATTRIBUTEERROR_RE and UNSUBSCRIPTABLE_RE.
-CHECK_OTHERS_DONT_MATCH = False
+CHECK_OTHERS_DONT_MATCH = True
 
 
 class RegexTests(unittest2.TestCase):
@@ -124,8 +124,6 @@ class RegexTests(unittest2.TestCase):
         msgs = [
             # Python 2.6
             "'function' object is unsubscriptable",
-            # Python 2.7
-            "'function' object has no attribute '__getitem__'",
             # Python 3.2/3.3/3.4/3.5/PyPy/PyPy3
             "'function' object is not subscriptable",
         ]
