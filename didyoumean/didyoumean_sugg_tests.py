@@ -171,6 +171,7 @@ NBARGERROR = (TypeError, re.NB_ARG_RE)
 MISSINGPOSERROR = (TypeError, re.MISSING_POS_ARG_RE)
 UNHASHABLE = (TypeError, re.UNHASHABLE_RE)
 UNSUBSCRIPTABLE = (TypeError, re.UNSUBSCRIPTABLE_RE)
+NOATTRIBUTE_TYPEERROR = (TypeError, re.ATTRIBUTEERROR_RE)
 UNEXPECTEDKWARG = (TypeError, re.UNEXPECTED_KEYWORDARG_RE)
 UNEXPECTEDKWARG2 = (TypeError, re.UNEXPECTED_KEYWORDARG2_RE)
 UNEXPECTEDKWARG3 = (TypeError, re.UNEXPECTED_KEYWORDARG3_RE)
@@ -931,7 +932,7 @@ class TypeErrorTests(GetSuggestionsTests):
                     up_to_version(version1), 'cython')
         self.throws(bad_code, UNSUBSCRIPTABLE, suggestion,
                     from_version(version2), 'cython')
-        self.throws(bad_code, ATTRIBUTEERROR, suggestion,
+        self.throws(bad_code, NOATTRIBUTE_TYPEERROR, suggestion,
                     (version1, version2), 'cython')
         self.runs(good_code)
 
