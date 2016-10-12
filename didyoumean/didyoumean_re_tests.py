@@ -469,6 +469,11 @@ class RegexTests(unittest2.TestCase):
         msg = 'invalid token'
         self.re_matches(msg, re.INVALID_TOKEN_RE, NO_GROUP)
 
+    def test_max_recursion_depth(self):
+        """Test MAX_RECURSION_DEPTH_RE."""
+        msg = 'maximum recursion depth exceeded'
+        self.re_matches(msg, re.MAX_RECURSION_DEPTH_RE, NO_GROUP)
+
 if __name__ == '__main__':
     print(sys.version_info)
     unittest2.main()

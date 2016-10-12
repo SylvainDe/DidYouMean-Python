@@ -39,6 +39,11 @@ def my_generator():
         yield i
 
 
+def endlessly_recursive_func(n):
+    """Call itself recursively with no end."""
+    return endlessly_recursive_func(n-1)
+
+
 class FoobarClass():
     """Dummy class for testing purposes."""
 
@@ -229,6 +234,8 @@ NOTADIR_OS = (common.NotDirOsError, "^Not a directory$")
 ISADIR_IO = (common.IsDirIoError, "^Is a directory$")
 ISADIR_OS = (common.IsDirOsError, "^Is a directory$")
 DIRNOTEMPTY_OS = (OSError, "^Directory not empty$")
+# RuntimeError
+MAXRECURDEPTH = (RuntimeError, re.MAX_RECURSION_DEPTH_RE)
 
 
 class GetSuggestionsTests(unittest2.TestCase):
@@ -1751,6 +1758,15 @@ class ValueErrorTests(GetSuggestionsTests):
         self.runs(good_code)
         self.throws(bad_code, TIMEDATAFORMAT,
                     ['to swap value and format parameters'])
+
+
+class RuntimeErrorTests(GetSuggestionsTests):
+    """Class for tests related to RuntimeError."""
+
+    def test_max_depth(self):
+        """Reach maximum recursion depth."""
+        code = 'endlessly_recursive_func(0)'
+        self.throws(code, MAXRECURDEPTH)
 
 
 class IOErrorTests(GetSuggestionsTests):
