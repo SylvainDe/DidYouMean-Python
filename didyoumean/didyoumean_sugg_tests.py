@@ -140,6 +140,8 @@ def listify(value, default):
         value = default
     if not isinstance(value, list):
         value = [value]
+    if default:
+        assert all(v in default for v in value)
     return value
 
 
@@ -169,6 +171,7 @@ NBARGERROR = (TypeError, re.NB_ARG_RE)
 MISSINGPOSERROR = (TypeError, re.MISSING_POS_ARG_RE)
 UNHASHABLE = (TypeError, re.UNHASHABLE_RE)
 UNSUBSCRIPTABLE = (TypeError, re.UNSUBSCRIPTABLE_RE)
+NOATTRIBUTE_TYPEERROR = (TypeError, re.ATTRIBUTEERROR_RE)
 UNEXPECTEDKWARG = (TypeError, re.UNEXPECTED_KEYWORDARG_RE)
 UNEXPECTEDKWARG2 = (TypeError, re.UNEXPECTED_KEYWORDARG2_RE)
 UNEXPECTEDKWARG3 = (TypeError, re.UNEXPECTED_KEYWORDARG3_RE)
@@ -919,7 +922,20 @@ class TypeErrorTests(GetSuggestionsTests):
         typo, sugg = '[2]', '(2)'
         code = func_gen(param='a') + 'some_func{0}'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, UNSUBSCRIPTABLE, "'function(value)'")
+        suggestion = "'function(value)'"
+        # Only Python 2.7 with cpython has a different error message
+        # (leading to more suggestions based on fuzzy matches)
+        version1 = (2, 7)
+        version2 = (3, 0)
+        self.throws(bad_code, UNSUBSCRIPTABLE, suggestion,
+                    ALL_VERSIONS, 'pypy')
+        self.throws(bad_code, UNSUBSCRIPTABLE, suggestion,
+                    up_to_version(version1), 'cython')
+        self.throws(bad_code, UNSUBSCRIPTABLE, suggestion,
+                    from_version(version2), 'cython')
+        self.throws(bad_code, NOATTRIBUTE_TYPEERROR,
+                    ["'__get__'", "'__getattribute__'", suggestion],
+                    (version1, version2), 'cython')
         self.runs(good_code)
 
     def test_method_called_on_class(self):
@@ -1273,11 +1289,10 @@ class TypeErrorTests(GetSuggestionsTests):
                     from_version(version), 'pypy')
         self.throws(custom_code,
                     ATTRIBUTEERROR, [], up_to_version(version), 'cython')
-        self.throws(
-            custom_code,
-            OBJECTDOESNOTSUPPORT,
-            'implement "__getitem__" on FoobarClass',
-            from_version(version), 'cython')
+        self.throws(custom_code,
+                    OBJECTDOESNOTSUPPORT,
+                    'implement "__getitem__" on FoobarClass',
+                    from_version(version), 'cython')
 
     def test_not_callable(self):
         """Sometimes, one uses parenthesis instead of brackets."""

@@ -291,6 +291,7 @@ def suggest_name_as_special_case(name):
 
 # Functions related to AttributeError
 @register_suggestion_for(AttributeError, re.ATTRIBUTEERROR_RE)
+@register_suggestion_for(TypeError, re.ATTRIBUTEERROR_RE)
 def suggest_attribute_error(value, frame, groups):
     """Get suggestions in case of ATTRIBUTEERROR."""
     del value  # unused param
