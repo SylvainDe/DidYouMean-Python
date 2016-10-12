@@ -7,8 +7,6 @@ import sys
 NO_GROUP = ((), dict())
 # Flag used to check that a text only match the expected regexp and not
 # the other to ensure we do not have ambiguous/double regexp matching.
-# This cannot be activated for the time being because of the current
-# definition of ATTRIBUTEERROR_RE and UNSUBSCRIPTABLE_RE.
 CHECK_OTHERS_DONT_MATCH = True
 
 
