@@ -998,14 +998,9 @@ class TypeErrorTests(GetSuggestionsTests):
             sugg = 'implement "{0}" on FoobarClass'
             for op, suggestions in ops.items():
                 code = op.format(obj)
-                magic, sugg_attr = suggestions
+                magic, _ = suggestions
                 sugg_unary = sugg.format(magic) if custom else None
-                self.throws(code, ATTRIBUTEERROR, sugg_attr,
-                            up_to_version(version), 'cython')
-                self.throws(code, BADOPERANDUNARY, sugg_unary,
-                            from_version(version), 'cython')
-                self.throws(code, ATTRIBUTEERROR, sugg_attr,
-                            ALL_VERSIONS, 'pypy')
+                self.throws(code, BADOPERANDUNARY, sugg_unary)
 
     def test_len_on_iterable(self):
         """len() can't be called on iterable (weird but understandable)."""
