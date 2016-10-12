@@ -72,7 +72,9 @@ NO_SUCH_FILE_RE = r"^No such file or directory$"
 TIME_DATA_DOES_NOT_MATCH_FORMAT_RE = r"^time data " \
     r"(?P<timedata>.*) does not match format (?P<format>.*)$"
 
-ALL_REGEXPS = {k: v for k, v in dict(locals()).items() if k.endswith('_RE')}
+ALL_REGEXPS = dict((k, v)
+                   for k, v in dict(locals()).items()
+                   if k.endswith('_RE'))
 
 
 def match(pattern, string):
