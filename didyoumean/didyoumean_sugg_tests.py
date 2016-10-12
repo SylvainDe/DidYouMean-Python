@@ -984,8 +984,8 @@ class TypeErrorTests(GetSuggestionsTests):
         code1 = 'dict().update(dict())'
         self.runs(code1)
 
-    def test_unary_operand(self):
-        """Test unary operand errors."""
+    def test_unary_operand_custom(self):
+        """Test unary operand errors on custom types."""
         version = (3, 0)
         ops = {
             '+{0}': ('__pos__', "'__doc__'"),
@@ -993,14 +993,35 @@ class TypeErrorTests(GetSuggestionsTests):
             '~{0}': ('__invert__', "'__init__'"),
             'abs({0})': ('__abs__', None),
         }
-        for custom in (True, False):
-            obj = 'FoobarClass()' if custom else 'set()'
-            sugg = 'implement "{0}" on FoobarClass'
-            for op, suggestions in ops.items():
-                code = op.format(obj)
-                magic, _ = suggestions
-                sugg_unary = sugg.format(magic) if custom else None
-                self.throws(code, BADOPERANDUNARY, sugg_unary)
+        obj = 'FoobarClass()'
+        sugg = 'implement "{0}" on FoobarClass'
+        for op, suggestions in ops.items():
+            code = op.format(obj)
+            magic, sugg_attr = suggestions
+            sugg_unary = sugg.format(magic)
+            self.throws(code, ATTRIBUTEERROR, sugg_attr,
+                        up_to_version(version), 'cython')
+            self.throws(code, BADOPERANDUNARY, sugg_unary,
+                        from_version(version), 'cython')
+            self.throws(code, ATTRIBUTEERROR, sugg_attr,
+                        ALL_VERSIONS, 'pypy')
+
+    def test_unary_operand_builtin(self):
+        """Test unary operand errors on builtin types."""
+        version = (3, 0)
+        ops = {
+            '+{0}': ('__pos__', "'__doc__'"),
+            '-{0}': ('__neg__', None),
+            '~{0}': ('__invert__', "'__init__'"),
+            'abs({0})': ('__abs__', None),
+        }
+        obj = 'set()'
+        sugg = 'implement "{0}" on FoobarClass'
+        for op, suggestions in ops.items():
+            code = op.format(obj)
+            magic, sugg_attr = suggestions
+            sugg_unary = sugg.format(magic)
+            self.throws(code, BADOPERANDUNARY)
 
     def test_len_on_iterable(self):
         """len() can't be called on iterable (weird but understandable)."""
