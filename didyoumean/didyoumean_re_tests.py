@@ -384,6 +384,8 @@ class RegexTests(unittest2.TestCase):
         msgs = [
             ("bad operand type for unary ~: 'set'", ('~', 'set')),
             ("bad operand type for abs(): 'set'", ('abs()', 'set')),
+            ("unsupported operand type for unary neg: 'Foobar'",
+                ('neg', 'Foobar')),
         ]
         for msg, group in msgs:
             self.re_matches(msg, re.BAD_OPERAND_UNARY_RE, (group, dict()))

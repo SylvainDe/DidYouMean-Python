@@ -504,9 +504,12 @@ def suggest_bad_operand_for_unary(value, frame, groups):
     unary, type_str = groups
     UNARY_OPS = {
         '+': '__pos__',
+        'pos': '__pos__',
         '-': '__neg__',
+        'neg': '__neg__',
         '~': '__invert__',
         'abs()': '__abs__',
+        'abs': '__abs__',
     }
     attr = UNARY_OPS.get(unary)
     if attr is None:
