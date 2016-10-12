@@ -1000,27 +1000,21 @@ class TypeErrorTests(GetSuggestionsTests):
             magic, sugg_attr = suggestions
             sugg_unary = sugg.format(magic)
             self.throws(code, ATTRIBUTEERROR, sugg_attr,
-                        up_to_version(version), 'cython')
+                        up_to_version(version))
             self.throws(code, BADOPERANDUNARY, sugg_unary,
-                        from_version(version), 'cython')
-            self.throws(code, ATTRIBUTEERROR, sugg_attr,
-                        ALL_VERSIONS, 'pypy')
+                        from_version(version))
 
     def test_unary_operand_builtin(self):
         """Test unary operand errors on builtin types."""
-        version = (3, 0)
-        ops = {
-            '+{0}': ('__pos__', "'__doc__'"),
-            '-{0}': ('__neg__', None),
-            '~{0}': ('__invert__', "'__init__'"),
-            'abs({0})': ('__abs__', None),
-        }
+        ops = [
+            '+{0}',
+            '-{0}',
+            '~{0}',
+            'abs({0})',
+        ]
         obj = 'set()'
-        sugg = 'implement "{0}" on FoobarClass'
-        for op, suggestions in ops.items():
+        for op in ops:
             code = op.format(obj)
-            magic, sugg_attr = suggestions
-            sugg_unary = sugg.format(magic)
             self.throws(code, BADOPERANDUNARY)
 
     def test_len_on_iterable(self):
