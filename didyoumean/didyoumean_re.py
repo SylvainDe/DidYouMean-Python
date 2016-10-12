@@ -52,8 +52,8 @@ IMPORTSTAR_RE = r"^import \* (?:only allowed at module level|" \
     r"(?:)contains a nested function with free variables))$"
 UNSUPPORTED_OP_RE = r"^unsupported operand type\(s\) for (.*): " \
     r"'(\w+)' and '(\w+)'$"
-BAD_OPERAND_UNARY_RE = r"(?:bad|unsupported) operand type for " \
-    r"(?:unary )?(.*): '(.*)'"
+BAD_OPERAND_UNARY_RE = r"^(?:bad|unsupported) operand type for " \
+    r"(?:unary )?(.*): '(.*)'$"
 OBJ_DOES_NOT_SUPPORT_RE = r"^\'(\w+)\' object (?:does not|doesn't) support " \
     r"(.*)$"
 CANNOT_CONCAT_RE = r"^cannot concatenate '(\w+)' and '(\w+)' objects$"
@@ -72,6 +72,8 @@ NO_SUCH_FILE_RE = r"^No such file or directory$"
 TIME_DATA_DOES_NOT_MATCH_FORMAT_RE = r"^time data " \
     r"(?P<timedata>.*) does not match format (?P<format>.*)$"
 
+ALL_REGEXPS = {k: v for k, v in dict(locals()).items() if k.endswith('_RE')}
+
 
 def match(pattern, string):
     """Wrap function from the re module.
@@ -83,6 +85,6 @@ def match(pattern, string):
 
 
 if __name__ == '__main__':
-    for k, v in dict(locals()).items():
-        if k.endswith('_RE') and not (v.startswith('^') and v.endswith('$')):
-            print("Missing ^$ for ", k)
+    for name, val in ALL_REGEXPS.items():
+        if not (val.startswith('^') and val.endswith('$')):
+            print("Missing ^$ for ", name)

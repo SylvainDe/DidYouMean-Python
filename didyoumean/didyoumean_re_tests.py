@@ -5,6 +5,11 @@ import didyoumean_re as re
 import sys
 
 NO_GROUP = ((), dict())
+# Flag used to check that a text only match the expected regexp and not
+# the other to ensure we do not have ambiguous/double regexp matching.
+# This cannot be activated for the time being because of the current
+# definition of ATTRIBUTEERROR_RE and UNSUBSCRIPTABLE_RE.
+CHECK_OTHERS_DONT_MATCH = False
 
 
 class RegexTests(unittest2.TestCase):
@@ -22,6 +27,13 @@ class RegexTests(unittest2.TestCase):
         self.assertTrue(match)
         self.assertEqual(groups, match.groups())
         self.assertEqual(named_groups, match.groupdict())
+        for other_name, other_re in re.ALL_REGEXPS.items():
+            if other_re != regexp and CHECK_OTHERS_DONT_MATCH:
+                details = "text '%s' matches %s (on top of %s)" % \
+                        (text, other_name, regexp)
+                self.assertNotRegexpMatches(text, other_re, details)
+                no_match = re.match(other_re, text)
+                self.assertEqual(no_match, None, details)
 
     def test_unbound_assignment(self):
         """Test VARREFBEFOREASSIGN_RE."""
