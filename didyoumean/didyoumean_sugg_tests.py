@@ -1,6 +1,7 @@
 # -*- coding: utf-8
 """Unit tests for get_suggestions_for_exception."""
-from didyoumean_internal import get_suggestions_for_exception, STAND_MODULES
+from didyoumean_internal import get_suggestions_for_exception, \
+    STAND_MODULES, AVOID_REC_MESSAGE
 import didyoumean_common_tests as common
 import unittest2
 import didyoumean_re as re
@@ -37,6 +38,12 @@ def my_generator():
     """
     for i in range(5):
         yield i
+
+
+def endlessly_recursive_func(n):
+    """Call itself recursively with no end."""
+    # http://stackoverflow.com/questions/871887/using-exec-with-recursive-functions
+    return endlessly_recursive_func(n-1)
 
 
 class FoobarClass():
@@ -229,6 +236,8 @@ NOTADIR_OS = (common.NotDirOsError, "^Not a directory$")
 ISADIR_IO = (common.IsDirIoError, "^Is a directory$")
 ISADIR_OS = (common.IsDirOsError, "^Is a directory$")
 DIRNOTEMPTY_OS = (OSError, "^Directory not empty$")
+# RuntimeError
+MAXRECURDEPTH = (RuntimeError, re.MAX_RECURSION_DEPTH_RE)
 
 
 class GetSuggestionsTests(unittest2.TestCase):
@@ -1751,6 +1760,19 @@ class ValueErrorTests(GetSuggestionsTests):
         self.runs(good_code)
         self.throws(bad_code, TIMEDATAFORMAT,
                     ['to swap value and format parameters'])
+
+
+class RuntimeErrorTests(GetSuggestionsTests):
+    """Class for tests related to RuntimeError."""
+
+    def test_max_depth(self):
+        """Reach maximum recursion depth."""
+        sys.setrecursionlimit(200)
+        code = 'endlessly_recursive_func(0)'
+        self.throws(code, MAXRECURDEPTH,
+                    ["increase the limit with `sys.setrecursionlimit(limit)`"
+                        " (current value is 200)",
+                     AVOID_REC_MESSAGE])
 
 
 class IOErrorTests(GetSuggestionsTests):

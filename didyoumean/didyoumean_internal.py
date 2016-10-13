@@ -7,6 +7,7 @@ import itertools
 import inspect
 import errno
 import os
+import sys
 from collections import namedtuple
 
 
@@ -29,6 +30,11 @@ SYNONYMS_SETS = [set(['add', 'append']), set(['extend', 'update'])]
 
 #: Maximum number of files suggested
 MAX_NB_FILES = 4
+
+#: Message to suggest not using recursion
+AVOID_REC_MESSAGE = \
+    "to avoid recursion (cf " \
+    "http://neopythonic.blogspot.fr/2009/04/tail-recursion-elimination.html)"
 
 
 # Helper function for string manipulation
@@ -655,6 +661,18 @@ def suggest_memory_friendly_equi(name, objs):
     """Suggest name of a memory friendly equivalent for a function."""
     suggs = {'range': ['xrange']}
     return [quote(s) for s in suggs.get(name, []) if s in objs]
+
+
+# Functions related to RuntimeError
+@register_suggestion_for(RuntimeError, re.MAX_RECURSION_DEPTH_RE)
+def suggest_max_resursion_depth(value, frame, groups):
+    """Suggest for MAX_RECURSION_DEPTH error."""
+    # this is the real solution, make it the first suggestion
+    del value, frame, groups  # unused param
+    yield AVOID_REC_MESSAGE
+    yield "increase the limit with " \
+          "`sys.setrecursionlimit(limit)` (current value" \
+          " is %d)" % sys.getrecursionlimit()
 
 
 # Functions related to IOError/OSError
