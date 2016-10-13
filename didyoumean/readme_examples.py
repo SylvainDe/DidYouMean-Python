@@ -111,7 +111,12 @@ def main():
             (1, "Suggestion for tilde/variable expansions"): [
                 "os.listdir('~')",
             ]
-        }
+        },
+        (10, RuntimeError): {
+            (1, "Suggestion to avoid reaching maximum recursion depth"): [
+                "global rec\ndef rec(n): return rec(n-1)\nrec(0)"
+            ],
+        },
     }
 
     str_func = repr  # could be str or repr

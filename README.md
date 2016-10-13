@@ -272,6 +272,17 @@ os.listdir('~')
 #>>> Before: OSError(2, 'No such file or directory')
 #>>> After: OSError(2, "No such file or directory. Did you mean '/home/user' (calling os.path.expanduser)?")
 ```
+### RuntimeError
+
+##### Suggestion to avoid reaching maximum recursion depth
+
+```python
+global rec
+def rec(n): return rec(n-1)
+rec(0)
+#>>> Before: RuntimeError('maximum recursion depth exceeded',)
+#>>> After: RuntimeError('maximum recursion depth exceeded. Did you mean to avoid recursion (cf http://neopythonic.blogspot.fr/2009/04/tail-recursion-elimination.html), increase the limit with `sys.setrecursionlimit(limit)` (current value is 1000)?',)
+```
 
 
 Usage
