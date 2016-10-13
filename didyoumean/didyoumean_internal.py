@@ -668,6 +668,7 @@ def suggest_memory_friendly_equi(name, objs):
 def suggest_max_resursion_depth(value, frame, groups):
     """Suggest for MAX_RECURSION_DEPTH error."""
     # this is the real solution, make it the first suggestion
+    del value, frame, groups  # unused param
     yield AVOID_REC_MESSAGE
     yield "increase the limit with " \
           "`sys.setrecursionlimit(limit)` (current value" \
