@@ -276,7 +276,7 @@ class GetSuggestionsTests(unittest2.TestCase):
         if version_range is None:
             version_range = ALL_VERSIONS
         interpreters = listify(interpreters, INTERPRETERS)
-        sugg = listify(sugg, [])
+        sugg = sorted(listify(sugg, []))
         if version_in_range(version_range) and interpreter_in(interpreters):
             error_type, error_msg = error_info
             type_caught, value, traceback = get_exception(code)

@@ -31,12 +31,14 @@ class ApiTest(TestWithStringFunction):
         with and without the API.
         """
         type1, value1, _ = get_exception(code)
-        self.assertTrue(isinstance(value1, type1))
-        self.assertEqual(type_arg, type1)
+        details1 = "%s %s" % (str(type1), str(value1))
+        self.assertTrue(isinstance(value1, type1), details1)
+        self.assertEqual(type_arg, type1, details1)
         str1, repr1 = str(value1), repr(value1)
         type2, value2, _ = self.get_exc_with_api(code)
-        self.assertTrue(isinstance(value2, type2))
-        self.assertEqual(type_arg, type2)
+        details2 = "%s %s" % (str(type2), str(value2))
+        self.assertTrue(isinstance(value2, type2), details2)
+        self.assertEqual(type_arg, type2, details2)
         str2, repr2 = str(value2), repr(value2)
         return (str1, repr1, str2, repr2)
 
@@ -148,7 +150,22 @@ class HookTest(ApiTest):
     pass  # Can't write tests as the hook seems to be ignored.
 
 
-class ExceptHookTest(unittest2.TestCase, HookTest):
+class NotATest(object):
+    """Dummy subclass to inherit from instead of unittest2.TestCase.
+
+    The tests from ExceptHookTest are not very relevant most of the
+    time and they flood the output because of the dodgy things we do
+    with sys.excepthook. Most of the time, it is better not to run them
+    but I still want to keep them for the time being. The solution is
+    to be able to make this easily configurable by having the dependency
+    over unittest2.TestCase optional with a simple test:
+        class MyTest(unittest2.TestCase if <cond> else NotRunTest, ...)
+    """
+
+    pass
+
+
+class ExceptHookTest(unittest2.TestCase if True else NotATest, HookTest):
     """Tests about the didyoumean excepthook."""
 
     def run_with_api(self, code):
