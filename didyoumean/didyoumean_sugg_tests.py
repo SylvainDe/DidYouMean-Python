@@ -993,6 +993,14 @@ class TypeErrorTests(GetSuggestionsTests):
         code1 = 'dict().update(dict())'
         self.runs(code1)
 
+    def test_unsupported_operand_caret(self):
+        """Use '**' for power, not '^'."""
+        # NICE_TO_HAVE
+        code = '3.5 {0} 2'
+        bad_code, good_code = format_str(code, '^', '**')
+        self.runs(good_code)
+        self.throws(bad_code, UNSUPPORTEDOPERAND)
+
     def test_unary_operand_custom(self):
         """Test unary operand errors on custom types."""
         version = (3, 0)
