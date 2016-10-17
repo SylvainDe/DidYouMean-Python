@@ -683,7 +683,7 @@ class UnboundLocalErrorTests(GetSuggestionsTests):
         self.runs(good_code)  # this is to be run afterward :-/
 
     def test_unbound_nonlocal(self):
-        "Shoud be nonlocal nb."""
+        """Shoud be nonlocal nb."""
         # NICE_TO_HAVE
         code = 'def foo():\n\tnb = 0\n\tdef bar():' \
                '\n\t\t{0}\n\t\tnb +=1\n\tbar()\nfoo()'
@@ -695,7 +695,7 @@ class UnboundLocalErrorTests(GetSuggestionsTests):
         self.throws(good_code, INVALIDSYNTAX, [], up_to_version(version))
 
     def test_unbound_nonlocal_and_global(self):
-        "Shoud be nonlocal nb or global."""
+        """Shoud be nonlocal nb or global."""
         # NICE_TO_HAVE
         code = 'nb = 1\ndef foo():\n\tnb = 0\n\tdef bar():' \
                '\n\t\t{0}\n\t\tnb +=1\n\tbar()\nfoo()'
