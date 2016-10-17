@@ -218,6 +218,7 @@ UNKNOWN_ATTRIBUTEERROR = (AttributeError, None)
 INVALIDSYNTAX = (SyntaxError, re.INVALID_SYNTAX_RE)
 INVALIDTOKEN = (SyntaxError, re.INVALID_TOKEN_RE)
 NOBINDING = (SyntaxError, re.NO_BINDING_NONLOCAL_RE)
+NONLOCALMODULE = (SyntaxError, re.NONLOCAL_AT_MODULE_RE)
 OUTSIDEFUNC = (SyntaxError, re.OUTSIDE_FUNCTION_RE)
 MISSINGPARENT = (SyntaxError, re.MISSING_PARENT_RE)
 INVALIDCOMP = (SyntaxError, re.INVALID_COMP_RE)
@@ -675,11 +676,37 @@ class UnboundLocalErrorTests(GetSuggestionsTests):
     def test_unbound_global(self):
         """Should be global nb."""
         # NICE_TO_HAVE
-        code = 'nb = 0\ndef func():\n\t{0}nb +=1\nfunc()'
+        code = 'nb = 0\ndef func():\n\t{0}\n\tnb +=1\nfunc()'
         sugg = 'global nb'
-        bad_code, good_code = format_str(code, "", sugg + "\n\t")
+        bad_code, good_code = format_str(code, "", sugg)
         self.throws(bad_code, UNBOUNDLOCAL)
         self.runs(good_code)  # this is to be run afterward :-/
+
+    def test_unbound_nonlocal(self):
+        "Shoud be nonlocal nb."""
+        # NICE_TO_HAVE
+        code = 'def foo():\n\tnb = 0\n\tdef bar():' \
+               '\n\t\t{0}\n\t\tnb +=1\n\tbar()\nfoo()'
+        sugg = 'nonlocal nb'
+        bad_code, good_code = format_str(code, "", sugg)
+        self.throws(bad_code, UNBOUNDLOCAL)
+        version = (3, 0)
+        self.runs(good_code, from_version(version))
+        self.throws(good_code, INVALIDSYNTAX, [], up_to_version(version))
+
+    def test_unbound_nonlocal_and_global(self):
+        "Shoud be nonlocal nb or global."""
+        # NICE_TO_HAVE
+        code = 'nb = 1\ndef foo():\n\tnb = 0\n\tdef bar():' \
+               '\n\t\t{0}\n\t\tnb +=1\n\tbar()\nfoo()'
+        sugg1, sugg2 = 'nonlocal nb', 'global nb'
+        bad_code, good_code1, good_code2 = format_str(code, "", sugg1, sugg2)
+        self.throws(bad_code, UNBOUNDLOCAL)
+        version = (3, 0)
+        self.runs(good_code1, from_version(version))
+        self.runs(good_code2, from_version(version))
+        self.throws(good_code1, INVALIDSYNTAX, [], up_to_version(version))
+        self.throws(good_code2, INVALIDSYNTAX, [], up_to_version(version))
 
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""
@@ -1664,6 +1691,13 @@ class SyntaxErrorTests(GetSuggestionsTests):
         version = (3, 0)
         code = 'foo = 1\ndef func():\n\tdef nested():\n\t\tnonlocal foo'
         self.throws(code, NOBINDING, [], from_version(version))
+        self.throws(code, INVALIDSYNTAX, [], up_to_version(version))
+
+    def test_nonlocal4(self):
+        """nonlocal must be used in function."""
+        version = (3, 0)
+        code = 'nonlocal foo'
+        self.throws(code, NONLOCALMODULE, [], from_version(version))
         self.throws(code, INVALIDSYNTAX, [], up_to_version(version))
 
     def test_octal_literal(self):

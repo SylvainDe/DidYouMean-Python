@@ -50,7 +50,9 @@ def get_close_matches(word, possibilities):
     Wrapper around difflib.get_close_matches() to be able to
     change default values or implementation details easily.
     """
-    return difflib.get_close_matches(word, possibilities, 3, 0.7)
+    return [w
+            for w in difflib.get_close_matches(word, possibilities, 3, 0.7)
+            if w != word]
 
 
 def get_suggestion_string(sugg):
