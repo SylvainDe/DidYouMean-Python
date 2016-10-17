@@ -1687,13 +1687,22 @@ class SyntaxErrorTests(GetSuggestionsTests):
 
     def test_nonlocal3(self):
         """nonlocal must be used only when binding to non-global exists."""
-        # NICE_TO_HAVE
+        # just a way to say that this_is_a_global_list is needed in globals
+        name = 'this_is_a_global_list'
+        this_is_a_global_list
+        self.assertFalse(name in locals())
+        self.assertTrue(name in globals())
         version = (3, 0)
-        code = 'foo = 1\ndef func():\n\tdef nested():\n\t\tnonlocal foo'
-        self.throws(code, NOBINDING, [], from_version(version))
-        self.throws(code, INVALIDSYNTAX, [], up_to_version(version))
+        code = 'def func():\n\tdef nested():\n\t\t{0} ' + name
+        typo, sugg = 'nonlocal', 'global'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.runs(good_code)
+        self.throws(bad_code,
+                    NOBINDING, "'{0} {1}'".format(sugg, name),
+                    from_version(version))
+        self.throws(bad_code, INVALIDSYNTAX, [], up_to_version(version))
 
-    def test_nonlocal4(self):
+    def test_nonlocal_at_module_level(self):
         """nonlocal must be used in function."""
         version1 = (2, 7)
         version2 = (3, 0)

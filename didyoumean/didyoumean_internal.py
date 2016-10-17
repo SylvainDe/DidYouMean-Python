@@ -618,6 +618,17 @@ def suggest_invalid_comp(value, frame, groups):
     yield quote('!=')
 
 
+@register_suggestion_for(SyntaxError, re.NO_BINDING_NONLOCAL_RE)
+def suggest_no_binding_for_nonlocal(value, frame, groups):
+    """Get suggestions in case of NO BINDING FOR NONLOCAL."""
+    del value  # unused param
+    name, = groups
+    objs = get_objects_in_frame(frame).get(name, [])
+    for obj, scope in objs:
+        if scope == 'global':
+            yield quote('global ' + name)
+
+
 @register_suggestion_for(SyntaxError, re.INVALID_SYNTAX_RE)
 def suggest_invalid_syntax(value, frame, groups):
     """Get suggestions in case of INVALID_SYNTAX error."""
