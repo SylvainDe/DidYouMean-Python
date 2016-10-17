@@ -219,6 +219,7 @@ INVALIDSYNTAX = (SyntaxError, re.INVALID_SYNTAX_RE)
 INVALIDTOKEN = (SyntaxError, re.INVALID_TOKEN_RE)
 NOBINDING = (SyntaxError, re.NO_BINDING_NONLOCAL_RE)
 NONLOCALMODULE = (SyntaxError, re.NONLOCAL_AT_MODULE_RE)
+UNEXPECTED_OEF = (SyntaxError, re.UNEXPECTED_EOF_RE)
 OUTSIDEFUNC = (SyntaxError, re.OUTSIDE_FUNCTION_RE)
 MISSINGPARENT = (SyntaxError, re.MISSING_PARENT_RE)
 INVALIDCOMP = (SyntaxError, re.INVALID_COMP_RE)
@@ -702,11 +703,10 @@ class UnboundLocalErrorTests(GetSuggestionsTests):
         sugg1, sugg2 = 'nonlocal nb', 'global nb'
         bad_code, good_code1, good_code2 = format_str(code, "", sugg1, sugg2)
         self.throws(bad_code, UNBOUNDLOCAL)
+        self.runs(good_code2)
         version = (3, 0)
         self.runs(good_code1, from_version(version))
-        self.runs(good_code2, from_version(version))
         self.throws(good_code1, INVALIDSYNTAX, [], up_to_version(version))
-        self.throws(good_code2, INVALIDSYNTAX, [], up_to_version(version))
 
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""
@@ -1695,10 +1695,12 @@ class SyntaxErrorTests(GetSuggestionsTests):
 
     def test_nonlocal4(self):
         """nonlocal must be used in function."""
-        version = (3, 0)
+        version1 = (2, 7)
+        version2 = (3, 0)
         code = 'nonlocal foo'
-        self.throws(code, NONLOCALMODULE, [], from_version(version))
-        self.throws(code, INVALIDSYNTAX, [], up_to_version(version))
+        self.throws(code, UNEXPECTED_OEF, [], up_to_version(version1))
+        self.throws(code, INVALIDSYNTAX, [], (version1, version2))
+        self.throws(code, NONLOCALMODULE, [], from_version(version1))
 
     def test_octal_literal(self):
         """Syntax for octal liberals has changed."""
