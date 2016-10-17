@@ -1700,7 +1700,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         code = 'nonlocal foo'
         self.throws(code, UNEXPECTED_OEF, [], up_to_version(version1))
         self.throws(code, INVALIDSYNTAX, [], (version1, version2))
-        self.throws(code, NONLOCALMODULE, [], from_version(version1))
+        self.throws(code, NONLOCALMODULE, [], from_version(version2))
 
     def test_octal_literal(self):
         """Syntax for octal liberals has changed."""
