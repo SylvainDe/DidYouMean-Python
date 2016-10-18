@@ -158,7 +158,10 @@ def get_objects_in_frame(frame):
     #      access to all visible scopes."
     # https://www.python.org/dev/peps/pep-3104/ PEP 3104 Access to Names in
     #      Outer Scopes
-    return merge_dict(  # LEGB Rule (missing E atm - not sure if a problem)
+    # LEGB Rule : missing E (enclosing) at the moment.
+    # I'm not sure if it can be fixed but if it can, suggestions
+    # tagged TODO_ENCLOSING could be implemented (and tested).
+    return merge_dict(
         add_scope_to_dict(frame.f_locals, 'local'),
         add_scope_to_dict(frame.f_globals, 'global'),
         add_scope_to_dict(frame.f_builtins, 'builtin'),
@@ -626,6 +629,7 @@ def suggest_no_binding_for_nonlocal(value, frame, groups):
     objs = get_objects_in_frame(frame).get(name, [])
     for obj, scope in objs:
         if scope == 'global':
+            # TODO_ENCLOSING: suggest close matches for enclosing
             yield quote('global ' + name)
 
 

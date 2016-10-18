@@ -1702,6 +1702,18 @@ class SyntaxErrorTests(GetSuggestionsTests):
                     from_version(version))
         self.throws(bad_code, INVALIDSYNTAX, [], up_to_version(version))
 
+    def test_nonlocal4(self):
+        """suggest close matches to variable name."""
+        # NICE_TO_HAVE (needs access to variable in enclosing scope)
+        version = (3, 0)
+        code = 'def func():\n\tfoo = 1\n\tdef nested():\n\t\tnonlocal {0}'
+        typo, sugg = 'foob', 'foo'
+        bad_code, good_code = format_str(code, typo, sugg)
+        self.runs(good_code, from_version(version))
+        self.throws(good_code, INVALIDSYNTAX, [], up_to_version(version))
+        self.throws(bad_code, NOBINDING, [], from_version(version))
+        self.throws(bad_code, INVALIDSYNTAX, [], up_to_version(version))
+
     def test_nonlocal_at_module_level(self):
         """nonlocal must be used in function."""
         version1 = (2, 7)
