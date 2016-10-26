@@ -193,6 +193,7 @@ DESCREXPECT = (TypeError, re.DESCRIPT_REQUIRES_TYPE_RE)
 ARGNOTITERABLE = (TypeError, re.ARG_NOT_ITERABLE_RE)
 MUSTCALLWITHINST = (TypeError, re.MUST_BE_CALLED_WITH_INST_RE)
 OBJECTHASNOFUNC = (TypeError, re.OBJECT_HAS_NO_FUNC_RE)
+EXCMUSTDERIVE = (TypeError, re.EXC_MUST_DERIVE_FROM_RE)
 UNKNOWN_TYPEERROR = (TypeError, None)
 # ImportError for ImportErrorTests
 NOMODULE = (ImportError, re.NOMODULE_RE)
@@ -1333,6 +1334,11 @@ class TypeErrorTests(GetSuggestionsTests):
             self.runs(ex + getitem)
         for ex in ['1', 'set()']:
             self.throws(ex + typo, NOTCALLABLE)
+
+    def test_exc_must_derive_from(self):
+        """Test when a non-exc object is raised."""
+        code = 'raise "ExceptionString"'
+        self.throws(code, EXCMUSTDERIVE)
 
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""
