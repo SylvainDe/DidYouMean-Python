@@ -502,7 +502,8 @@ class RegexTests(unittest2.TestCase):
         """Test EXC_MUST_DERIVE_FROM_RE."""
         msgs = [
             # Python 2.7
-            "exceptions must be old-style classes or derived from BaseException, not NoneType",
+            "exceptions must be old-style classes or derived from "
+            "BaseException, not NoneType",
             # Python 3.3 / 3.4
             "exceptions must derive from BaseException",
         ]
