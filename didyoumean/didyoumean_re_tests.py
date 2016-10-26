@@ -5,9 +5,19 @@ import didyoumean_re as re
 import sys
 
 NO_GROUP = ((), dict())
+# Various technical flags to check more that meet the eyes in tests
 # Flag used to check that a text only match the expected regexp and not
 # the other to ensure we do not have ambiguous/double regexp matching.
 CHECK_OTHERS_DONT_MATCH = True
+# Flag to check that the regexp provided does correspond to a regexp
+# listed in re.ALL_REGEXPS
+CHECK_RE_LISTED = True
+# Flag to check that the name used for the regexp in re.ALL_REGEXPS
+# does match the naming convention
+CHECK_RE_NAME = True
+# Flag to check that the regex does match a few conventions such as:
+# stars with ^, ends with $.
+CHECK_RE_VALUE = True
 
 
 class RegexTests(unittest2.TestCase):
@@ -25,13 +35,31 @@ class RegexTests(unittest2.TestCase):
         self.assertTrue(match)
         self.assertEqual(groups, match.groups())
         self.assertEqual(named_groups, match.groupdict())
+        self.check_more_about_re(text, regexp)
+
+    def check_more_about_re(self, text, regexp):
+        """Check various properties about the regexp.
+
+        Properties checked are configurable via global constants. These
+        properties are not stricly speaking required but they help to
+        detect potential issues much more quickly."""
+        if CHECK_RE_VALUE:
+            self.assertTrue(regexp.startswith('^'))
+            self.assertTrue(regexp.endswith('$'))
+        found = False
         for other_name, other_re in re.ALL_REGEXPS.items():
-            if other_re != regexp and CHECK_OTHERS_DONT_MATCH:
+            if other_re == regexp:
+                found = True
+                if CHECK_RE_NAME:
+                    self.assertTrue(other_name.endswith('_RE'))
+            elif CHECK_OTHERS_DONT_MATCH:
                 details = "text '%s' matches %s (on top of %s)" % \
                         (text, other_name, regexp)
                 self.assertNotRegexpMatches(text, other_re, details)
                 no_match = re.match(other_re, text)
                 self.assertEqual(no_match, None, details)
+        if CHECK_RE_LISTED:
+            self.assertTrue(found)
 
     def test_unbound_assignment(self):
         """Test VARREFBEFOREASSIGN_RE."""
