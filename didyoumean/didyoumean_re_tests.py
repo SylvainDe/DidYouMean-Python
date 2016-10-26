@@ -42,7 +42,8 @@ class RegexTests(unittest2.TestCase):
 
         Properties checked are configurable via global constants. These
         properties are not stricly speaking required but they help to
-        detect potential issues much more quickly."""
+        detect potential issues much more quickly.
+        """
         if CHECK_RE_VALUE:
             self.assertTrue(regexp.startswith('^'))
             self.assertTrue(regexp.endswith('$'))
