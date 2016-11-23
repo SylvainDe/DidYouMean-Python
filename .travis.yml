@@ -5,12 +5,15 @@ python:
   - "3.2"
   - "3.3"
   - "3.4"
+  - "3.5"
   - "3.5-dev"
   - "3.5.0b2"
   - "3.5.0b3"
+  - "3.6.0b4"
   - "nightly"
   - "pypy"
   - "pypy3"
+  - "pypy-5.3.1"
 
 install:
   - pip install --upgrade pep8
