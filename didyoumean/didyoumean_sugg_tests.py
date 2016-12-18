@@ -238,6 +238,9 @@ ISADIR_OS = (common.IsDirOsError, "^Is a directory$")
 DIRNOTEMPTY_OS = (OSError, "^Directory not empty$")
 # RuntimeError
 MAXRECURDEPTH = (RuntimeError, re.MAX_RECURSION_DEPTH_RE)
+DICTSIZECHANGEDDURINGITER = (
+    RuntimeError,
+    "dictionary changed size during iteration")
 
 
 class GetSuggestionsTests(unittest2.TestCase):
@@ -1786,6 +1789,14 @@ class RuntimeErrorTests(GetSuggestionsTests):
                     ["increase the limit with `sys.setrecursionlimit(limit)`"
                         " (current value is 200)",
                      AVOID_REC_MESSAGE])
+
+    def test_dict_size_changed_during_iter(self):
+        """Test size change during iteration."""
+        # NICE_TO_HAVE (along with same tests/suggestions for
+        # other containers)
+        code = 'd = dict(enumerate("notimportant"))' \
+            '\nfor e in d:\n\td.pop(e)'
+        self.throws(code, DICTSIZECHANGEDDURINGITER)
 
 
 class IOErrorTests(GetSuggestionsTests):
