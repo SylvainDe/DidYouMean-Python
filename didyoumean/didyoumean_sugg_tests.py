@@ -1306,7 +1306,7 @@ class TypeErrorTests(GetSuggestionsTests):
             format_str(code, '"a_string"', "set()", "FoobarClass()")
         self.runs(good_code)
         sugg_for_iterable = 'convert to list first or use the iterator ' \
-                'protocol to get the different elements'
+            'protocol to get the different elements'
         self.throws(set_code,
                     OBJECTDOESNOTSUPPORT,
                     sugg_for_iterable, ALL_VERSIONS, 'cython')
