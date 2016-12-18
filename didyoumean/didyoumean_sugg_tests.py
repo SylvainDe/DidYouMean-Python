@@ -1303,11 +1303,16 @@ class TypeErrorTests(GetSuggestionsTests):
         version = (3, 0)
         code = "{0}[0]"
         good_code, set_code, custom_code = \
-            format_str(code, '"a"', "set()", "FoobarClass()")
+            format_str(code, '"a_string"', "set()", "FoobarClass()")
         self.runs(good_code)
-        self.throws(set_code, OBJECTDOESNOTSUPPORT, [], ALL_VERSIONS, 'cython')
+        sugg_for_iterable = 'convert to list first or use the iterator ' \
+                'protocol to get the different elements'
         self.throws(set_code,
-                    UNSUBSCRIPTABLE, [], ALL_VERSIONS, 'pypy')
+                    OBJECTDOESNOTSUPPORT,
+                    sugg_for_iterable, ALL_VERSIONS, 'cython')
+        self.throws(set_code,
+                    UNSUBSCRIPTABLE,
+                    sugg_for_iterable, ALL_VERSIONS, 'pypy')
         self.throws(custom_code,
                     ATTRIBUTEERROR, [], up_to_version(version), 'pypy')
         self.throws(custom_code,

@@ -365,6 +365,9 @@ def suggest_attribute_alternative(attribute, type_str, attributes):
     elif attribute == '__getitem__':
         if '__call__' in attributes:
             yield quote(type_str + '(value)')
+        if is_iterable:
+            yield 'convert to list first or use the iterator protocol to ' \
+                    'get the different elements'
     elif attribute == '__call__':
         if '__getitem__' in attributes:
             yield quote(type_str + '[value]')
