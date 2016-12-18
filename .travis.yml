@@ -9,6 +9,7 @@ python:
   - "3.5-dev"
   - "3.5.0b2"
   - "3.5.0b3"
+  - "3.6-dev"
   - "nightly"
   - "pypy"
   - "pypy3"
