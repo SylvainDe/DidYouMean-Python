@@ -28,22 +28,8 @@ The logic adding suggestions can be invoked in different ways :
 
  - a function decorator `@didyoumean_decorator`.
 
-Examples to be added.
+Examples to be added (once the whole project is easily pip-installable).
 
-
-See also :
-
- - [PEP 473 :  Adding structured data to built-in exceptions](http://legacy.python.org/dev/peps/pep-0473/).
-
- - [dutc/didyoumean](https://github.com/dutc/didyoumean) : a quite similar project developed in pretty much the same time. A few differences though : written in C, works only for AttributeError, etc.
-
- - [Did You Mean in Perl](http://perltricks.com/article/122/2014/10/31/Implementing-Did-You-Mean-in-Perl)
-
- - [TheF*ck](https://github.com/nvbn/thefuck) : Correct and execute your previous shell command.
-
- - [PyDidYouMean](https://github.com/asweigart/pydidyoumean) : Improve "file/command not found" errors with suggestions.
-
- - [danrobinson/tracestack](https://github.com/danrobinson/tracestack) : Search your Python error messages on the web.
 
 
 Example
@@ -308,6 +294,28 @@ Implementation
 
 All external APIs (decorator, hook, etc) use the same logic behind the scene. It works in a pretty simple way : when an exception happens, we try to get the relevant information out of the error message and of the backtrace to find the most relevant suggestions. To filter the best suggestions out of everything in case of fuzzy match, I am currently using ```difflib```.
 
+
+See also (similar projects/ideas)
+---------------------------------
+
+ - "Did you mean" for Ruby (links above)
+
+ - [PEP 473 :  Adding structured data to built-in exceptions](http://legacy.python.org/dev/peps/pep-0473/).
+
+ - [dutc/didyoumean](https://github.com/dutc/didyoumean) : a quite similar project developed in pretty much the same time. A few differences though : written in C, works only for AttributeError, etc.
+
+ - [Did You Mean in Perl](http://perltricks.com/article/122/2014/10/31/Implementing-Did-You-Mean-in-Perl)
+
+ - [Commit in iPython](https://github.com/ipython/ipython/pull/9073/files) to add suggestions in case of errors
+
+ - Ideas from the Python Ideas mailing list : ["Improve error message when missing 'self' in method definition"](https://mail.python.org/pipermail/python-ideas/2016-October/042672.html), "Better error messages" [part 1](https://mail.python.org/pipermail/python-ideas/2016-November/043848.html) and [part 2](https://mail.python.org/pipermail/python-ideas/2016-December/043910.html)
+ - [TheF*ck](https://github.com/nvbn/thefuck) : Correct and execute your previous shell command.
+
+ - [PyDidYouMean](https://github.com/asweigart/pydidyoumean) : Improve "file/command not found" errors with suggestions.
+
+ - [danrobinson/tracestack](https://github.com/danrobinson/tracestack) : Search your Python error messages on the web.
+
+ - In [Raymond Hettinger's PyconCA keynote](https://www.youtube.com/watch?v=-TdrFjDJn5E), the part about the `hint` builtin (at 14 minutes) looks a lot like `didyoumean_postmortem`.
 
 Contributing
 ------------
