@@ -926,8 +926,13 @@ class TypeErrorTests(GetSuggestionsTests):
     """Class for tests related to TypeError."""
 
     def test_unhashable(self):
-        """Test that other errors do not crash."""
-        self.throws('dict()[list()] = 1', UNHASHABLE)
+        """Test for UNHASHABLE exception."""
+        # NICE_TO_HAVE : suggest hashable equivalent
+        self.throws('s = set([list()])', UNHASHABLE)
+        self.throws('s = set([dict()])', UNHASHABLE)
+        self.throws('s = set([set()])', UNHASHABLE)
+        self.runs('s = set([tuple()])')
+        self.runs('s = set([frozenset()])')
 
     def test_not_sub(self):
         """Should be function call, not [] operator."""
