@@ -511,7 +511,9 @@ class RegexTests(unittest2.TestCase):
         }
         for name, msg in msgs.items():
             groups = (name, )
-            self.re_matches(msg, re.SIZE_CHANGED_DURING_ITER_RE, (groups, dict()))
+            self.re_matches(msg,
+                            re.SIZE_CHANGED_DURING_ITER_RE,
+                            (groups, dict()))
 
 if __name__ == '__main__':
     print(sys.version_info)
