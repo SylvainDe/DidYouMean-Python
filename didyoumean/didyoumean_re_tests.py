@@ -503,6 +503,16 @@ class RegexTests(unittest2.TestCase):
         msg = 'maximum recursion depth exceeded'
         self.re_matches(msg, re.MAX_RECURSION_DEPTH_RE, NO_GROUP)
 
+    def test_size_changed_during_iter(self):
+        """Test SIZE_CHANGED_DURING_ITER_RE."""
+        msgs = {
+            "Set": "Set changed size during iteration",
+            "dictionnary": "dictionnary changed size during iteration",
+        }
+        for name, msg in msgs.items():
+            groups = (name, )
+            self.re_matches(msg, re.SIZE_CHANGED_DURING_ITER_RE, (groups, dict()))
+
 if __name__ == '__main__':
     print(sys.version_info)
     unittest2.main()

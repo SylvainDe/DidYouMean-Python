@@ -238,9 +238,7 @@ ISADIR_OS = (common.IsDirOsError, "^Is a directory$")
 DIRNOTEMPTY_OS = (OSError, "^Directory not empty$")
 # RuntimeError
 MAXRECURDEPTH = (RuntimeError, re.MAX_RECURSION_DEPTH_RE)
-DICTSIZECHANGEDDURINGITER = (
-    RuntimeError,
-    "dictionary changed size during iteration")
+SIZECHANGEDDURINGITER = (RuntimeError, re.SIZE_CHANGED_DURING_ITER_RE)
 
 
 class GetSuggestionsTests(unittest2.TestCase):
@@ -1797,11 +1795,21 @@ class RuntimeErrorTests(GetSuggestionsTests):
 
     def test_dict_size_changed_during_iter(self):
         """Test size change during iteration."""
-        # NICE_TO_HAVE (along with same tests/suggestions for
-        # other containers)
+        # NICE_TO_HAVE
         code = 'd = dict(enumerate("notimportant"))' \
             '\nfor e in d:\n\td.pop(e)'
-        self.throws(code, DICTSIZECHANGEDDURINGITER)
+        self.throws(code, SIZECHANGEDDURINGITER)
+
+    def test_set_changed_size_during_iter(self):
+        # NICE_TO_HAVE
+        code = 's = set("notimportant")' \
+            '\nfor e in s:\n\ts.pop()'
+        self.throws(code, SIZECHANGEDDURINGITER)
+
+    def test_dequeue_changed_during_iter(self):
+        # NICE_TO_HAVE
+        # "deque mutated during iteration"
+        pass
 
 
 class IOErrorTests(GetSuggestionsTests):

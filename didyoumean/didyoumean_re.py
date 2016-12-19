@@ -72,6 +72,7 @@ NO_SUCH_FILE_RE = r"^No such file or directory$"
 TIME_DATA_DOES_NOT_MATCH_FORMAT_RE = r"^time data " \
     r"(?P<timedata>.*) does not match format (?P<format>.*)$"
 MAX_RECURSION_DEPTH_RE = r"^maximum recursion depth exceeded$"
+SIZE_CHANGED_DURING_ITER_RE = r"^(\w+) changed size during iteration$"
 
 ALL_REGEXPS = dict((k, v)
                    for k, v in dict(locals()).items()
