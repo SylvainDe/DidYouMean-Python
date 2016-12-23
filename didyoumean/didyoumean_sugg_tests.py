@@ -1702,7 +1702,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         self.runs(code, from_version(version))
 
     def test_fstring(self):
-        """Fstrings (see PEP 498) appeared in Python 3.6."""
+        """Fstring (see PEP 498) appeared in Python 3.6."""
         # NICE_TO_HAVE
         version = (3, 6)
         code = 'f"toto"'
