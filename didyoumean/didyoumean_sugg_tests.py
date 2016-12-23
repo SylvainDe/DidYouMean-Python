@@ -1701,6 +1701,14 @@ class SyntaxErrorTests(GetSuggestionsTests):
         self.throws(code, INVALIDSYNTAX, [], up_to_version(version))
         self.runs(code, from_version(version))
 
+    def test_fstring(self):
+        """Fstrings (see PEP 498) appeared in Python 3.6."""
+        # NICE_TO_HAVE
+        version = (3, 6)
+        code = 'f"toto"'
+        self.throws(code, INVALIDSYNTAX, [], up_to_version(version))
+        self.runs(code, from_version(version))
+
 
 class MemoryErrorTests(GetSuggestionsTests):
     """Class for tests related to MemoryError."""
