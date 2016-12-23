@@ -889,16 +889,18 @@ class AttributeErrorTests(GetSuggestionsTests):
     def test_moved_between_str_string(self):
         """Some methods have been moved from string to str."""
         # NICE_TO_HAVE
-        version = (3, 0)
+        version1 = (3, 0)
+        version2 = (3, 5)
         code = 'import string\n{0}.maketrans'
         code_str, code_string = format_str(code, 'str', 'string')
         code_str2 = 'str.maketrans'  # No 'string' import
-        self.throws(code_str, ATTRIBUTEERROR, [], up_to_version(version))
-        self.throws(code_str2, ATTRIBUTEERROR, [], up_to_version(version))
-        self.runs(code_string, up_to_version(version))
-        self.throws(code_string, ATTRIBUTEERROR, [], from_version(version))
-        self.runs(code_str, from_version(version))
-        self.runs(code_str2, from_version(version))
+        self.throws(code_str, ATTRIBUTEERROR, [], up_to_version(version1))
+        self.throws(code_str2, ATTRIBUTEERROR, [], up_to_version(version1))
+        self.runs(code_string, up_to_version(version1))
+        self.throws(code_string, ATTRIBUTEERROR, [], (version1, version2))
+        self.throws(code_string, MODATTRIBUTEERROR, [], from_version(version2))
+        self.runs(code_str, from_version(version1))
+        self.runs(code_str2, from_version(version1))
 
     def test_join(self):
         """Test what happens when join is used incorrectly.
