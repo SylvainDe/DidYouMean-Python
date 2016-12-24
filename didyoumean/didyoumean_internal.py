@@ -11,8 +11,15 @@ import sys
 from collections import namedtuple
 
 
-#: Standard modules we'll consider while searching for undefined values
-# To be completed
+#: Standard modules we'll consider while searching for symbols, for instance:
+#  - NameError and the name is an attribute of a std (imported or not) module
+#  - NameError and the name is the name of a standard (non imported) module
+#  - ImportError and the name looks like a standard (imported or not) module
+#  - TODO: AttributeError and the attribute is the one of a module
+# Not that in the first case, the modules must be considered safe to import
+# (no side-effects) but in some other cases, we only care about the names
+# of the module and a more extended list could be used.
+# The list is to be completed
 # Potential candidates :
 #  - sys.builtin_module_names
 # https://docs.python.org/2/library/sys.html#sys.builtin_module_names
@@ -329,7 +336,8 @@ def get_attribute_suggestions(type_str, attribute, frame):
         module_name = frame.f_code.co_names[0]
         objs = get_objects_in_frame(frame)
         mod = objs[module_name][0].obj
-        attributes = set(dir(mod))
+        if inspect.ismodule(mod):
+            attributes = set(dir(mod))
 
     return itertools.chain(
         suggest_attribute_as_builtin(attribute, type_str, frame),
