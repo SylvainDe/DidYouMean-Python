@@ -72,11 +72,12 @@ def get_subclasses(klass):
 
     Get the set of direct/indirect subclasses of a class including itself.
     """
-    subclass = klass.__subclasses__
+    subclass = getattr(klass, '__subclasses__', list)
     try:
-        subclasses = set(subclass())
+        subclasses = subclass()
     except TypeError:
-        subclasses = set(subclass(klass))
+        subclasses = subclass(klass)
+    subclasses = set(subclasses)
     for derived in set(subclasses):
         subclasses.update(get_subclasses(derived))
     subclasses.add(klass)
