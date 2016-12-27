@@ -478,6 +478,16 @@ class RegexTests(unittest2.TestCase):
         groups = ('foo',)
         self.re_matches(msg, re.NO_BINDING_NONLOCAL_RE, (groups, dict()))
 
+    def test_nonlocal_at_module_level(self):
+        """Test NONLOCAL_AT_MODULE_RE."""
+        msg = "nonlocal declaration not allowed at module level"
+        self.re_matches(msg, re.NONLOCAL_AT_MODULE_RE, NO_GROUP)
+
+    def test_unexpected_eof(self):
+        """Test UNEXPECTED_EOF_RE."""
+        msg = "unexpected EOF while parsing"
+        self.re_matches(msg, re.UNEXPECTED_EOF_RE, NO_GROUP)
+
     def test_nosuchfile(self):
         """Test NO_SUCH_FILE_RE."""
         msg = "No such file or directory"
