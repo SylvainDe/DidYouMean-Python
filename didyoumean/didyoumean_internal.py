@@ -67,16 +67,26 @@ def get_suggestion_string(sugg):
 
 
 # Helper functions for code introspection
+def subclasses_wrapper(klass):
+    """Wrapper around __subclass__ as it is not as easy as it should."""
+    method = getattr(klass, '__subclasses__', None)
+    if method is None:
+        return []
+    try:
+        return method()
+    except TypeError:
+        try:
+            return method(klass)
+        except TypeError:
+            return []
+
+
 def get_subclasses(klass):
     """Get the subclasses of a class.
 
     Get the set of direct/indirect subclasses of a class including itself.
     """
-    if klass == type:  # very special case
-        subclasses = []
-    else:
-        subclasses = getattr(klass, '__subclasses__', list)()
-    subclasses = set(subclasses)
+    subclasses = set(subclasses_wrapper(klass))
     for derived in set(subclasses):
         subclasses.update(get_subclasses(derived))
     subclasses.add(klass)
