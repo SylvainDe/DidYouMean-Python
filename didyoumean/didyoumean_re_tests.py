@@ -508,6 +508,18 @@ class RegexTests(unittest2.TestCase):
         msg = 'invalid token'
         self.re_matches(msg, re.INVALID_TOKEN_RE, NO_GROUP)
 
+    def test_exc_must_derive_from(self):
+        """Test EXC_MUST_DERIVE_FROM_RE."""
+        msgs = [
+            # Python 2.7
+            "exceptions must be old-style classes or derived from "
+            "BaseException, not NoneType",
+            # Python 3.3 / 3.4
+            "exceptions must derive from BaseException",
+        ]
+        for msg in msgs:
+            self.re_matches(msg, re.EXC_MUST_DERIVE_FROM_RE, NO_GROUP)
+
     def test_max_recursion_depth(self):
         """Test MAX_RECURSION_DEPTH_RE."""
         msg = 'maximum recursion depth exceeded'

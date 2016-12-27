@@ -75,6 +75,7 @@ TIME_DATA_DOES_NOT_MATCH_FORMAT_RE = r"^time data " \
     r"(?P<timedata>.*) does not match format (?P<format>.*)$"
 MAX_RECURSION_DEPTH_RE = r"^maximum recursion depth exceeded$"
 SIZE_CHANGED_DURING_ITER_RE = r"^(\w+) changed size during iteration$"
+EXC_MUST_DERIVE_FROM_RE = r"^exceptions must .*derive.*from.*BaseException.*$"
 
 ALL_REGEXPS = dict((k, v)
                    for k, v in dict(locals()).items()
