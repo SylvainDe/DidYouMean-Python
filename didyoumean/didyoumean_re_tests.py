@@ -520,6 +520,15 @@ class RegexTests(unittest2.TestCase):
         for msg in msgs:
             self.re_matches(msg, re.EXC_MUST_DERIVE_FROM_RE, NO_GROUP)
 
+    def test_unorderable_types(self):
+        """Test UNORDERABLE_TYPES_RE."""
+        msgs = [
+            "unorderable types: str() > int()",
+            "unorderable types: FoobarClass() <= int()",
+        ]
+        for msg in msgs:
+            self.re_matches(msg, re.UNORDERABLE_TYPES_RE, NO_GROUP)
+
     def test_max_recursion_depth(self):
         """Test MAX_RECURSION_DEPTH_RE."""
         msg = 'maximum recursion depth exceeded'

@@ -197,6 +197,7 @@ ARGNOTITERABLE = (TypeError, re.ARG_NOT_ITERABLE_RE)
 MUSTCALLWITHINST = (TypeError, re.MUST_BE_CALLED_WITH_INST_RE)
 OBJECTHASNOFUNC = (TypeError, re.OBJECT_HAS_NO_FUNC_RE)
 EXCMUSTDERIVE = (TypeError, re.EXC_MUST_DERIVE_FROM_RE)
+UNORDERABLE = (TypeError, re.UNORDERABLE_TYPES_RE)
 UNKNOWN_TYPEERROR = (TypeError, None)
 # ImportError for ImportErrorTests
 NOMODULE = (ImportError, re.NOMODULE_RE)
@@ -1449,6 +1450,19 @@ class TypeErrorTests(GetSuggestionsTests):
         """Test when a non-exc object is raised."""
         code = 'raise "ExceptionString"'
         self.throws(code, EXCMUSTDERIVE)
+
+    def test_unordered_builtin(self):
+        """Test for UNORDERABLE exception on builtin types."""
+        for op in ['>', '>=', '<', '<=']:
+            self.throws("'10' {0} 2".format(op), UNORDERABLE)
+
+    def test_unordered_custom(self):
+        """Test for UNORDERABLE exception on custom types."""
+        self.throws("FoobarClass() > FoobarClass()", UNORDERABLE)
+
+    def test_unordered_custom2(self):
+        """Test for UNORDERABLE exception on custom types."""
+        self.throws("FoobarClass() > 2", UNORDERABLE)
 
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""
