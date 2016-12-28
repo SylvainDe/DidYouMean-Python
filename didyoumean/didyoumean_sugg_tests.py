@@ -1326,6 +1326,20 @@ class TypeErrorTests(GetSuggestionsTests):
         self.throws(code, UNEXPECTEDKWARG2, [], from_version(v3), 'cython')
         self.throws(code, UNEXPECTEDKWARG3, [], from_version(v3), 'pypy')
 
+    def test_keyword_sort_cmpkey(self):
+        """Sort and sorted functions have a cmp/key param dep. on the vers."""
+        # NICE_TO_HAVE
+        v3 = (3, 0)
+        code = "import functools as f\nl = [1, 8, 3]\n" \
+               "def comp(a, b): return (a > b) - (a < b)\nl.sort({0})"
+        cmp_arg, key_arg, cmp_to_key = format_str(
+                code, 'cmp=comp', 'key=id', 'key=f.cmp_to_key(comp)')
+        self.runs(cmp_arg, up_to_version(v3))
+        self.throws(cmp_arg, UNEXPECTEDKWARG2, [], from_version(v3), 'cython')
+        self.throws(cmp_arg, UNEXPECTEDKWARG, [], from_version(v3), 'pypy')
+        self.runs(key_arg)
+        self.runs(cmp_to_key, from_version((2, 7)))
+
     def test_no_implicit_str_conv(self):
         """Trying to concatenate a non-string value to a string."""
         # NICE_TO_HAVE
