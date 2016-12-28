@@ -1453,7 +1453,7 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_unordered_builtin(self):
         """Test for UNORDERABLE exception on builtin types."""
-        version = (2, 7)
+        version = (3, 0)
         for op in ['>', '>=', '<', '<=']:
             code = "'10' {0} 2".format(op)
             self.runs(code, up_to_version(version))
@@ -1461,7 +1461,7 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_unordered_custom(self):
         """Test for UNORDERABLE exception on custom types."""
-        version = (2, 7)
+        version = (3, 0)
         for op in ['>', '>=', '<', '<=']:
             code = "FoobarClass() {0} FoobarClass()".format(op)
             self.runs(code, up_to_version(version))
@@ -1469,11 +1469,11 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_unordered_custom2(self):
         """Test for UNORDERABLE exception on custom types."""
-        version = (2, 7)
+        version = (3, 0)
         for op in ['>', '>=', '<', '<=']:
             code = "FoobarClass() {0} 2".format(op)
             self.runs(code, up_to_version(version))
-            self.throws(code, UNORDERABLE, [], up_to_version(version))
+            self.throws(code, UNORDERABLE, [], from_version(version))
 
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""
