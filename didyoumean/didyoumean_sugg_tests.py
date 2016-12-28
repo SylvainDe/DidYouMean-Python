@@ -952,15 +952,21 @@ class AttributeErrorTests(GetSuggestionsTests):
         # importlib module new in Python 2.7
         # importlib.reload new in Python 3.4
         # imp.reload new in Python 3.2
-        version = (3, 0)
+        version27 = (2, 7)
+        version3 = (3, 0)
+        version26 = up_to_version(version27)
         code = '{0}reload(math)'
         null, code_imp, code_importlib = format_str(
             code, '', 'import imp\nimp.', 'import importlib\nimportlib.')
-        self.runs(null, up_to_version(version))
-        self.throws(null, NAMEERROR, RELOAD_REMOVED_MSG, from_version(version))
+        self.runs(null, up_to_version(version3))
+        self.throws(null, NAMEERROR,
+                    RELOAD_REMOVED_MSG, from_version(version3))
         self.runs(code_imp)
-        self.throws(code_importlib, NOMODULE, [], up_to_version((2, 7)))
-        self.throws(code_importlib, ATTRIBUTEERROR, [], ((2, 7), (3, 4)))
+        self.throws(code_importlib, NOMODULE, [], version26)
+        self.throws(code_importlib, ATTRIBUTEERROR,
+                    "'reload(module)'", (version27, version3))
+        self.throws(code_importlib, ATTRIBUTEERROR,
+                    [], (version3, (3, 4)))
         self.runs(code_importlib, from_version((3, 4)))
 
     def test_join(self):
