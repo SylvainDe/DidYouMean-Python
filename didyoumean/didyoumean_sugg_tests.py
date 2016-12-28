@@ -3,6 +3,7 @@
 from didyoumean_internal import get_suggestions_for_exception, \
     STAND_MODULES, AVOID_REC_MSG, \
     APPLY_REMOVED_MSG, BUFFER_REMOVED_MSG, CMP_REMOVED_MSG, \
+    CMP_ARG_REMOVED_MSG, \
     MEMVIEW_ADDED_MSG, RELOAD_REMOVED_MSG, STDERR_REMOVED_MSG
 import didyoumean_common_tests as common
 import unittest2
@@ -1335,8 +1336,10 @@ class TypeErrorTests(GetSuggestionsTests):
         cmp_arg, key_arg, cmp_to_key = format_str(
                 code, 'cmp=comp', 'key=id', 'key=f.cmp_to_key(comp)')
         self.runs(cmp_arg, up_to_version(v3))
-        self.throws(cmp_arg, UNEXPECTEDKWARG2, [], from_version(v3), 'cython')
-        self.throws(cmp_arg, UNEXPECTEDKWARG, [], from_version(v3), 'pypy')
+        self.throws(cmp_arg, UNEXPECTEDKWARG2,
+                    CMP_ARG_REMOVED_MSG, from_version(v3), 'cython')
+        self.throws(cmp_arg, UNEXPECTEDKWARG,
+                    CMP_ARG_REMOVED_MSG, from_version(v3), 'pypy')
         self.runs(key_arg)
         self.runs(cmp_to_key, from_version((2, 7)))
 

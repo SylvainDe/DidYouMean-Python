@@ -50,6 +50,9 @@ BUFFER_REMOVED_MSG = '"memoryview" (`buffer` has been removed " \
 CMP_REMOVED_MSG = "to use comparison operators (`cmp` is removed since " \
     "Python 3 but you can define `def cmp(a, b): return (a > b) - (a < b)` " \
     "if needed)"
+CMP_ARG_REMOVED_MSG = 'to use "key" (`cmp` has been replaced by `key` ' \
+    "since Python 3 - `functools.cmp_to_key` provides a convenient way " \
+    "to convert cmp function to key function)"
 MEMVIEW_ADDED_MSG = '"buffer" (`memoryview` is added in Python 2.7 and " \
     "completely replaces `buffer` since Python 3)'
 RELOAD_REMOVED_MSG = '"importlib.reload" or "imp.reload" (`reload` is " \
@@ -566,11 +569,8 @@ def suggest_bad_operand_for_unary(value, frame, groups):
     return suggest_feature_not_supported(attr, type_str, frame)
 
 
-@register_suggestion_for(TypeError, re.UNEXPECTED_KEYWORDARG_RE)
-def suggest_unexpected_keywordarg(value, frame, groups):
-    """Get suggestions in case of UNEXPECTED_KEYWORDARG error."""
-    del value  # unused param
-    func_name, kw_arg = groups
+def get_func_by_name(func_name, frame):
+    """Get the function with the given name in the frame."""
     objs = get_objects_in_frame(frame)
     # Trying to fetch reachable objects: getting objects and attributes
     # for objects. We would go deeper (with a fixed point algorithm) but
@@ -582,18 +582,45 @@ def suggest_unexpected_keywordarg(value, frame, groups):
             attr = getattr(obj, a, None)
             if attr is not None:
                 objects.append(attr)
-    arg_names = set()
     # Then, we filter for function with the correct name (the name being the
     # name on the function object which is not always the same from the
     # namespace).
-    for func in objects:
-        if getattr(func, '__name__', None) == func_name:
-            if hasattr(func, '__code__'):
-                args = func.__code__.co_varnames
-                for name in get_close_matches(kw_arg, args):
-                    arg_names.add(name)
-    for name in arg_names:
-        yield quote(name)
+    return [func
+            for func in objects
+            if getattr(func, '__name__', None) == func_name]
+
+
+@register_suggestion_for(TypeError, re.UNEXPECTED_KEYWORDARG_RE)
+def suggest_unexpected_keywordarg(value, frame, groups):
+    """Get suggestions in case of UNEXPECTED_KEYWORDARG error."""
+    del value  # unused param
+    func_name, kw_arg = groups
+    arg_names = set()
+    functions = get_func_by_name(func_name, frame)
+    func_codes = [f.__code__ for f in functions if hasattr(f, '__code__')]
+    args = set([var for func in func_codes for var in func.co_varnames])
+    for arg_name in get_close_matches(kw_arg, args):
+        yield quote(arg_name)
+    if kw_arg == 'cmp' and 'key' in args:
+        yield CMP_ARG_REMOVED_MSG
+
+
+@register_suggestion_for(TypeError, re.UNEXPECTED_KEYWORDARG2_RE)
+def suggest_unexpected_keywordarg2(value, frame, groups):
+    """Get suggestions in case of UNEXPECTED_KEYWORDARG2 error."""
+    del value, frame  # unused param
+    kw_arg, = groups
+    if kw_arg == 'cmp':
+        yield CMP_ARG_REMOVED_MSG
+
+
+@register_suggestion_for(TypeError, re.UNEXPECTED_KEYWORDARG3_RE)
+def suggest_unexpected_keywordarg3(value, frame, groups):
+    """Get suggestions in case of UNEXPECTED_KEYWORDARG2 error."""
+    del value, frame  # unused param
+    func_name, = groups
+    del func_name  # unused value
+    return []  # no implementation so far
 
 
 @register_suggestion_for(TypeError, re.NB_ARG_RE)
@@ -606,13 +633,6 @@ def suggest_nb_arg(value, frame, groups):
     objs = get_objects_in_frame(frame)
     del expect_nb, given_nb, objs, func_name  # for later
     return []
-
-
-@register_suggestion_for(TypeError, re.UNEXPECTED_KEYWORDARG2_RE)
-def suggest_unexpected_keywordarg2(value, frame, groups):
-    """Get suggestions in case of UNEXPECTED_KEYWORDARG2 error."""
-    del value, frame, groups  # unused param
-    return []  # no implementation so far
 
 
 # Functions related to ValueError
