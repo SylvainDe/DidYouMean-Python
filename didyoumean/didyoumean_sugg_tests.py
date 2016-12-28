@@ -198,6 +198,7 @@ MUSTCALLWITHINST = (TypeError, re.MUST_BE_CALLED_WITH_INST_RE)
 OBJECTHASNOFUNC = (TypeError, re.OBJECT_HAS_NO_FUNC_RE)
 EXCMUSTDERIVE = (TypeError, re.EXC_MUST_DERIVE_FROM_RE)
 UNORDERABLE = (TypeError, re.UNORDERABLE_TYPES_RE)
+OPNOTSUPPBETWEENINST = (TypeError, re.OP_NOT_SUPP_BETWEEN_INSTANCES_RE)
 UNKNOWN_TYPEERROR = (TypeError, None)
 # ImportError for ImportErrorTests
 NOMODULE = (ImportError, re.NOMODULE_RE)
@@ -1454,26 +1455,32 @@ class TypeErrorTests(GetSuggestionsTests):
     def test_unordered_builtin(self):
         """Test for UNORDERABLE exception on builtin types."""
         version = (3, 0)
+        version2 = (3, 6)
         for op in ['>', '>=', '<', '<=']:
             code = "'10' {0} 2".format(op)
             self.runs(code, up_to_version(version))
-            self.throws(code, UNORDERABLE, [], from_version(version))
+            self.throws(code, UNORDERABLE, [], (version, version2))
+            self.throws(code, OPNOTSUPPBETWEENINST, [], from_version(version2))
 
     def test_unordered_custom(self):
         """Test for UNORDERABLE exception on custom types."""
         version = (3, 0)
+        version2 = (3, 6)
         for op in ['>', '>=', '<', '<=']:
             code = "FoobarClass() {0} FoobarClass()".format(op)
             self.runs(code, up_to_version(version))
-            self.throws(code, UNORDERABLE, [], from_version(version))
+            self.throws(code, UNORDERABLE, [], (version, version2))
+            self.throws(code, OPNOTSUPPBETWEENINST, [], from_version(version2))
 
     def test_unordered_custom2(self):
         """Test for UNORDERABLE exception on custom types."""
         version = (3, 0)
+        version2 = (3, 6)
         for op in ['>', '>=', '<', '<=']:
             code = "FoobarClass() {0} 2".format(op)
             self.runs(code, up_to_version(version))
-            self.throws(code, UNORDERABLE, [], from_version(version))
+            self.throws(code, UNORDERABLE, [], (version, version2))
+            self.throws(code, OPNOTSUPPBETWEENINST, [], from_version(version2))
 
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""

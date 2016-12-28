@@ -532,6 +532,16 @@ class RegexTests(unittest2.TestCase):
         for msg in msgs:
             self.re_matches(msg, re.UNORDERABLE_TYPES_RE, NO_GROUP)
 
+    def test_op_not_supported_between_instances(self):
+        """Test OP_NOT_SUPP_BETWEEN_INSTANCES_RE."""
+        msgs = [
+            # Python 3.6
+            "'<' not supported between instances of 'int' and 'NoneType'",
+            "'>' not supported between instances of 'Foo' and 'Foo'",
+        ]
+        for msg in msgs:
+            self.re_matches(msg, re.OP_NOT_SUPP_BETWEEN_INSTANCES_RE, NO_GROUP)
+
     def test_max_recursion_depth(self):
         """Test MAX_RECURSION_DEPTH_RE."""
         msg = 'maximum recursion depth exceeded'

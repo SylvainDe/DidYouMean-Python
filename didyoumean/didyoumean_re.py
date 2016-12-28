@@ -78,6 +78,8 @@ SIZE_CHANGED_DURING_ITER_RE = r"^(\w+) changed size during iteration$"
 EXC_MUST_DERIVE_FROM_RE = r"^exceptions must .*derive.*from.*BaseException.*$"
 UNORDERABLE_TYPES_RE = r"^unorderable types: " \
         r"\w+(?:\(\))? [<=>]+ \w+(?:\(\))?$"
+OP_NOT_SUPP_BETWEEN_INSTANCES_RE = r"^'[<=>]+' not supported between " \
+        r"instances of '\w+' and '\w+'$"
 
 ALL_REGEXPS = dict((k, v)
                    for k, v in dict(locals()).items()
