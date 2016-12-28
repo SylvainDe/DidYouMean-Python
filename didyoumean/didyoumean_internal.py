@@ -39,9 +39,23 @@ SYNONYMS_SETS = [set(['add', 'append']), set(['extend', 'update'])]
 MAX_NB_FILES = 4
 
 #: Message to suggest not using recursion
-AVOID_REC_MESSAGE = \
+AVOID_REC_MSG = \
     "to avoid recursion (cf " \
     "http://neopythonic.blogspot.fr/2009/04/tail-recursion-elimination.html)"
+#: Messages for functions removed from one version to another
+APPLY_REMOVED_MSG = "to call the function directly (`apply` is deprecated " \
+    "since Python 2.3, removed since Python 3)"
+BUFFER_REMOVED_MSG = '"memoryview" (`buffer` has been removed " \
+    "since Python 3)'
+CMP_REMOVED_MSG = "to use comparison operators (`cmp` is removed since " \
+    "Python 3 but you can define `def cmp(a, b): return (a > b) - (a < b)` " \
+    "if needed)"
+MEMVIEW_ADDED_MSG = '"buffer" (`memoryview` is added in Python 2.7 and " \
+    "completely replaces `buffer` since Python 3)'
+RELOAD_REMOVED_MSG = '"importlib.reload" or "imp.reload" (`reload` is " \
+    "removed since Python 3)'
+STDERR_REMOVED_MSG = '"Exception" (`StandardError` has been removed since " \
+    "Python 3)'
 
 
 # Helper function for string manipulation
@@ -306,6 +320,13 @@ def suggest_name_as_special_case(name):
         'ls': quote('os.listdir(os.getcwd())'),
         'cd': quote('os.chdir(path)'),
         'rm': "'os.remove(filename)', 'shutil.rmtree(dir)' for recursive",
+        # Function removed from Python
+        'apply': APPLY_REMOVED_MSG,
+        'buffer': BUFFER_REMOVED_MSG,
+        'cmp': CMP_REMOVED_MSG,
+        'memoryview': MEMVIEW_ADDED_MSG,
+        'reload': RELOAD_REMOVED_MSG,
+        'StandardError': STDERR_REMOVED_MSG,
     }
     result = special_cases.get(name)
     if result is not None:
@@ -702,7 +723,7 @@ def suggest_max_resursion_depth(value, frame, groups):
     """Suggest for MAX_RECURSION_DEPTH error."""
     # this is the real solution, make it the first suggestion
     del value, frame, groups  # unused param
-    yield AVOID_REC_MESSAGE
+    yield AVOID_REC_MSG
     yield "increase the limit with " \
           "`sys.setrecursionlimit(limit)` (current value" \
           " is %d)" % sys.getrecursionlimit()

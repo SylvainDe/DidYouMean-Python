@@ -1,7 +1,9 @@
 # -*- coding: utf-8
 """Unit tests for get_suggestions_for_exception."""
 from didyoumean_internal import get_suggestions_for_exception, \
-    STAND_MODULES, AVOID_REC_MESSAGE
+    STAND_MODULES, AVOID_REC_MSG, \
+    APPLY_REMOVED_MSG, BUFFER_REMOVED_MSG, CMP_REMOVED_MSG, \
+    MEMVIEW_ADDED_MSG, RELOAD_REMOVED_MSG, STDERR_REMOVED_MSG
 import didyoumean_common_tests as common
 import unittest2
 import didyoumean_re as re
@@ -434,11 +436,14 @@ class NameErrorTests(GetSuggestionsTests):
     # meantime, I am keeping both versions because safer is better.
     def test_removed_cmp(self):
         """Builtin cmp is removed."""
-        # NICE_TO_HAVE
         code = 'cmp(1, 2)'
+        sugg1 = '1 < 2'
+        sugg2 = 'def cmp(a, b):\n\treturn (a > b) - (a < b)\ncmp(1, 2)'
         version = (3, 0, 1)
         self.runs(code, up_to_version(version))
-        self.throws(code, NAMEERROR, [], from_version(version))
+        self.throws(code, NAMEERROR, CMP_REMOVED_MSG, from_version(version))
+        self.runs(sugg1)
+        self.runs(sugg2)
 
     def test_removed_reduce(self):
         """Builtin reduce is removed - moved to functools."""
@@ -455,22 +460,26 @@ class NameErrorTests(GetSuggestionsTests):
 
     def test_removed_apply(self):
         """Builtin apply is removed."""
-        # NICE_TO_HAVE
         code = 'apply(sum, [[1, 2, 3]])'
+        sugg = 'sum([1, 2, 3])'
         version = (3, 0)
         self.runs(code, up_to_version(version))
-        self.throws(code, NAMEERROR, [], from_version(version))
+        self.throws(code, NAMEERROR, APPLY_REMOVED_MSG, from_version(version))
+        self.runs(sugg)
 
     def test_removed_reload(self):
         """Builtin reload is removed.
 
         Moved to importlib.reload or imp.reload depending on version.
         """
-        # NICE_TO_HAVE
         code = 'reload(math)'
+        sugg1 = 'import importlib\nimportlib.reload(math)'
+        sugg2 = 'import imp\nimp.reload(math)'
         version = (3, 0)
         self.runs(code, up_to_version(version))
-        self.throws(code, NAMEERROR, [], from_version(version))
+        self.throws(code, NAMEERROR, RELOAD_REMOVED_MSG, from_version(version))
+        self.runs(sugg1)
+        self.runs(sugg2)
 
     def test_removed_intern(self):
         """Builtin intern is removed - moved to sys."""
@@ -502,28 +511,31 @@ class NameErrorTests(GetSuggestionsTests):
 
     def test_removed_buffer(self):
         """Builtin buffer is removed - use memoryview instead."""
-        # NICE_TO_HAVE
-        code = 'buffer("abc")'
+        code = 'buffer(b"abc")'
+        sugg = 'memoryview(b"abc")'
         version = (3, 0)
         self.runs(code, up_to_version(version))
-        self.throws(code, NAMEERROR, [], from_version(version))
+        self.throws(code, NAMEERROR, BUFFER_REMOVED_MSG, from_version(version))
+        self.runs(sugg, from_version((2, 7)))
 
     def test_added_2_7(self):
         """Test for names added in 2.7."""
         version = (2, 7)
-        for name in ['memoryview']:
+        for name, suggs in {
+                'memoryview': [MEMVIEW_ADDED_MSG],
+                }.items():
             self.runs(name, from_version(version))
-            self.throws(name, NAMEERROR, [], up_to_version(version))
+            self.throws(name, NAMEERROR, suggs, up_to_version(version))
 
     def test_removed_3_0(self):
         """Test for names removed in 3.0."""
         version = (3, 0)
         for name, suggs in {
-                'StandardError': [],  # Exception
-                'apply': [],
+                'StandardError': [STDERR_REMOVED_MSG],
+                'apply': [APPLY_REMOVED_MSG],
                 'basestring': [],
-                'buffer': [],
-                'cmp': [],
+                'buffer': [BUFFER_REMOVED_MSG],
+                'cmp': [CMP_REMOVED_MSG],
                 'coerce': [],
                 'execfile': [],
                 'file': ["'filter' (builtin)"],
@@ -531,7 +543,7 @@ class NameErrorTests(GetSuggestionsTests):
                 'long': [],
                 'raw_input': ["'input' (builtin)"],
                 'reduce': ["'reduce' from functools (not imported)"],
-                'reload': [],
+                'reload': [RELOAD_REMOVED_MSG],
                 'unichr': [],
                 'unicode': ["'code' (local)"],
                 'xrange': ["'range' (builtin)"],
@@ -1881,7 +1893,7 @@ class RuntimeErrorTests(GetSuggestionsTests):
         self.throws(code, MAXRECURDEPTH,
                     ["increase the limit with `sys.setrecursionlimit(limit)`"
                         " (current value is 200)",
-                     AVOID_REC_MESSAGE])
+                     AVOID_REC_MSG])
 
     def test_dict_size_changed_during_iter(self):
         """Test size change during iteration (dict)."""
