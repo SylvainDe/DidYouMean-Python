@@ -473,12 +473,12 @@ class NameErrorTests(GetSuggestionsTests):
         Moved to importlib.reload or imp.reload depending on version.
         """
         code = 'reload(math)'
-        sugg1 = 'import importlib\nimportlib.reload(math)'
-        sugg2 = 'import imp\nimp.reload(math)'
+        sugg_template = 'import {0}\n{0}.reload(math)'
+        sugg1, sugg2 = format_str(sugg_template, 'importlib', 'imp')
         version = (3, 0)
         self.runs(code, up_to_version(version))
         self.throws(code, NAMEERROR, RELOAD_REMOVED_MSG, from_version(version))
-        self.runs(sugg1)
+        self.runs(sugg1, from_version((3, 4)))
         self.runs(sugg2)
 
     def test_removed_intern(self):
@@ -944,6 +944,30 @@ class AttributeErrorTests(GetSuggestionsTests):
         self.runs(code_str, from_version(version1))
         self.runs(code_str2, from_version(version1))
         self.runs(code_str3, from_version(version1))
+
+    def test_moved_between_imp_importlib(self):
+        """Some methods have been moved from imp to importlib."""
+        # NICE_TO_HAVE
+        # reload removed from Python 3
+        # importlib module new in Python 2.7
+        # importlib.reload new in Python 3.4
+        # imp.reload new in Python 3.2
+        version27 = (2, 7)
+        version3 = (3, 0)
+        version26 = up_to_version(version27)
+        code = '{0}reload(math)'
+        null, code_imp, code_importlib = format_str(
+            code, '', 'import imp\nimp.', 'import importlib\nimportlib.')
+        self.runs(null, up_to_version(version3))
+        self.throws(null, NAMEERROR,
+                    RELOAD_REMOVED_MSG, from_version(version3))
+        self.runs(code_imp)
+        self.throws(code_importlib, NOMODULE, [], version26)
+        self.throws(code_importlib, ATTRIBUTEERROR,
+                    "'reload(module)'", (version27, version3))
+        self.throws(code_importlib, ATTRIBUTEERROR,
+                    [], (version3, (3, 4)))
+        self.runs(code_importlib, from_version((3, 4)))
 
     def test_join(self):
         """Test what happens when join is used incorrectly.
