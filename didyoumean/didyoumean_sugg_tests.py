@@ -948,7 +948,8 @@ class AttributeErrorTests(GetSuggestionsTests):
     def test_moved_between_imp_importlib(self):
         """Some methods have been moved from imp to importlib."""
         # NICE_TO_HAVE
-        # reload removed from Python
+        # reload removed from Python 3
+        # importlib module new in Python 2.7
         # importlib.reload new in Python 3.4
         # imp.reload new in Python 3.2
         version = (3, 0)
@@ -958,7 +959,9 @@ class AttributeErrorTests(GetSuggestionsTests):
         self.runs(null, up_to_version(version))
         self.throws(null, NAMEERROR, RELOAD_REMOVED_MSG, from_version(version))
         self.runs(code_imp)
-        self.runs(code_importlib)
+        self.throws(code_importlib, NOMODULE, [], up_to_version((2, 7)))
+        self.throws(code_importlib, ATTRIBUTEERROR, [], ((2, 7), (3, 4)))
+        self.runs(code_importlib, from_version((3, 4)))
 
     def test_join(self):
         """Test what happens when join is used incorrectly.
