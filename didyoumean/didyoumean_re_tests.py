@@ -523,8 +523,11 @@ class RegexTests(unittest2.TestCase):
     def test_unorderable_types(self):
         """Test UNORDERABLE_TYPES_RE."""
         msgs = [
+            # Python 3.2 to 3.5
             "unorderable types: str() > int()",
             "unorderable types: FoobarClass() <= int()",
+            # PyPy
+            "unorderable types: FoobarClass > FoobarClass",
         ]
         for msg in msgs:
             self.re_matches(msg, re.UNORDERABLE_TYPES_RE, NO_GROUP)

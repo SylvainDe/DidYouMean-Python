@@ -76,7 +76,8 @@ TIME_DATA_DOES_NOT_MATCH_FORMAT_RE = r"^time data " \
 MAX_RECURSION_DEPTH_RE = r"^maximum recursion depth exceeded$"
 SIZE_CHANGED_DURING_ITER_RE = r"^(\w+) changed size during iteration$"
 EXC_MUST_DERIVE_FROM_RE = r"^exceptions must .*derive.*from.*BaseException.*$"
-UNORDERABLE_TYPES_RE = r"^unorderable types: \w+\(\) [<=>]+ \w+\(\)$"
+UNORDERABLE_TYPES_RE = r"^unorderable types: " \
+        r"\w+(?:\(\))? [<=>]+ \w+(?:\(\))?$"
 
 ALL_REGEXPS = dict((k, v)
                    for k, v in dict(locals()).items()
