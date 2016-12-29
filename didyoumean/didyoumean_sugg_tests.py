@@ -172,6 +172,7 @@ def get_exception(code):
 # UnboundLocalError for UnboundLocalErrorTests
 UNBOUNDLOCAL = (UnboundLocalError, re.VARREFBEFOREASSIGN_RE)
 UNKNOWN_UNBOUNDLOCAL = (UnboundLocalError, None)
+INVALIDSYNTAX = (SyntaxError, re.INVALID_SYNTAX_RE)
 
 
 class GetSuggestionsTests(unittest2.TestCase):
