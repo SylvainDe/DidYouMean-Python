@@ -80,21 +80,6 @@ class ApiTest(TestWithStringFunction):
         code = 'babar = 0\nfdjhflsdsqfjlkqs'
         self.check_sugg_added(code, type_, sugg)
 
-    def test_api_syntax(self):
-        """Check the case with syntax error suggestion."""
-        type_ = SyntaxError
-        sugg = ". Did you mean to indent it, 'sys.exit([arg])'?"
-        code = 'return'
-        self.check_sugg_added(code, type_, sugg, True)
-
-    def test_api_ioerror(self):
-        """Check the case with IO error suggestion."""
-        type_ = NoFileIoError
-        home = os.path.expanduser("~")
-        sugg = ". Did you mean '" + home + "' (calling os.path.expanduser)?"
-        code = 'with open("~") as f:\n\tpass'
-        self.check_sugg_added(code, type_, sugg, True)
-
 
 class DecoratorTest(unittest2.TestCase, ApiTest):
     """Tests about the didyoumean decorator."""
