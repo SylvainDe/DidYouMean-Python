@@ -3,7 +3,7 @@
 from didyoumean_internal import get_suggestions_for_exception, \
     STAND_MODULES, AVOID_REC_MSG, \
     APPLY_REMOVED_MSG, BUFFER_REMOVED_MSG, CMP_REMOVED_MSG, \
-    CMP_ARG_REMOVED_MSG, LONG_REMOVED_MSG, \
+    CMP_ARG_REMOVED_MSG, EXC_ATTR_REMOVED_MSG, LONG_REMOVED_MSG, \
     MEMVIEW_ADDED_MSG, RELOAD_REMOVED_MSG, STDERR_REMOVED_MSG
 import didyoumean_common_tests as common
 import unittest2
@@ -892,6 +892,21 @@ class AttributeErrorTests(GetSuggestionsTests):
             meth_code, = format_str(code, method)
             self.runs(meth_code, up_to_version(version))
             self.throws(meth_code, ATTRIBUTEERROR, sugg, from_version(version))
+
+    def test_remove_exc_attr(self):
+        """Attribute sys.exc_xxx have been removed."""
+        v3 = (3, 0)
+        v35 = (3, 5)
+        for att_name, sugg in {
+            'exc_type': [EXC_ATTR_REMOVED_MSG],
+            'exc_value': [EXC_ATTR_REMOVED_MSG],
+            'exc_traceback': ["'last_traceback'", EXC_ATTR_REMOVED_MSG],
+        }.items():
+            code = 'import sys\nsys.' + att_name
+            self.runs(code, up_to_version(v3))
+            self.throws(code, ATTRIBUTEERROR, sugg, (v3, v35))
+            self.throws(code, MODATTRIBUTEERROR, sugg, from_version(v35))
+        self.runs('import sys\nsys.exc_info()')
 
     def test_removed_xreadlines(self):
         """Method xreadlines is removed."""

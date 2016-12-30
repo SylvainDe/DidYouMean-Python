@@ -53,6 +53,9 @@ CMP_REMOVED_MSG = "to use comparison operators (`cmp` is removed since " \
 CMP_ARG_REMOVED_MSG = 'to use "key" (`cmp` has been replaced by `key` ' \
     "since Python 3 - `functools.cmp_to_key` provides a convenient way " \
     "to convert cmp function to key function)"
+EXC_ATTR_REMOVED_MSG = 'to use "sys.exc_info()" returning a tuple ' \
+    'of the form (type, value, traceback) ("exc_type", "exc_value" and ' \
+    '"exc_traceback" are removed from sys since Python 3)'
 LONG_REMOVED_MSG = 'to use "int" (since Python 3, there is only one ' \
     'integer type: `int`)'
 MEMVIEW_ADDED_MSG = '"buffer" (`memoryview` is added in Python 2.7 and " \
@@ -315,7 +318,7 @@ def suggest_name_as_keyword_typo(name):
 
 
 def suggest_name_as_special_case(name):
-    """Suggest that name could correspond to a typo with special handling."""
+    """Suggest that name could be handled in a special way."""
     special_cases = {
         # Imaginary unit is '1j' in Python
         'i': quote('1j') + " (imaginary unit)",
@@ -380,7 +383,8 @@ def get_attribute_suggestions(type_str, attribute, frame):
         suggest_attribute_as_builtin(attribute, type_str, frame),
         suggest_attribute_alternative(attribute, type_str, attributes),
         suggest_attribute_synonyms(attribute, attributes),
-        suggest_attribute_as_typo(attribute, attributes))
+        suggest_attribute_as_typo(attribute, attributes),
+        suggest_attribute_as_special_case(attribute))
 
 
 def suggest_attribute_as_builtin(attribute, type_str, frame):
@@ -446,6 +450,18 @@ def suggest_attribute_as_typo(attribute, attributes):
             yield quote(name) + ' (but it is supposed to be private)'
         else:
             yield quote(name)
+
+
+def suggest_attribute_as_special_case(attribute):
+    """Suggest that attribute could be handled in a specific way."""
+    special_cases = {
+        'exc_type': EXC_ATTR_REMOVED_MSG,
+        'exc_value': EXC_ATTR_REMOVED_MSG,
+        'exc_traceback': EXC_ATTR_REMOVED_MSG,
+    }
+    result = special_cases.get(attribute)
+    if result is not None:
+        yield result
 
 
 # Functions related to ImportError
