@@ -252,6 +252,10 @@ class RegexTests(unittest2.TestCase):
                 '1', '2'),
             ("some_func() takes 0 positional arguments but 1 was given",
                 '0', '1'),
+            # PyPy adds suggestions sometimes:
+            ("some_func() takes no arguments (1 given)"
+             ". Did you forget 'self' in the function definition?",
+                'no', '1'),
         ]
         for msg, exp, nb in msgs:
             groups = ('some_func', exp, nb)
