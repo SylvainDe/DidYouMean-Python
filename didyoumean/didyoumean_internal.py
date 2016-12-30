@@ -426,6 +426,9 @@ def suggest_attribute_alternative(attribute, type_str, attributes):
     elif attribute == 'join':
         if is_iterable:
             yield quote('my_string.join(' + type_str + ')')
+    elif attribute == '__or__':
+        if '__pow__' in attributes:
+            yield quote('val1 ** val2')
 
 
 def suggest_attribute_synonyms(attribute, attributes):
@@ -586,6 +589,21 @@ def suggest_bad_operand_for_unary(value, frame, groups):
     if attr is None:
         return []
     return suggest_feature_not_supported(attr, type_str, frame)
+
+
+@register_suggestion_for(TypeError, re.UNSUPPORTED_OP_RE)
+def suggest_unsupported_op(value, frame, groups):
+    """Get suggestions for UNSUPPORTED_OP_RE."""
+    del value  # unused param
+    binary, type1, type2 = groups
+    BINARY_OPS = {
+        '^': '__or__',
+    }
+    attr = BINARY_OPS.get(binary)
+    if attr is None:
+        return []
+    # Suggestion is based on first type which may not be the best
+    return suggest_feature_not_supported(attr, type1, frame)
 
 
 def get_func_by_name(func_name, frame):

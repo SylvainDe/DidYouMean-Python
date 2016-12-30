@@ -1118,11 +1118,10 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_unsupported_operand_caret(self):
         """Use '**' for power, not '^'."""
-        # NICE_TO_HAVE
         code = '3.5 {0} 2'
         bad_code, good_code = format_str(code, '^', '**')
         self.runs(good_code)
-        self.throws(bad_code, UNSUPPORTEDOPERAND)
+        self.throws(bad_code, UNSUPPORTEDOPERAND, "'val1 ** val2'")
 
     def test_unary_operand_custom(self):
         """Test unary operand errors on custom types."""
