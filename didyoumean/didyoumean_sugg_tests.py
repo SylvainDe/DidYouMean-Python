@@ -880,6 +880,19 @@ class AttributeErrorTests(GetSuggestionsTests):
             from_version(version))
         self.runs(new_code)
 
+    def test_removed_dict_methods(self):
+        """Different methos (iterXXX) have been removed from dict."""
+        version = (3, 0)
+        code = 'dict().{0}()'
+        for method, sugg in {
+            'iterkeys': [],
+            'itervalues': ["'values'"],
+            'iteritems': ["'items'"],
+        }.items():
+            meth_code, = format_str(code, method)
+            self.runs(meth_code, up_to_version(version))
+            self.throws(meth_code, ATTRIBUTEERROR, sugg, from_version(version))
+
     def test_removed_xreadlines(self):
         """Method xreadlines is removed."""
         # NICE_TO_HAVE
