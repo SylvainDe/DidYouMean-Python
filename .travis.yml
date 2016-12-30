@@ -43,8 +43,7 @@ before_script:
  - pep257 *.py */*.py
 
 script:
- - if [ "$TRAVIS_PYTHON_VERSION" != "nightly" ]; then coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py; fi
- - if [ "$TRAVIS_PYTHON_VERSION" == "nightly" ]; then       python -m unittest2 discover --start-directory=didyoumean --pattern=*.py; fi
+ - coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py
  - python didyoumean/readme_examples.py
 
 after_success:
