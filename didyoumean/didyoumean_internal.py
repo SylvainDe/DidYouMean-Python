@@ -337,6 +337,23 @@ def suggest_name_as_special_case(name):
 
 
 # Functions related to AttributeError
+@register_suggestion_for(AttributeError, re.ATTRIBUTEERROR_RE)
+@register_suggestion_for(TypeError, re.ATTRIBUTEERROR_RE)
+def suggest_attribute_error(value, frame, groups):
+    """Get suggestions in case of ATTRIBUTEERROR."""
+    del value  # unused param
+    type_str, attr = groups
+    return get_attribute_suggestions(type_str, attr, frame)
+
+
+@register_suggestion_for(AttributeError, re.MODULEHASNOATTRIBUTE_RE)
+def suggest_module_has_no_attr(value, frame, groups):
+    """Get suggestions in case of MODULEHASNOATTRIBUTE."""
+    del value  # unused param
+    _, attr = groups  # name ignored for the time being
+    return get_attribute_suggestions('module', attr, frame)
+
+
 def get_attribute_suggestions(type_str, attribute, frame):
     """Get the suggestions closest to the attribute name for a given type."""
     types = get_types_for_str(type_str, frame)
@@ -429,6 +446,29 @@ def suggest_attribute_as_typo(attribute, attributes):
 
 
 # Functions related to ImportError
+@register_suggestion_for(ImportError, re.NOMODULE_RE)
+def suggest_no_module(value, frame, groups):
+    """Get the suggestions closest to the failing module import.
+
+    Example: 'import maths' -> 'import math'.
+    """
+    del value, frame  # unused param
+    module_str, = groups
+    for name in get_close_matches(module_str, STAND_MODULES):
+        yield quote(name)
+
+
+@register_suggestion_for(ImportError, re.CANNOTIMPORT_RE)
+def suggest_cannot_import(value, frame, groups):
+    """Get the suggestions closest to the failing import."""
+    del value  # unused param
+    imported_name, = groups
+    module_name = frame.f_code.co_names[0]
+    return itertools.chain(
+        suggest_imported_name_as_typo(imported_name, module_name, frame),
+        suggest_import_from_module(imported_name, frame))
+
+
 def suggest_imported_name_as_typo(imported_name, module_name, frame):
     """Suggest that imported name could be a typo from actual name in module.
 
@@ -467,6 +507,68 @@ def suggest_feature_not_supported(attr, type_str, frame):
         yield 'implement "' + attr + '" on ' + type_str
 
 
+@register_suggestion_for(TypeError, re.UNSUBSCRIPTABLE_RE)
+def suggest_unsubscriptable(value, frame, groups):
+    """Get suggestions in case of UNSUBSCRIPTABLE error."""
+    del value  # unused param
+    type_str, = groups
+    return suggest_feature_not_supported('__getitem__', type_str, frame)
+
+
+@register_suggestion_for(TypeError, re.NOT_CALLABLE_RE)
+def suggest_not_callable(value, frame, groups):
+    """Get suggestions in case of NOT_CALLABLE error."""
+    del value  # unused param
+    type_str, = groups
+    return suggest_feature_not_supported('__call__', type_str, frame)
+
+
+@register_suggestion_for(TypeError, re.OBJ_DOES_NOT_SUPPORT_RE)
+def suggest_obj_does_not_support(value, frame, groups):
+    """Get suggestions in case of OBJ DOES NOT SUPPORT error."""
+    del value  # unused param
+    type_str, feature = groups
+    FEATURES = {
+        'indexing': '__getitem__',
+        'item assignment': '__setitem__',
+        'item deletion': '__delitem__',
+    }
+    attr = FEATURES.get(feature)
+    if attr is None:
+        return []
+    return suggest_feature_not_supported(attr, type_str, frame)
+
+
+@register_suggestion_for(TypeError, re.OBJECT_HAS_NO_FUNC_RE)
+def suggest_obj_has_no(value, frame, groups):
+    """Get suggestions in case of OBJECT_HAS_NO_FUNC."""
+    del value  # unused param
+    type_str, feature = groups
+    if feature in ('length', 'len'):
+        return suggest_feature_not_supported('__len__', type_str, frame)
+    return []
+
+
+@register_suggestion_for(TypeError, re.BAD_OPERAND_UNARY_RE)
+def suggest_bad_operand_for_unary(value, frame, groups):
+    """Get suggestions for BAD_OPERAND_UNARY."""
+    del value  # unused param
+    unary, type_str = groups
+    UNARY_OPS = {
+        '+': '__pos__',
+        'pos': '__pos__',
+        '-': '__neg__',
+        'neg': '__neg__',
+        '~': '__invert__',
+        'abs()': '__abs__',
+        'abs': '__abs__',
+    }
+    attr = UNARY_OPS.get(unary)
+    if attr is None:
+        return []
+    return suggest_feature_not_supported(attr, type_str, frame)
+
+
 def get_func_by_name(func_name, frame):
     """Get the function with the given name in the frame."""
     objs = get_objects_in_frame(frame)
@@ -488,10 +590,178 @@ def get_func_by_name(func_name, frame):
             if getattr(func, '__name__', None) == func_name]
 
 
+@register_suggestion_for(TypeError, re.UNEXPECTED_KEYWORDARG_RE)
+def suggest_unexpected_keywordarg(value, frame, groups):
+    """Get suggestions in case of UNEXPECTED_KEYWORDARG error."""
+    del value  # unused param
+    func_name, kw_arg = groups
+    arg_names = set()
+    functions = get_func_by_name(func_name, frame)
+    func_codes = [f.__code__ for f in functions if hasattr(f, '__code__')]
+    args = set([var for func in func_codes for var in func.co_varnames])
+    for arg_name in get_close_matches(kw_arg, args):
+        yield quote(arg_name)
+    if kw_arg == 'cmp' and 'key' in args:
+        yield CMP_ARG_REMOVED_MSG
+
+
+@register_suggestion_for(TypeError, re.UNEXPECTED_KEYWORDARG2_RE)
+def suggest_unexpected_keywordarg2(value, frame, groups):
+    """Get suggestions in case of UNEXPECTED_KEYWORDARG2 error."""
+    del value, frame  # unused param
+    kw_arg, = groups
+    if kw_arg == 'cmp':
+        yield CMP_ARG_REMOVED_MSG
+
+
+@register_suggestion_for(TypeError, re.UNEXPECTED_KEYWORDARG3_RE)
+def suggest_unexpected_keywordarg3(value, frame, groups):
+    """Get suggestions in case of UNEXPECTED_KEYWORDARG2 error."""
+    del value, frame  # unused param
+    func_name, = groups
+    del func_name  # unused value
+    return []  # no implementation so far
+
+
+@register_suggestion_for(TypeError, re.NB_ARG_RE)
+def suggest_nb_arg(value, frame, groups):
+    """Get suggestions in case of NB ARGUMENT error."""
+    del value  # unused param
+    func_name, expected, given = groups
+    expect_nb = 0 if expected == 'no' else int(expected)
+    given_nb = int(given)
+    objs = get_objects_in_frame(frame)
+    del expect_nb, given_nb, objs, func_name  # for later
+    return []
+
+
+# Functions related to ValueError
+@register_suggestion_for(ValueError, re.ZERO_LEN_FIELD_RE)
+def suggest_zero_len_field(value, frame, groups):
+    """Get suggestions in case of ZERO_LEN_FIELD."""
+    del value, frame, groups  # unused param
+    yield '{0}'
+
+
+@register_suggestion_for(ValueError, re.TIME_DATA_DOES_NOT_MATCH_FORMAT_RE)
+def suggest_time_data_is_wrong(value, frame, groups):
+    """Get suggestions in case of TIME_DATA_DOES_NOT_MATCH_FORMAT_RE."""
+    del value, frame  # unused param
+    timedata, timeformat = groups
+    if timedata.count('%') > timeformat.count('%%'):
+        yield "to swap value and format parameters"
+
+
+# Functions related to SyntaxError
+@register_suggestion_for(SyntaxError, re.OUTSIDE_FUNCTION_RE)
+def suggest_outside_func_error(value, frame, groups):
+    """Get suggestions in case of OUTSIDE_FUNCTION error."""
+    del value, frame  # unused param
+    yield "to indent it"
+    word, = groups
+    if word == 'return':
+        yield "'sys.exit([arg])'"
+
+
+@register_suggestion_for(SyntaxError, re.FUTURE_FEATURE_NOT_DEF_RE)
+def suggest_future_feature(value, frame, groups):
+    """Get suggestions in case of FUTURE_FEATURE_NOT_DEF error."""
+    del value  # unused param
+    feature, = groups
+    return suggest_imported_name_as_typo(feature, '__future__', frame)
+
+
+@register_suggestion_for(SyntaxError, re.INVALID_COMP_RE)
+def suggest_invalid_comp(value, frame, groups):
+    """Get suggestions in case of INVALID_COMP error."""
+    del value, frame, groups  # unused param
+    yield quote('!=')
+
+
+@register_suggestion_for(SyntaxError, re.NO_BINDING_NONLOCAL_RE)
+def suggest_no_binding_for_nonlocal(value, frame, groups):
+    """Get suggestions in case of NO BINDING FOR NONLOCAL."""
+    del value  # unused param
+    name, = groups
+    objs = get_objects_in_frame(frame).get(name, [])
+    for obj, scope in objs:
+        if scope == 'global':
+            # TODO_ENCLOSING: suggest close matches for enclosing
+            yield quote('global ' + name)
+
+
+@register_suggestion_for(SyntaxError, re.INVALID_SYNTAX_RE)
+def suggest_invalid_syntax(value, frame, groups):
+    """Get suggestions in case of INVALID_SYNTAX error."""
+    del frame, groups  # unused param
+    alternatives = {
+        '<>': '!=',
+        '&&': 'and',
+        '||': 'or',
+    }
+    offset = value.offset
+    if value.offset is not None:
+        for shift in (0, 1):
+            offset = value.offset + shift
+            two_last = value.text[offset - 2:offset]
+            alt = alternatives.get(two_last)
+            if alt is not None:
+                yield quote(alt)
+                break
+
+
+# Functions related to MemoryError
+@register_suggestion_for(MemoryError, None)
+def get_memory_error_sugg(value, frame, groups):
+    """Get suggestions for MemoryError exception."""
+    del value, groups  # unused param
+    objs = get_objects_in_frame(frame)
+    return itertools.chain.from_iterable(
+        suggest_memory_friendly_equi(name, objs)
+        for name in frame.f_code.co_names)
+
+
+# Functions related to OverflowError
+@register_suggestion_for(OverflowError, re.RESULT_TOO_MANY_ITEMS_RE)
+def suggest_too_many_items(value, frame, groups):
+    """Suggest for TOO_MANY_ITEMS error."""
+    del value  # unused param
+    func, = groups
+    objs = get_objects_in_frame(frame)
+    return suggest_memory_friendly_equi(func, objs)
+
+
 def suggest_memory_friendly_equi(name, objs):
     """Suggest name of a memory friendly equivalent for a function."""
     suggs = {'range': ['xrange']}
     return [quote(s) for s in suggs.get(name, []) if s in objs]
+
+
+# Functions related to RuntimeError
+@register_suggestion_for(RuntimeError, re.MAX_RECURSION_DEPTH_RE)
+def suggest_max_resursion_depth(value, frame, groups):
+    """Suggest for MAX_RECURSION_DEPTH error."""
+    # this is the real solution, make it the first suggestion
+    del value, frame, groups  # unused param
+    yield AVOID_REC_MSG
+    yield "increase the limit with " \
+          "`sys.setrecursionlimit(limit)` (current value" \
+          " is %d)" % sys.getrecursionlimit()
+
+
+# Functions related to IOError/OSError
+@register_suggestion_for((IOError, OSError), None)
+def get_io_os_error_sugg(value, frame, groups):
+    """Get suggestions for IOError/OSError exception."""
+    # https://www.python.org/dev/peps/pep-3151/
+    del frame, groups  # unused param
+    err, _ = value.args
+    errnos = {
+        errno.ENOENT: suggest_if_file_does_not_exist,
+        errno.ENOTDIR: suggest_if_file_is_not_dir,
+        errno.EISDIR: suggest_if_file_is_dir,
+    }
+    return errnos.get(err, lambda x: [])(value)
 
 
 def suggest_if_file_does_not_exist(value):
