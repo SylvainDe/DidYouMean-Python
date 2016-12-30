@@ -3,7 +3,7 @@
 from didyoumean_internal import get_suggestions_for_exception, \
     STAND_MODULES, AVOID_REC_MSG, \
     APPLY_REMOVED_MSG, BUFFER_REMOVED_MSG, CMP_REMOVED_MSG, \
-    CMP_ARG_REMOVED_MSG, \
+    CMP_ARG_REMOVED_MSG, LONG_REMOVED_MSG, \
     MEMVIEW_ADDED_MSG, RELOAD_REMOVED_MSG, STDERR_REMOVED_MSG
 import didyoumean_common_tests as common
 import unittest2
@@ -543,7 +543,7 @@ class NameErrorTests(GetSuggestionsTests):
                 'execfile': [],
                 'file': ["'filter' (builtin)"],
                 'intern': ["'iter' (builtin)", "'sys.intern'"],
-                'long': [],
+                'long': [LONG_REMOVED_MSG],
                 'raw_input': ["'input' (builtin)"],
                 'reduce': ["'reduce' from functools (not imported)"],
                 'reload': [RELOAD_REMOVED_MSG],

@@ -53,6 +53,8 @@ CMP_REMOVED_MSG = "to use comparison operators (`cmp` is removed since " \
 CMP_ARG_REMOVED_MSG = 'to use "key" (`cmp` has been replaced by `key` ' \
     "since Python 3 - `functools.cmp_to_key` provides a convenient way " \
     "to convert cmp function to key function)"
+LONG_REMOVED_MSG = 'to use "int" (since Python 3, there is only one ' \
+    'integer type: `int`)'
 MEMVIEW_ADDED_MSG = '"buffer" (`memoryview` is added in Python 2.7 and " \
     "completely replaces `buffer` since Python 3)'
 RELOAD_REMOVED_MSG = '"importlib.reload" or "imp.reload" (`reload` is " \
@@ -327,6 +329,7 @@ def suggest_name_as_special_case(name):
         'apply': APPLY_REMOVED_MSG,
         'buffer': BUFFER_REMOVED_MSG,
         'cmp': CMP_REMOVED_MSG,
+        'long': LONG_REMOVED_MSG,
         'memoryview': MEMVIEW_ADDED_MSG,
         'reload': RELOAD_REMOVED_MSG,
         'StandardError': STDERR_REMOVED_MSG,
