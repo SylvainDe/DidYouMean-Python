@@ -698,9 +698,10 @@ class UnboundLocalErrorTests(GetSuggestionsTests):
         sugg = 'global nb'
         bad_code, good_code = format_str(code, "", sugg)
         original_limit = sys.getrecursionlimit()
-        assert original_limit == 2, "original_limit=%d" % original_limit
+        sys.setrecursionlimit(1000)  # needed for weird PyPy versions
         self.throws(bad_code, UNBOUNDLOCAL)
         self.runs(good_code)  # this is to be run afterward :-/
+        sys.setrecursionlimit(original_limit)
 
     def test_unbound_nonlocal(self):
         """Shoud be nonlocal nb."""
