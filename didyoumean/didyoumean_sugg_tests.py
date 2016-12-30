@@ -1999,12 +1999,14 @@ class RuntimeErrorTests(GetSuggestionsTests):
 
     def test_max_depth(self):
         """Reach maximum recursion depth."""
+        original_limit = sys.getrecursionlimit()
         sys.setrecursionlimit(200)
         code = 'endlessly_recursive_func(0)'
         self.throws(code, MAXRECURDEPTH,
                     ["increase the limit with `sys.setrecursionlimit(limit)`"
                         " (current value is 200)",
                      AVOID_REC_MSG])
+        sys.setrecursionlimit(original_limit)
 
     def test_dict_size_changed_during_iter(self):
         """Test size change during iteration (dict)."""
