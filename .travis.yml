@@ -21,6 +21,21 @@ matrix:
   - python: pypy-5.3.1
 
 install:
+  # From https://github.com/frol/flask-restplus-server-example/blob/master/.travis.yml
+  # Travis has pypy 2.5.0, which is way too old, so we upgrade it on the fly:
+  - |
+      if [ "$TRAVIS_PYTHON_VERSION" = "pypy" ]; then
+        export PYENV_ROOT="$HOME/.pyenv"
+        if [ -f "$PYENV_ROOT/bin/pyenv" ]; then
+          pushd "$PYENV_ROOT" && git pull && popd
+        else
+          rm -rf "$PYENV_ROOT" && git clone --depth 1 https://github.com/yyuu/pyenv.git "$PYENV_ROOT"
+        fi
+        export PYPY_VERSION="5.6.0"
+        "$PYENV_ROOT/bin/pyenv" install --skip-existing "pypy-$PYPY_VERSION"
+        virtualenv --python="$PYENV_ROOT/versions/pypy-$PYPY_VERSION/bin/python" "$HOME/virtualenvs/pypy-$PYPY_VERSION"
+        source "$HOME/virtualenvs/pypy-$PYPY_VERSION/bin/activate"
+      fi
   - pip install --upgrade pep8
   - pip install pep257
   - pip install --upgrade pyflakes
