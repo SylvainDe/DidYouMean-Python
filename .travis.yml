@@ -13,22 +13,14 @@ python:
   - "nightly"
   - "pypy-5.3.1"
   - "pypy-5.4.1"
-  - "pypy-5.6.0"
   - "pypy3"
-
-matrix:
-  allow_failures:
-  - python: pypy-5.3.1
-  - python: pypy-5.4.1
-  - python: pypy-5.6.0
 
 install:
   # From https://github.com/frol/flask-restplus-server-example/blob/master/.travis.yml
   # Travis has pypy 2.5.0, which is way too old, so we upgrade it on the fly:
   - |
       if ([ "$TRAVIS_PYTHON_VERSION" = "pypy-5.3.1" ] ||
-          [ "$TRAVIS_PYTHON_VERSION" = "pypy-5.4.1" ] ||
-          [ "$TRAVIS_PYTHON_VERSION" = "pypy-5.6.0" ]); then
+          [ "$TRAVIS_PYTHON_VERSION" = "pypy-5.4.1" ]); then
         export PYENV_ROOT="$HOME/.pyenv"
         if [ -f "$PYENV_ROOT/bin/pyenv" ]; then
           pushd "$PYENV_ROOT" && git pull && popd
@@ -38,7 +30,6 @@ install:
         case "$TRAVIS_PYTHON_VERSION" in
             "pypy-5.3.1") export PYPY_VERSION="5.3.1";;
             "pypy-5.4.1") export PYPY_VERSION="5.4.1";;
-            "pypy-5.6.0") export PYPY_VERSION="5.6.0";;
         esac
         "$PYENV_ROOT/bin/pyenv" install --skip-existing "pypy-$PYPY_VERSION"
         virtualenv --python="$PYENV_ROOT/versions/pypy-$PYPY_VERSION/bin/python" "$HOME/virtualenvs/pypy-$PYPY_VERSION"
