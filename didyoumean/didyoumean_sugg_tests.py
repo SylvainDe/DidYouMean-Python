@@ -1693,6 +1693,16 @@ class SyntaxErrorTests(GetSuggestionsTests):
             'cython')
         self.runs(new_code)
 
+    def test_backticks(self):
+        """String with backticks is removed in Python3, use 'repr' instead."""
+        # NICE_TO_HAVE
+        version = (3, 0)
+        expr = "2+3"
+        backtick_str, repr_str = "`%s`" % expr, "repr(%s)" % expr
+        self.runs(backtick_str, up_to_version(version))
+        self.throws(backtick_str, INVALIDSYNTAX, [], from_version(version))
+        self.runs(repr_str)
+
     def test_missing_colon(self):
         """Missing colon is a classic mistake."""
         # NICE_TO_HAVE
