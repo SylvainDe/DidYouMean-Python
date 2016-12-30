@@ -603,6 +603,7 @@ def suggest_unsupported_op(value, frame, groups):
     if attr is None:
         return []
     # Suggestion is based on first type which may not be the best
+    del type2  # unused value
     return suggest_feature_not_supported(attr, type1, frame)
 
 

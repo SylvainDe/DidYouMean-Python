@@ -1361,7 +1361,6 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_keyword_sort_cmpkey(self):
         """Sort and sorted functions have a cmp/key param dep. on the vers."""
-        # NICE_TO_HAVE
         v3 = (3, 0)
         code = "import functools as f\nl = [1, 8, 3]\n" \
                "def comp(a, b): return (a > b) - (a < b)\nl.sort({0})"
