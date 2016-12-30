@@ -905,7 +905,7 @@ class AttributeErrorTests(GetSuggestionsTests):
             code = 'import sys\nsys.' + att_name
             self.throws(code, ATTRIBUTEERROR, sugg, (v3, v35), 'cython')
             self.throws(code, MODATTRIBUTEERROR, sugg, from_version(v35))
-        self.runs('import sys\nsys.type', up_to_version(v3))
+        self.runs('import sys\nsys.exc_type', up_to_version(v3))
         self.runs('import sys\nsys.exc_info()')
 
     def test_removed_xreadlines(self):
