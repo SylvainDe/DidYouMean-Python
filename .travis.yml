@@ -26,9 +26,9 @@ install:
   # From https://github.com/frol/flask-restplus-server-example/blob/master/.travis.yml
   # Travis has pypy 2.5.0, which is way too old, so we upgrade it on the fly:
   - |
-      if [ "$TRAVIS_PYTHON_VERSION" = "pypy531" ] ||
-         [ "$TRAVIS_PYTHON_VERSION" = "pypy541" ] ||
-         [ "$TRAVIS_PYTHON_VERSION" = "pypy560" ]; then
+      if ([ "$TRAVIS_PYTHON_VERSION" = "pypy531" ] ||
+          [ "$TRAVIS_PYTHON_VERSION" = "pypy541" ] ||
+          [ "$TRAVIS_PYTHON_VERSION" = "pypy560" ]); then
         export PYENV_ROOT="$HOME/.pyenv"
         if [ -f "$PYENV_ROOT/bin/pyenv" ]; then
           pushd "$PYENV_ROOT" && git pull && popd
@@ -36,9 +36,9 @@ install:
           rm -rf "$PYENV_ROOT" && git clone --depth 1 https://github.com/yyuu/pyenv.git "$PYENV_ROOT"
         fi
         case "$TRAVIS_PYTHON_VERSION" in
-            "pypy531") export PYPY_VERSION="5.3.1";
-            "pypy541") export PYPY_VERSION="5.4.1";
-            "pypy560") export PYPY_VERSION="5.6.0";
+            "pypy531") export PYPY_VERSION="5.3.1";;
+            "pypy541") export PYPY_VERSION="5.4.1";;
+            "pypy560") export PYPY_VERSION="5.6.0";;
         esac
         "$PYENV_ROOT/bin/pyenv" install --skip-existing "pypy-$PYPY_VERSION"
         virtualenv --python="$PYENV_ROOT/versions/pypy-$PYPY_VERSION/bin/python" "$HOME/virtualenvs/pypy-$PYPY_VERSION"
