@@ -697,6 +697,8 @@ class UnboundLocalErrorTests(GetSuggestionsTests):
         code = 'nb = 0\ndef func():\n\t{0}\n\tnb +=1\nfunc()'
         sugg = 'global nb'
         bad_code, good_code = format_str(code, "", sugg)
+        original_limit = sys.getrecursionlimit()
+        assert original_limit == 2, "original_limit=%d" % original_limit
         self.throws(bad_code, UNBOUNDLOCAL)
         self.runs(good_code)  # this is to be run afterward :-/
 
