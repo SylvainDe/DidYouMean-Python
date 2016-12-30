@@ -697,8 +697,11 @@ class UnboundLocalErrorTests(GetSuggestionsTests):
         code = 'nb = 0\ndef func():\n\t{0}\n\tnb +=1\nfunc()'
         sugg = 'global nb'
         bad_code, good_code = format_str(code, "", sugg)
+        original_limit = sys.getrecursionlimit()
+        sys.setrecursionlimit(1000)  # needed for weird PyPy versions
         self.throws(bad_code, UNBOUNDLOCAL)
         self.runs(good_code)  # this is to be run afterward :-/
+        sys.setrecursionlimit(original_limit)
 
     def test_unbound_nonlocal(self):
         """Shoud be nonlocal nb."""
@@ -1999,12 +2002,14 @@ class RuntimeErrorTests(GetSuggestionsTests):
 
     def test_max_depth(self):
         """Reach maximum recursion depth."""
+        original_limit = sys.getrecursionlimit()
         sys.setrecursionlimit(200)
         code = 'endlessly_recursive_func(0)'
         self.throws(code, MAXRECURDEPTH,
                     ["increase the limit with `sys.setrecursionlimit(limit)`"
                         " (current value is 200)",
                      AVOID_REC_MSG])
+        sys.setrecursionlimit(original_limit)
 
     def test_dict_size_changed_during_iter(self):
         """Test size change during iteration (dict)."""

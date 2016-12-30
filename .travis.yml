@@ -11,21 +11,26 @@ python:
   - "3.5.0b3"
   - "3.6-dev"
   - "nightly"
-  - "pypy"
+  - "pypy-5.3.1"
+  - "pypy-5.4.1"
   - "pypy3"
 
 install:
   # From https://github.com/frol/flask-restplus-server-example/blob/master/.travis.yml
   # Travis has pypy 2.5.0, which is way too old, so we upgrade it on the fly:
   - |
-      if [ "$TRAVIS_PYTHON_VERSION" = "pypy" ]; then
+      if ([ "$TRAVIS_PYTHON_VERSION" = "pypy-5.3.1" ] ||
+          [ "$TRAVIS_PYTHON_VERSION" = "pypy-5.4.1" ]); then
         export PYENV_ROOT="$HOME/.pyenv"
         if [ -f "$PYENV_ROOT/bin/pyenv" ]; then
           pushd "$PYENV_ROOT" && git pull && popd
         else
           rm -rf "$PYENV_ROOT" && git clone --depth 1 https://github.com/yyuu/pyenv.git "$PYENV_ROOT"
         fi
-        export PYPY_VERSION="5.6.0"
+        case "$TRAVIS_PYTHON_VERSION" in
+            "pypy-5.3.1") export PYPY_VERSION="5.3.1";;
+            "pypy-5.4.1") export PYPY_VERSION="5.4.1";;
+        esac
         "$PYENV_ROOT/bin/pyenv" install --skip-existing "pypy-$PYPY_VERSION"
         virtualenv --python="$PYENV_ROOT/versions/pypy-$PYPY_VERSION/bin/python" "$HOME/virtualenvs/pypy-$PYPY_VERSION"
         source "$HOME/virtualenvs/pypy-$PYPY_VERSION/bin/activate"
@@ -43,8 +48,7 @@ before_script:
  - pep257 *.py */*.py
 
 script:
- - if [ "$TRAVIS_PYTHON_VERSION" != "nightly" ]; then coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py; fi
- - if [ "$TRAVIS_PYTHON_VERSION" == "nightly" ]; then       python -m unittest2 discover --start-directory=didyoumean --pattern=*.py; fi
+ - coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py
  - python didyoumean/readme_examples.py
 
 after_success:
