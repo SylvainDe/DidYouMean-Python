@@ -234,6 +234,7 @@ class RegexTests(unittest2.TestCase):
         """Test INTEGER_EXPECTED_GOT_RE."""
         msgs = {
             "expected integer, got str object": 'str',
+            "range() integer end argument expected, got list.": 'list'
         }
         for msg, typ in msgs.items():
             results = ((typ,), dict())
