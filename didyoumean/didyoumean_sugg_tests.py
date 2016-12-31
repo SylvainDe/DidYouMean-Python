@@ -182,6 +182,7 @@ MISSINGPOSERROR = (TypeError, re.MISSING_POS_ARG_RE)
 UNHASHABLE = (TypeError, re.UNHASHABLE_RE)
 UNSUBSCRIPTABLE = (TypeError, re.UNSUBSCRIPTABLE_RE)
 CANNOTBEINTERPRETED = (TypeError, re.CANNOT_BE_INTERPRETED_INT_RE)
+INTEXPECTED = (TypeError, re.INTEGER_EXPECTED_GOT_RE)
 NOATTRIBUTE_TYPEERROR = (TypeError, re.ATTRIBUTEERROR_RE)
 UNEXPECTEDKWARG = (TypeError, re.UNEXPECTED_KEYWORDARG_RE)
 UNEXPECTEDKWARG2 = (TypeError, re.UNEXPECTED_KEYWORDARG2_RE)
@@ -1378,28 +1379,36 @@ class TypeErrorTests(GetSuggestionsTests):
     def test_iter_cannot_be_interpreted_as_int(self):
         """Trying to call `range(len(iterable))` (bad) and forget the len."""
         # NICE_TO_HAVE
+        v3 = (3, 0)
         bad_code = 'range([0, 1, 2])'
         sugg = 'range(len([0, 1, 2]))'
         self.runs(sugg)
-        self.throws(bad_code, CANNOTBEINTERPRETED)
+        self.throws(bad_code, INTEXPECTED, [], up_to_version(v3))
+        self.throws(bad_code, CANNOTBEINTERPRETED, [], from_version(v3))
 
     def test_str_cannot_be_interpreted_as_int(self):
         """Forget to convert str to int."""
         # NICE_TO_HAVE
+        v3 = (3, 0)
         bad_code = 'range("12")'
         sugg = 'range(int("12"))'
         self.runs(sugg)
-        self.throws(bad_code, CANNOTBEINTERPRETED)
+        self.throws(bad_code, INTEXPECTED, [], up_to_version(v3))
+        self.throws(bad_code, CANNOTBEINTERPRETED, [], from_version(v3))
 
     def test_float_cannot_be_interpreted_as_int(self):
         """Use float instead of int."""
         # NICE_TO_HAVE
+        v27 = (2, 7)
+        v3 = (3, 0)
         code = 'import math\nrange({0})'
         good1, good2, bad = format_str(
             code, 'int(12.0)', 'math.floor(12.0)', '12.0')
         self.runs(good1)
         self.runs(good2)
-        self.throws(bad, CANNOTBEINTERPRETED)
+        self.runs(bad, up_to_version(v27))
+        self.throws(bad, INTEXPECTED, [], (v27, v3))
+        self.throws(bad, CANNOTBEINTERPRETED, [], from_version(v3))
 
     def test_customclass_cannot_be_interpreter_as_int(self):
         """Forget to implement the __index__ method."""

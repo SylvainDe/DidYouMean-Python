@@ -230,6 +230,15 @@ class RegexTests(unittest2.TestCase):
             results = ((typ,), dict())
             self.re_matches(msg, re.CANNOT_BE_INTERPRETED_INT_RE, results)
 
+    def test_int_expected_got(self):
+        """Test INTEGER_EXPECTED_GOT_RE."""
+        msgs = {
+            "expected integer, got str object": 'str',
+        }
+        for msg, typ in msgs.items():
+            results = ((typ,), dict())
+            self.re_matches(msg, re.INTEGER_EXPECTED_GOT_RE, results)
+
     def test_outside_function(self):
         """Test OUTSIDE_FUNCTION_RE."""
         msgs = [
