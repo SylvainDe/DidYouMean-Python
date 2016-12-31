@@ -11,6 +11,8 @@ ATTRIBUTEERROR_RE = r"^(?:class |type object )?'?([\w\.]+)'? " \
 MODULEHASNOATTRIBUTE_RE = r"^module '?([\w\.]+)' has no attribute '(\w+)'$"
 UNSUBSCRIPTABLE_RE = r"^'(\w+)' object " \
     r"(?:is (?:not |un)subscriptable)$"
+CANNOT_BE_INTERPRETED_INT_RE = r"^'(\w+)' object cannot be interpreted " \
+    r"as an integer$"
 UNEXPECTED_KEYWORDARG_RE = r"^(.+)\(\) " \
     r"got an unexpected keyword argument '(\w+)'$"
 UNEXPECTED_KEYWORDARG2_RE = r"^'(\w+)' is an " \

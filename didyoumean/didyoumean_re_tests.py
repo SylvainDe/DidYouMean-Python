@@ -220,6 +220,16 @@ class RegexTests(unittest2.TestCase):
         for msg in msgs:
             self.re_matches(msg, re.UNHASHABLE_RE, (groups, dict()))
 
+    def test_cannot_be_interpreted_as_integer(self):
+        """Test CANNOT_BE_INTERPRETED_INT_RE."""
+        msgs = {
+            "'str' object cannot be interpreted as an integer": 'str',
+            "'list' object cannot be interpreted as an integer": 'list',
+        }
+        for msg, typ in msgs.items():
+            results = ((typ,), dict())
+            self.re_matches(msg, re.CANNOT_BE_INTERPRETED_INT_RE, results)
+
     def test_outside_function(self):
         """Test OUTSIDE_FUNCTION_RE."""
         msgs = [

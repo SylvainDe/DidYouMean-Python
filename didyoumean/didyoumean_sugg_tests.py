@@ -181,6 +181,7 @@ NBARGERROR = (TypeError, re.NB_ARG_RE)
 MISSINGPOSERROR = (TypeError, re.MISSING_POS_ARG_RE)
 UNHASHABLE = (TypeError, re.UNHASHABLE_RE)
 UNSUBSCRIPTABLE = (TypeError, re.UNSUBSCRIPTABLE_RE)
+CANNOTBEINTERPRETED = (TypeError, re.CANNOT_BE_INTERPRETED_INT_RE)
 NOATTRIBUTE_TYPEERROR = (TypeError, re.ATTRIBUTEERROR_RE)
 UNEXPECTEDKWARG = (TypeError, re.UNEXPECTED_KEYWORDARG_RE)
 UNEXPECTEDKWARG2 = (TypeError, re.UNEXPECTED_KEYWORDARG2_RE)
@@ -1373,6 +1374,39 @@ class TypeErrorTests(GetSuggestionsTests):
                     CMP_ARG_REMOVED_MSG, from_version(v3), 'pypy')
         self.runs(key_arg)
         self.runs(cmp_to_key, from_version((2, 7)))
+
+    def test_iter_cannot_be_interpreted_as_int(self):
+        """Trying to call `range(len(iterable))` (bad) and forget the len."""
+        # NICE_TO_HAVE
+        bad_code = 'range([0, 1, 2])'
+        sugg = 'range(len([0, 1, 2]))'
+        self.runs(sugg)
+        self.throws(bad_code, CANNOTBEINTERPRETED)
+
+    def test_str_cannot_be_interpreted_as_int(self):
+        """Forget to convert str to int."""
+        # NICE_TO_HAVE
+        bad_code = 'range("12")'
+        sugg = 'range(int("12"))'
+        self.runs(sugg)
+        self.throws(bad_code, CANNOTBEINTERPRETED)
+
+    def test_float_cannot_be_interpreted_as_int(self):
+        """Use float instead of int."""
+        # NICE_TO_HAVE
+        code = 'import math\nrange({0})'
+        good1, good2, bad = format_str(
+            code, 'int(12.0)', 'math.floor(12.0)', '12.0')
+        self.runs(good1)
+        self.runs(good2)
+        self.throws(bad, CANNOTBEINTERPRETED)
+
+    def test_customclass_cannot_be_interpreter_as_int(self):
+        """Forget to implement the __index__ method."""
+        # NICE_TO_HAVE TODO
+        pass
+        # http://stackoverflow.com/questions/17342899/object-cannot-be-interpreted-as-an-integer
+        # https://twitter.com/raymondh/status/773224135409360896
 
     def test_no_implicit_str_conv(self):
         """Trying to concatenate a non-string value to a string."""
