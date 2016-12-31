@@ -1405,7 +1405,9 @@ class TypeErrorTests(GetSuggestionsTests):
         good1, good2, bad = format_str(
             code, 'int(12.0)', 'math.floor(12.0)', '12.0')
         self.runs(good1)
-        self.runs(good2)
+        self.runs(good2, up_to_version(v27))
+        self.throws(good2, (v27, v3))  # floor returns a float -_-
+        self.runs(good2, from_version(v3))
         self.runs(bad, up_to_version(v27))
         self.throws(bad, INTEXPECTED, [], (v27, v3))
         self.throws(bad, CANNOTBEINTERPRETED, [], from_version(v3))
