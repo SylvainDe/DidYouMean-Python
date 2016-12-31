@@ -1408,7 +1408,8 @@ class TypeErrorTests(GetSuggestionsTests):
             code, 'int(12.0)', 'math.floor(12.0)', '12.0')
         self.runs(good1)
         self.runs(good2, up_to_version(v27))
-        self.throws(good2, (v27, v3))  # floor returns a float -_-
+        # floor returns a float before Python 3 -_-
+        self.throws(good2, INTEXPECTED, [], (v27, v3))
         self.runs(good2, from_version(v3))
         self.runs(bad, up_to_version(v27))
         self.throws(bad, INTEXPECTED, [], (v27, v3))
