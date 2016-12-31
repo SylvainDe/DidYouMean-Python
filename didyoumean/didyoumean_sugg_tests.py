@@ -1389,6 +1389,7 @@ class TypeErrorTests(GetSuggestionsTests):
     def test_str_cannot_be_interpreted_as_int(self):
         """Forget to convert str to int."""
         # NICE_TO_HAVE
+        # TODO: Test when the wrong arg is at different pos. regex may vary
         v3 = (3, 0)
         bad_code = 'range("12")'
         sugg = 'range(int("12"))'
@@ -1399,6 +1400,7 @@ class TypeErrorTests(GetSuggestionsTests):
     def test_float_cannot_be_interpreted_as_int(self):
         """Use float instead of int."""
         # NICE_TO_HAVE
+        # TODO: Test when the wrong arg is at different pos. regex may vary
         v27 = (2, 7)
         v3 = (3, 0)
         code = 'import math\nrange({0})'
@@ -1415,6 +1417,7 @@ class TypeErrorTests(GetSuggestionsTests):
     def test_customclass_cannot_be_interpreter_as_int(self):
         """Forget to implement the __index__ method."""
         # NICE_TO_HAVE TODO
+        # TODO: Test when the wrong arg is at different pos. regex may vary
         pass
         # http://stackoverflow.com/questions/17342899/object-cannot-be-interpreted-as-an-integer
         # https://twitter.com/raymondh/status/773224135409360896
