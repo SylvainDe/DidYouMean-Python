@@ -183,6 +183,7 @@ UNHASHABLE = (TypeError, re.UNHASHABLE_RE)
 UNSUBSCRIPTABLE = (TypeError, re.UNSUBSCRIPTABLE_RE)
 CANNOTBEINTERPRETED = (TypeError, re.CANNOT_BE_INTERPRETED_INT_RE)
 INTEXPECTED = (TypeError, re.INTEGER_EXPECTED_GOT_RE)
+INDICESMUSTBEINT = (TypeError, re.INDICES_MUST_BE_INT_RE)
 NOATTRIBUTE_TYPEERROR = (TypeError, re.ATTRIBUTEERROR_RE)
 UNEXPECTEDKWARG = (TypeError, re.UNEXPECTED_KEYWORDARG_RE)
 UNEXPECTEDKWARG2 = (TypeError, re.UNEXPECTED_KEYWORDARG2_RE)
@@ -1421,6 +1422,28 @@ class TypeErrorTests(GetSuggestionsTests):
         pass
         # http://stackoverflow.com/questions/17342899/object-cannot-be-interpreted-as-an-integer
         # https://twitter.com/raymondh/status/773224135409360896
+
+    def test_indices_cant_be_str(self):
+        """Use str as index."""
+        # NICE_TO_HAVE TODO
+        for code in ['[1, 2, 3][{0}]', '(1, 2, 3)[{0}]']:
+            bad, good = format_str(code, '"2"', 'int("2")')
+            self.runs(good)
+            self.throws(bad, INDICESMUSTBEINT)
+
+    def test_indices_cant_be_float(self):
+        """Use float as index."""
+        # NICE_TO_HAVE TODO
+        # TODO
+        code = '[1, 2, 3][{0}]'
+        good1, good2, bad = format_str(
+                code, 'int(12.0)', 'math.floor(12.0)', '12.0')
+
+    def test_indices_cant_be_custom(self):
+        """Use custom as index."""
+        # NICE_TO_HAVE TODO
+        # TODO
+        pass
 
     def test_no_implicit_str_conv(self):
         """Trying to concatenate a non-string value to a string."""

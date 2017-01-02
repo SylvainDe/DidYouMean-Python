@@ -241,6 +241,16 @@ class RegexTests(unittest2.TestCase):
             results = ((typ,), dict())
             self.re_matches(msg, re.INTEGER_EXPECTED_GOT_RE, results)
 
+    def test_indices_must_be_int(self):
+        """Test INDICES_MUST_BE_INT_RE."""
+        msgs = {
+            "list indices must be integers or slices, not str": "str",
+            "tuple indices must be integers or slices, not str": "str",
+        }
+        for msg, typ in msgs.items():
+            results = ((typ,), dict())
+            self.re_matches(msg, re.INDICES_MUST_BE_INT_RE, results)
+
     def test_outside_function(self):
         """Test OUTSIDE_FUNCTION_RE."""
         msgs = [
