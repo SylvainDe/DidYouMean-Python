@@ -1389,31 +1389,30 @@ class TypeErrorTests(GetSuggestionsTests):
     def test_str_cannot_be_interpreted_as_int(self):
         """Forget to convert str to int."""
         # NICE_TO_HAVE
-        # TODO: Test when the wrong arg is at different pos. regex may vary
         v3 = (3, 0)
-        bad_code = 'range("12")'
-        sugg = 'range(int("12"))'
-        self.runs(sugg)
-        self.throws(bad_code, INTEXPECTED, [], up_to_version(v3))
-        self.throws(bad_code, CANNOTBEINTERPRETED, [], from_version(v3))
+        for code in ['range({0})', 'range({0}, 14)', 'range(0, 24, {0})']:
+            bad_code, good_code = format_str(code, '"12"', 'int("12")')
+            self.runs(good_code)
+            self.throws(bad_code, INTEXPECTED, [], up_to_version(v3))
+            self.throws(bad_code, CANNOTBEINTERPRETED, [], from_version(v3))
 
     def test_float_cannot_be_interpreted_as_int(self):
         """Use float instead of int."""
         # NICE_TO_HAVE
-        # TODO: Test when the wrong arg is at different pos. regex may vary
         v27 = (2, 7)
         v3 = (3, 0)
-        code = 'import math\nrange({0})'
-        good1, good2, bad = format_str(
-            code, 'int(12.0)', 'math.floor(12.0)', '12.0')
-        self.runs(good1)
-        self.runs(good2, up_to_version(v27))
-        # floor returns a float before Python 3 -_-
-        self.throws(good2, INTEXPECTED, [], (v27, v3))
-        self.runs(good2, from_version(v3))
-        self.runs(bad, up_to_version(v27))
-        self.throws(bad, INTEXPECTED, [], (v27, v3))
-        self.throws(bad, CANNOTBEINTERPRETED, [], from_version(v3))
+        for code in ['range({0})', 'range({0}, 14)', 'range(0, 24, {0})']:
+            full_code = 'import math\n' + range_ex
+            good1, good2, bad = format_str(
+                full_code, 'int(12.0)', 'math.floor(12.0)', '12.0')
+            self.runs(good1)
+            self.runs(good2, up_to_version(v27))
+            # floor returns a float before Python 3 -_-
+            self.throws(good2, INTEXPECTED, [], (v27, v3))
+            self.runs(good2, from_version(v3))
+            self.runs(bad, up_to_version(v27))
+            self.throws(bad, INTEXPECTED, [], (v27, v3))
+            self.throws(bad, CANNOTBEINTERPRETED, [], from_version(v3))
 
     def test_customclass_cannot_be_interpreter_as_int(self):
         """Forget to implement the __index__ method."""
