@@ -244,8 +244,13 @@ class RegexTests(unittest2.TestCase):
     def test_indices_must_be_int(self):
         """Test INDICES_MUST_BE_INT_RE."""
         msgs = {
+            # Python 2.6, 2.7, 3.2, 3.3, 3.4
+            "list indices must be integers, not str": "str",
             "list indices must be integers or slices, not str": "str",
+            # Python 3.5
             "tuple indices must be integers or slices, not str": "str",
+            # PyPy
+            "list index must be an integer, not str": "str",
         }
         for msg, typ in msgs.items():
             results = ((typ,), dict())

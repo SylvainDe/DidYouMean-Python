@@ -16,7 +16,8 @@ CANNOT_BE_INTERPRETED_INT_RE = r"^'(\w+)' object cannot be interpreted " \
 INTEGER_EXPECTED_GOT_RE = r"^" \
     r"(?:range\(\) integer \w+ argument expected|expected integer), " \
     r"got (\w+)(?: object|\.)$"
-INDICES_MUST_BE_INT_RE = "^\w+ indices must be integers or slices, not (\w+)$"
+INDICES_MUST_BE_INT_RE = "^\w+ ind(?:ices|ex)? must be " \
+    r"(?:an integer|integers)(?: or slices)?, not (\w+)$"
 UNEXPECTED_KEYWORDARG_RE = r"^(.+)\(\) " \
     r"got an unexpected keyword argument '(\w+)'$"
 UNEXPECTED_KEYWORDARG2_RE = r"^'(\w+)' is an " \
