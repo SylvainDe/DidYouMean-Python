@@ -14,7 +14,7 @@ UNSUBSCRIPTABLE_RE = r"^'(\w+)' object " \
 CANNOT_BE_INTERPRETED_INT_RE = r"^'(\w+)' object cannot be interpreted " \
     r"as an integer$"
 INTEGER_EXPECTED_GOT_RE = r"^" \
-    r"(?:range\(\) integer end argument expected|expected integer), " \
+    r"(?:range\(\) integer \w+ argument expected|expected integer), " \
     r"got (\w+)(?: object|\.)$"
 UNEXPECTED_KEYWORDARG_RE = r"^(.+)\(\) " \
     r"got an unexpected keyword argument '(\w+)'$"

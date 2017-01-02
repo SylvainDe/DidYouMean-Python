@@ -1402,7 +1402,7 @@ class TypeErrorTests(GetSuggestionsTests):
         v27 = (2, 7)
         v3 = (3, 0)
         for code in ['range({0})', 'range({0}, 14)', 'range(0, 24, {0})']:
-            full_code = 'import math\n' + range_ex
+            full_code = 'import math\n' + code
             good1, good2, bad = format_str(
                 full_code, 'int(12.0)', 'math.floor(12.0)', '12.0')
             self.runs(good1)
