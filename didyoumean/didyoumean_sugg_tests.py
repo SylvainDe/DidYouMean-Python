@@ -181,6 +181,12 @@ NBARGERROR = (TypeError, re.NB_ARG_RE)
 MISSINGPOSERROR = (TypeError, re.MISSING_POS_ARG_RE)
 UNHASHABLE = (TypeError, re.UNHASHABLE_RE)
 UNSUBSCRIPTABLE = (TypeError, re.UNSUBSCRIPTABLE_RE)
+CANNOTBEINTERPRETED = (TypeError, re.CANNOT_BE_INTERPRETED_INT_RE)
+INTEXPECTED = (TypeError, re.INTEGER_EXPECTED_GOT_RE)
+INDICESMUSTBEINT = (TypeError, re.INDICES_MUST_BE_INT_RE)
+CANNOTBEINTERPRETEDINDEX = (
+    TypeError,
+    r"^object cannot be interpreted as an index$")
 NOATTRIBUTE_TYPEERROR = (TypeError, re.ATTRIBUTEERROR_RE)
 UNEXPECTEDKWARG = (TypeError, re.UNEXPECTED_KEYWORDARG_RE)
 UNEXPECTEDKWARG2 = (TypeError, re.UNEXPECTED_KEYWORDARG2_RE)
@@ -297,7 +303,7 @@ class GetSuggestionsTests(unittest2.TestCase):
                 .format(type_caught, value, error_type) + details)
             msg = next((a for a in value.args if isinstance(a, str)), '')
             if error_msg is not None:
-                self.assertRegexpMatches(msg, error_msg)
+                self.assertRegexpMatches(msg, error_msg, details)
             suggestions = sorted(
                 get_suggestions_for_exception(value, traceback))
             self.assertEqual(suggestions, sugg, details)
@@ -1373,6 +1379,96 @@ class TypeErrorTests(GetSuggestionsTests):
                     CMP_ARG_REMOVED_MSG, from_version(v3), 'pypy')
         self.runs(key_arg)
         self.runs(cmp_to_key, from_version((2, 7)))
+
+    def test_iter_cannot_be_interpreted_as_int(self):
+        """Trying to call `range(len(iterable))` (bad) and forget the len."""
+        # NICE_TO_HAVE
+        v3 = (3, 0)
+        bad_code = 'range([0, 1, 2])'
+        sugg = 'range(len([0, 1, 2]))'
+        self.runs(sugg)
+        self.throws(bad_code, INTEXPECTED, [], up_to_version(v3))
+        self.throws(bad_code, CANNOTBEINTERPRETED, [], from_version(v3))
+
+    RANGE_CODE_TEMPLATES = [
+        'range({0})',
+        'range({0}, 14)',
+        'range(0, 24, {0})'
+    ]
+    INDEX_CODE_TEMPLATES = ['[1, 2, 3][{0}]', '(1, 2, 3)[{0}]']
+
+    def test_str_cannot_be_interpreted_as_int(self):
+        """Forget to convert str to int."""
+        # NICE_TO_HAVE
+        v3 = (3, 0)
+        for code in self.RANGE_CODE_TEMPLATES:
+            bad_code, good_code = format_str(code, '"12"', 'int("12")')
+            self.runs(good_code)
+            self.throws(bad_code, INTEXPECTED, [], up_to_version(v3))
+            self.throws(bad_code, CANNOTBEINTERPRETED, [], from_version(v3))
+
+    def test_float_cannot_be_interpreted_as_int(self):
+        """Use float instead of int."""
+        # NICE_TO_HAVE
+        v27 = (2, 7)
+        v3 = (3, 0)
+        for code in self.RANGE_CODE_TEMPLATES:
+            full_code = 'import math\n' + code
+            good1, good2, bad = format_str(
+                full_code, 'int(12.0)', 'math.floor(12.0)', '12.0')
+            self.runs(good1)
+            self.runs(good2, up_to_version(v27))
+            # floor returns a float before Python 3 -_-
+            self.throws(good2, INTEXPECTED, [], (v27, v3))
+            self.runs(good2, from_version(v3))
+            self.runs(bad, up_to_version(v27))
+            self.throws(bad, INTEXPECTED, [], (v27, v3))
+            self.throws(bad, CANNOTBEINTERPRETED, [], from_version(v3))
+
+    def test_customclass_cannot_be_interpreter_as_int(self):
+        """Forget to implement the __index__ method."""
+        # NICE_TO_HAVE
+        # http://stackoverflow.com/questions/17342899/object-cannot-be-interpreted-as-an-integer
+        # https://twitter.com/raymondh/status/773224135409360896
+        v3 = (3, 0)
+        for code in self.RANGE_CODE_TEMPLATES:
+            bad,  = format_str(code, 'FoobarClass()')
+            self.throws(bad, ATTRIBUTEERROR, [], up_to_version(v3))
+            self.throws(bad, CANNOTBEINTERPRETED, [], from_version(v3))
+
+    def test_indices_cant_be_str(self):
+        """Use str as index."""
+        # NICE_TO_HAVE
+        for code in self.INDEX_CODE_TEMPLATES:
+            bad, good = format_str(code, '"2"', 'int("2")')
+            self.runs(good)
+            self.throws(bad, INDICESMUSTBEINT)
+
+    def test_indices_cant_be_float(self):
+        """Use float as index."""
+        # NICE_TO_HAVE
+        v27 = (2, 7)
+        v3 = (3, 0)
+        for code in self.INDEX_CODE_TEMPLATES:
+            good1, good2, bad = format_str(
+                    code, 'int(2.0)', 'math.floor(2.0)', '2.0')
+            self.runs(good1)
+            # floor returns a float before Python 3 -_-
+            self.throws(good2, INDICESMUSTBEINT, [], up_to_version(v3))
+            self.runs(good2, from_version(v3))
+            self.throws(bad, INDICESMUSTBEINT, [])
+
+    def test_indices_cant_be_custom(self):
+        """Use custom as index."""
+        # NICE_TO_HAVE
+        v3 = (3, 0)
+        for code in self.INDEX_CODE_TEMPLATES:
+            bad,  = format_str(code, 'FoobarClass()')
+            self.throws(bad, INDICESMUSTBEINT, [], up_to_version(v3), 'pypy')
+            self.throws(
+                    bad, CANNOTBEINTERPRETEDINDEX,
+                    [], up_to_version(v3), 'cython')
+            self.throws(bad, INDICESMUSTBEINT, [], from_version(v3))
 
     def test_no_implicit_str_conv(self):
         """Trying to concatenate a non-string value to a string."""

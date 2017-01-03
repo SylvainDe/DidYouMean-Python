@@ -220,6 +220,42 @@ class RegexTests(unittest2.TestCase):
         for msg in msgs:
             self.re_matches(msg, re.UNHASHABLE_RE, (groups, dict()))
 
+    def test_cannot_be_interpreted_as_integer(self):
+        """Test CANNOT_BE_INTERPRETED_INT_RE."""
+        msgs = {
+            "'str' object cannot be interpreted as an integer": 'str',
+            "'list' object cannot be interpreted as an integer": 'list',
+        }
+        for msg, typ in msgs.items():
+            results = ((typ,), dict())
+            self.re_matches(msg, re.CANNOT_BE_INTERPRETED_INT_RE, results)
+
+    def test_int_expected_got(self):
+        """Test INTEGER_EXPECTED_GOT_RE."""
+        msgs = {
+            "expected integer, got str object": 'str',
+            "range() integer end argument expected, got list.": 'list',
+            "range() integer start argument expected, got list.": 'list',
+        }
+        for msg, typ in msgs.items():
+            results = ((typ,), dict())
+            self.re_matches(msg, re.INTEGER_EXPECTED_GOT_RE, results)
+
+    def test_indices_must_be_int(self):
+        """Test INDICES_MUST_BE_INT_RE."""
+        msgs = {
+            # Python 2.6, 2.7, 3.2, 3.3, 3.4
+            "list indices must be integers, not str": "str",
+            "list indices must be integers or slices, not str": "str",
+            # Python 3.5
+            "tuple indices must be integers or slices, not str": "str",
+            # PyPy
+            "list index must be an integer, not str": "str",
+        }
+        for msg, typ in msgs.items():
+            results = ((typ,), dict())
+            self.re_matches(msg, re.INDICES_MUST_BE_INT_RE, results)
+
     def test_outside_function(self):
         """Test OUTSIDE_FUNCTION_RE."""
         msgs = [
