@@ -1456,8 +1456,7 @@ class TypeErrorTests(GetSuggestionsTests):
             # floor returns a float before Python 3 -_-
             self.throws(good2, INDICESMUSTBEINT, [], up_to_version(v3))
             self.runs(good2, from_version(v3))
-            self.runs(bad, up_to_version(v27))
-            self.throws(bad, INDICESMUSTBEINT, [], from_version(v27))
+            self.throws(bad, INDICESMUSTBEINT, [])
 
     def test_indices_cant_be_custom(self):
         """Use custom as index."""
@@ -1465,7 +1464,10 @@ class TypeErrorTests(GetSuggestionsTests):
         v3 = (3, 0)
         for code in self.INDEX_CODE_TEMPLATES:
             bad,  = format_str(code, 'FoobarClass()')
-            self.throws(bad, CANNOTBEINTERPRETEDINDEX, [], up_to_version(v3))
+            self.throws(bad, INDICESMUSTBEINT, [], up_to_version(v3), 'pypy')
+            self.throws(
+                    bad, CANNOTBEINTERPRETEDINDEX,
+                    [], up_to_version(v3), 'cython')
             self.throws(bad, INDICESMUSTBEINT, [], from_version(v3))
 
     def test_no_implicit_str_conv(self):
