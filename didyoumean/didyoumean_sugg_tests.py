@@ -184,6 +184,9 @@ UNSUBSCRIPTABLE = (TypeError, re.UNSUBSCRIPTABLE_RE)
 CANNOTBEINTERPRETED = (TypeError, re.CANNOT_BE_INTERPRETED_INT_RE)
 INTEXPECTED = (TypeError, re.INTEGER_EXPECTED_GOT_RE)
 INDICESMUSTBEINT = (TypeError, re.INDICES_MUST_BE_INT_RE)
+CANNOTBEINTERPRETEDINDEX = (
+    TypeError,
+    r"^object cannot be interpreted as an index$")
 NOATTRIBUTE_TYPEERROR = (TypeError, re.ATTRIBUTEERROR_RE)
 UNEXPECTEDKWARG = (TypeError, re.UNEXPECTED_KEYWORDARG_RE)
 UNEXPECTEDKWARG2 = (TypeError, re.UNEXPECTED_KEYWORDARG2_RE)
@@ -1430,7 +1433,7 @@ class TypeErrorTests(GetSuggestionsTests):
         v3 = (3, 0)
         for code in self.RANGE_CODE_TEMPLATES:
             bad,  = format_str(code, 'FoobarClass()')
-            self.throws(bad, INTEXPECTED, [], up_to_version(v3))
+            self.throws(bad, ATTRIBUTEERROR, [], up_to_version(v3))
             self.throws(bad, CANNOTBEINTERPRETED, [], from_version(v3))
 
     def test_indices_cant_be_str(self):
@@ -1450,9 +1453,8 @@ class TypeErrorTests(GetSuggestionsTests):
             good1, good2, bad = format_str(
                     code, 'int(2.0)', 'math.floor(2.0)', '2.0')
             self.runs(good1)
-            self.runs(good2, up_to_version(v27))
             # floor returns a float before Python 3 -_-
-            self.throws(good2, INDICESMUSTBEINT, [], (v27, v3))
+            self.throws(good2, INDICESMUSTBEINT, [], up_to_version(v3))
             self.runs(good2, from_version(v3))
             self.runs(bad, up_to_version(v27))
             self.throws(bad, INDICESMUSTBEINT, [], from_version(v27))
@@ -1460,9 +1462,11 @@ class TypeErrorTests(GetSuggestionsTests):
     def test_indices_cant_be_custom(self):
         """Use custom as index."""
         # NICE_TO_HAVE
+        v3 = (3, 0)
         for code in self.INDEX_CODE_TEMPLATES:
             bad,  = format_str(code, 'FoobarClass()')
-            self.throws(bad, INDICESMUSTBEINT)
+            self.throws(bad, CANNOTBEINTERPRETEDINDEX, [], up_to_version(v3))
+            self.throws(bad, INDICESMUSTBEINT, [], from_version(v3))
 
     def test_no_implicit_str_conv(self):
         """Trying to concatenate a non-string value to a string."""
