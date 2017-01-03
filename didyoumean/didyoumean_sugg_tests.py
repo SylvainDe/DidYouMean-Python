@@ -1427,7 +1427,7 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_customclass_cannot_be_interpreter_as_int(self):
         """Forget to implement the __index__ method."""
-        # NICE_TO_HAVE TODO
+        # NICE_TO_HAVE
         # http://stackoverflow.com/questions/17342899/object-cannot-be-interpreted-as-an-integer
         # https://twitter.com/raymondh/status/773224135409360896
         v3 = (3, 0)
