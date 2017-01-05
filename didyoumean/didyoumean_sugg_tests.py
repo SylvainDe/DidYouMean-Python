@@ -1057,6 +1057,7 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_not_sub(self):
         """Should be function call, not [] operator."""
+        # https://twitter.com/raymondh/status/772957699478663169
         typo, sugg = '[2]', '(2)'
         code = func_gen(param='a') + 'some_func{0}'
         bad_code, good_code = format_str(code, typo, sugg)
@@ -2082,6 +2083,7 @@ class ValueErrorTests(GetSuggestionsTests):
 
     def test_timedata_does_not_match(self):
         """Strptime arguments are in wrong order."""
+        # https://twitter.com/brandon_rhodes/status/781234730091941888
         code = 'import datetime\ndatetime.datetime.strptime({0}, {1})'
         timedata, timeformat = '"30 Nov 00"', '"%d %b %y"'
         good_code = code.format(*(timedata, timeformat))
