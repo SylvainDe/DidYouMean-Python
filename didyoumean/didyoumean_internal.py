@@ -633,7 +633,6 @@ def suggest_unexpected_keywordarg(value, frame, groups):
     """Get suggestions in case of UNEXPECTED_KEYWORDARG error."""
     del value  # unused param
     func_name, kw_arg = groups
-    arg_names = set()
     functions = get_func_by_name(func_name, frame)
     func_codes = [f.__code__ for f in functions if hasattr(f, '__code__')]
     args = set([var for func in func_codes for var in func.co_varnames])
