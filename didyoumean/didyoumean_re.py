@@ -2,28 +2,37 @@
 """Regular expressions to parse error messages."""
 import re
 
-
-VARREFBEFOREASSIGN_RE = r"^(?:local|free) variable '(?P<name>\w+)' " \
-    r"referenced before assignment(?: in enclosing scope)?$"
-NAMENOTDEFINED_RE = r"^(?:global )?name '(?P<name>\w+)' is not defined$"
-ATTRIBUTEERROR_RE = r"^(?:class |type object )?'?([\w\.]+)'? " \
-    r"(?:object |instance )?has no attribute '(\w+)'$"
-MODULEHASNOATTRIBUTE_RE = r"^module '?([\w\.]+)' has no attribute '(\w+)'$"
-UNSUBSCRIPTABLE_RE = r"^'(\w+)' object " \
-    r"(?:is (?:not |un)subscriptable)$"
-CANNOT_BE_INTERPRETED_INT_RE = r"^'(\w+)' object cannot be interpreted " \
-    r"as an integer$"
+# https://docs.python.org/3/reference/grammar.html
+IDENTIFIER = r"[^\d\W]\w*"
+VAR_NAME = IDENTIFIER
+ATTR_NAME = IDENTIFIER
+ARG_NAME = IDENTIFIER
+TYPE_NAME = r"[\w\.-]+"
+MODULE_NAME = r"[\w\.]+"
+VARREFBEFOREASSIGN_RE = r"^(?:local|free) variable '(?P<name>{0})' " \
+    r"referenced before assignment(?: in enclosing scope)?$".format(VAR_NAME)
+NAMENOTDEFINED_RE = r"^(?:global )?name '(?P<name>{0})' " \
+    r"is not defined$".format(VAR_NAME)
+ATTRIBUTEERROR_RE = r"^(?:class |type object )?'?({0})'? " \
+    r"(?:object |instance )?has no attribute " \
+    r"'(?P<attr>{1})'$".format(TYPE_NAME, ATTR_NAME)
+MODULEHASNOATTRIBUTE_RE = r"^module '?({0})' has no attribute " \
+    r"'(?P<attr>{1})'$".format(MODULE_NAME, ATTR_NAME)
+UNSUBSCRIPTABLE_RE = r"^'({0})' object " \
+    r"(?:is (?:not |un)subscriptable)$".format(TYPE_NAME)
+CANNOT_BE_INTERPRETED_INT_RE = r"^'({0})' object cannot be interpreted " \
+    r"as an integer$".format(TYPE_NAME)
 INTEGER_EXPECTED_GOT_RE = r"^" \
     r"(?:range\(\) integer \w+ argument expected|expected integer), " \
-    r"got (\w+)(?: object|\.)$"
-INDICES_MUST_BE_INT_RE = "^\w+ ind(?:ices|ex)? must be " \
-    r"(?:an integer|integers)(?: or slices)?, not (\w+)$"
+    r"got ({0})(?: object|\.)$".format(TYPE_NAME)
+INDICES_MUST_BE_INT_RE = "^{0} ind(?:ices|ex)? must be " \
+    r"(?:an integer|integers)(?: or slices)?, not ({0})$".format(TYPE_NAME)
 UNEXPECTED_KEYWORDARG_RE = r"^(.+)\(\) " \
-    r"got an unexpected keyword argument '(\w+)'$"
-UNEXPECTED_KEYWORDARG2_RE = r"^'(\w+)' is an " \
-    r"invalid keyword argument for this function$"
+    r"got an unexpected keyword argument '(?P<arg>{0})'$".format(ARG_NAME)
+UNEXPECTED_KEYWORDARG2_RE = r"^'(?P<arg>{0})' is an " \
+    r"invalid keyword argument for this function$".format(ARG_NAME)
 UNEXPECTED_KEYWORDARG3_RE = r"^invalid keyword arguments to (\w+)\(\)$"
-NOMODULE_RE = r"^No module named '?(\w+)'?$"
+NOMODULE_RE = r"^No module named '?({0})'?$".format(MODULE_NAME)
 CANNOTIMPORT_RE = r"^cannot import name '?(\w+)'?$"
 INDEXOUTOFRANGE_RE = r"^list index out of range$"
 ZERO_LEN_FIELD_RE = r"^zero length field name in format$"
@@ -33,9 +42,10 @@ TOO_MANY_VALUES_UNPACK_RE = r"^too many values " \
 OUTSIDE_FUNCTION_RE = r"^'?(\w+)'? outside function$"
 NEED_MORE_VALUES_RE = r"^(?:need more than \d+|not enough) values to unpack" \
     r"(?: \(expected \d+, got \d+\))?$"
-UNHASHABLE_RE = r"^(?:unhashable type: )?'(\w+)'(?: objects are unhashable)?$"
+UNHASHABLE_RE = r"^(?:unhashable type: )?'({0})'" \
+    r"(?: objects are unhashable)?$".format(TYPE_NAME)
 MISSING_PARENT_RE = r"^Missing parentheses in call to '(\w+)'$"
-INVALID_LITERAL_RE = r"^invalid literal for (\w+)\(\) with base \d+: '(\w+)'$"
+INVALID_LITERAL_RE = r"^invalid literal for (\w+)\(\) with base \d+: '(.*)'$"
 NB_ARG_RE = r"^(\w+)\(\) takes (?:exactly |at least )?(no|\d+) " \
     r"(?:positional |non-keyword )?arguments? " \
     r"\(?(?:but )?(\d+) (?:were |was )?given\)?" \
@@ -59,23 +69,28 @@ IMPORTSTAR_RE = r"^import \* (?:only allowed at module level|" \
     r"(?:is a nested function|" \
     r"(?:)contains a nested function with free variables))$"
 UNSUPPORTED_OP_RE = r"^unsupported operand type\(s\) for (.*): " \
-    r"'(\w+)' and '(\w+)'$"
+    r"'({0})' and '({0})'$".format(TYPE_NAME)
 BAD_OPERAND_UNARY_RE = r"^(?:bad|unsupported) operand type for " \
     r"(?:unary )?(.*): '(.*)'$"
-OBJ_DOES_NOT_SUPPORT_RE = r"^\'(\w+)\' object (?:does not|doesn't) support " \
-    r"(.*)$"
-CANNOT_CONCAT_RE = r"^cannot concatenate '(\w+)' and '(\w+)' objects$"
-CANT_CONVERT_RE = r"^Can't convert '(\w+)' object to (\w+) implicitly$"
-MUST_BE_TYPE1_NOT_TYPE2_RE = r"^must be (\w+), not (\w+)$"
-NOT_CALLABLE_RE = r"^'(\w+)' object is not callable$"
-DESCRIPT_REQUIRES_TYPE_RE = r"^descriptor '(\w+)' requires a '(\w+)' " \
-    r"object but received a '(\w+)'$"
-ARG_NOT_ITERABLE_RE = r"^(?:argument of type )?'(\w+)'" \
-    r"(?: object)? is not iterable$"
+OBJ_DOES_NOT_SUPPORT_RE = r"^\'({0})\' object (?:does not|doesn't) support " \
+    r"(.*)$".format(TYPE_NAME)
+CANNOT_CONCAT_RE = r"^cannot concatenate '({0})' and '({0})' " \
+    r"objects$".format(TYPE_NAME)
+CANT_CONVERT_RE = r"^Can't convert '({0})' object to ({0}) " \
+    r"implicitly$".format(TYPE_NAME)
+MUST_BE_TYPE1_NOT_TYPE2_RE = r"^must be ({0}), not ({0})$".format(TYPE_NAME)
+NOT_CALLABLE_RE = r"^'({0})' object is not callable$".format(TYPE_NAME)
+DESCRIPT_REQUIRES_TYPE_RE = r"^descriptor '(\w+)' requires a '({0})' " \
+    r"object but received a '({0})'$".format(TYPE_NAME)
+ARG_NOT_ITERABLE_RE = r"^(?:argument of type )?'({0})'" \
+    r"(?: object)? is not iterable$".format(TYPE_NAME)
 MUST_BE_CALLED_WITH_INST_RE = r"^unbound method (\w+)\(\) must be called " \
-    r"with (\w+) instance as first argument \(got (\w+) instance instead\)$"
-OBJECT_HAS_NO_FUNC_RE = r"^(?:object of type )?'(\w+)' has no (\w+)(?:\(\))?$"
-NO_BINDING_NONLOCAL_RE = r"^no binding for nonlocal '(\w+)' found$"
+    r"with ({0}) instance as first argument " \
+    r"\(got ({0}) instance instead\)$".format(TYPE_NAME)
+OBJECT_HAS_NO_FUNC_RE = r"^(?:object of type )?'({0})' has no " \
+    r"(\w+)(?:\(\))?$".format(TYPE_NAME)
+NO_BINDING_NONLOCAL_RE = r"^no binding for nonlocal '({0})' " \
+    r"found$".format(VAR_NAME)
 NONLOCAL_AT_MODULE_RE = r"^nonlocal declaration not allowed at module level$"
 UNEXPECTED_EOF_RE = r"^unexpected EOF while parsing$"
 NO_SUCH_FILE_RE = r"^No such file or directory$"
@@ -85,9 +100,9 @@ MAX_RECURSION_DEPTH_RE = r"^maximum recursion depth exceeded$"
 SIZE_CHANGED_DURING_ITER_RE = r"^(\w+) changed size during iteration$"
 EXC_MUST_DERIVE_FROM_RE = r"^exceptions must .*derive.*from.*BaseException.*$"
 UNORDERABLE_TYPES_RE = r"^unorderable types: " \
-        r"\w+(?:\(\))? [<=>]+ \w+(?:\(\))?$"
+        r"{0}(?:\(\))? [<=>]+ {0}(?:\(\))?$".format(TYPE_NAME)
 OP_NOT_SUPP_BETWEEN_INSTANCES_RE = r"^'[<=>]+' not supported between " \
-        r"instances of '\w+' and '\w+'$"
+        r"instances of '{0}' and '{0}'$".format(TYPE_NAME)
 
 ALL_REGEXPS = dict((k, v)
                    for k, v in dict(locals()).items()
