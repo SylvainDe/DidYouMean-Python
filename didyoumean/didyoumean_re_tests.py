@@ -519,6 +519,11 @@ class RegexTests(unittest2.TestCase):
         results = (groups, dict())
         self.re_matches(msg, re.CANNOT_CONCAT_RE, results)
 
+    def test_only_concat(self):
+        """Test ONLY_CONCAT_RE."""
+        msg = 'can only concatenate list (not "set") to list'
+        self.re_matches(msg, re.ONLY_CONCAT_RE, NO_GROUP)
+
     def test_unsupported_operand(self):
         """Test UNSUPPORTED_OP_RE."""
         msg = "unsupported operand type(s) for +: 'int' and 'str'"

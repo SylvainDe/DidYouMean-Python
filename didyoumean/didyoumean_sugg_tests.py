@@ -195,6 +195,7 @@ UNSUPPORTEDOPERAND = (TypeError, re.UNSUPPORTED_OP_RE)
 BADOPERANDUNARY = (TypeError, re.BAD_OPERAND_UNARY_RE)
 OBJECTDOESNOTSUPPORT = (TypeError, re.OBJ_DOES_NOT_SUPPORT_RE)
 CANNOTCONCAT = (TypeError, re.CANNOT_CONCAT_RE)
+ONLYCONCAT = (TypeError, re.ONLY_CONCAT_RE)
 CANTCONVERT = (TypeError, re.CANT_CONVERT_RE)
 MUSTBETYPENOTTYPE = (TypeError, re.MUST_BE_TYPE1_NOT_TYPE2_RE)
 NOTCALLABLE = (TypeError, re.NOT_CALLABLE_RE)
@@ -1479,6 +1480,32 @@ class TypeErrorTests(GetSuggestionsTests):
         bad_code, good_code = format_str(code, typo, sugg)
         self.throws(bad_code, UNSUPPORTEDOPERAND)
         self.runs(good_code)
+
+    def test_cannot_concatenate_iter_to_list(self):
+        """Trying to concatenate a non-list iterable to a list."""
+        # NICE_TO_HAVE
+        v3 = (3, 0)
+        code = 'list() + {0}'
+        good, bad, sugg, bad2, bad3, bad4 = \
+            format_str(code, 'list()', 'set()', 'list(set())',
+                       'range(10)', 'dict().keys()', 'dict().iterkeys()')
+        self.runs(good)
+        self.runs(sugg)
+        self.throws(bad, ONLYCONCAT, [], ALL_VERSIONS, 'cython')
+        self.throws(bad, UNSUPPORTEDOPERAND, [], ALL_VERSIONS, 'pypy')
+        # Other examples are more interesting but depend on the version used:
+        #  - range returns a list or a range object
+        self.runs(bad2, up_to_version(v3))
+        self.throws(bad2, ONLYCONCAT, [], from_version(v3), 'cython')
+        self.throws(bad2, UNSUPPORTEDOPERAND, [], from_version(v3), 'pypy')
+        #  - keys return a list or a view object
+        self.runs(bad3, up_to_version(v3))
+        self.throws(bad3, ONLYCONCAT, [], from_version(v3), 'cython')
+        self.throws(bad3, UNSUPPORTEDOPERAND, [], from_version(v3), 'pypy')
+        #  - iterkeys returns an iterator or doesn't exist
+        self.throws(bad4, ONLYCONCAT, [], up_to_version(v3), 'cython')
+        self.throws(bad4, UNSUPPORTEDOPERAND, [], up_to_version(v3), 'pypy')
+        self.throws(bad4, ATTRIBUTEERROR, [], from_version(v3))
 
     def test_no_implicit_str_conv2(self):
         """Trying to concatenate a non-string value to a string."""
