@@ -1491,13 +1491,20 @@ class TypeErrorTests(GetSuggestionsTests):
                        'range(10)', 'dict().keys()', 'dict().iterkeys()')
         self.runs(good)
         self.runs(sugg)
-        self.throws(bad, ONLYCONCAT)
-        # Other examples are more interesting but depend on the version used
+        self.throws(bad, ONLYCONCAT, [], ALL_VERSIONS, 'cython')
+        self.throws(bad, UNSUPPORTEDOPERAND, [], ALL_VERSIONS, 'pypy')
+        # Other examples are more interesting but depend on the version used:
+        #  - range returns a list or a range object
         self.runs(bad2, up_to_version(v3))
-        self.throws(bad2, ONLYCONCAT, [], from_version(v3))
+        self.throws(bad2, ONLYCONCAT, [], from_version(v3), 'cython')
+        self.throws(bad2, UNSUPPORTEDOPERAND, [], from_version(v3), 'pypy')
+        #  - keys return a list or a view object
         self.runs(bad3, up_to_version(v3))
-        self.throws(bad3, ONLYCONCAT, [], from_version(v3))
-        self.throws(bad4, ONLYCONCAT, [], up_to_version(v3))
+        self.throws(bad3, ONLYCONCAT, [], from_version(v3), 'cython')
+        self.throws(bad3, UNSUPPORTEDOPERAND, [], from_version(v3), 'pypy')
+        #  - iterkeys returns an iterator or doesn't exist
+        self.throws(bad4, ONLYCONCAT, [], up_to_version(v3), 'cython')
+        self.throws(bad4, UNSUPPORTEDOPERAND, [], up_to_version(v3), 'pypy')
         self.throws(bad4, ATTRIBUTEERROR, [], from_version(v3))
 
     def test_no_implicit_str_conv2(self):
