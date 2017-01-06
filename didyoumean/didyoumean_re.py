@@ -76,6 +76,8 @@ OBJ_DOES_NOT_SUPPORT_RE = r"^\'({0})\' object (?:does not|doesn't) support " \
     r"(.*)$".format(TYPE_NAME)
 CANNOT_CONCAT_RE = r"^cannot concatenate '({0})' and '({0})' " \
     r"objects$".format(TYPE_NAME)
+ONLY_CONCAT_RE = r'^can only concatenate {0} \(not "{0}"\) ' \
+    r"to {0}$".format(TYPE_NAME)
 CANT_CONVERT_RE = r"^Can't convert '({0})' object to ({0}) " \
     r"implicitly$".format(TYPE_NAME)
 MUST_BE_TYPE1_NOT_TYPE2_RE = r"^must be ({0}), not ({0})$".format(TYPE_NAME)
