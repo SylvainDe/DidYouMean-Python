@@ -721,7 +721,7 @@ def suggest_no_binding_for_nonlocal(value, frame, groups):
     del value  # unused param
     name, = groups
     objs = get_objects_in_frame(frame).get(name, [])
-    for obj, scope in objs:
+    for _, scope in objs:
         if scope == 'global':
             # TODO_ENCLOSING: suggest close matches for enclosing
             yield quote('global ' + name)
