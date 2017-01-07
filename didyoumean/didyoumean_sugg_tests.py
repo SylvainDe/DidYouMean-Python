@@ -1190,7 +1190,7 @@ class TypeErrorTests(GetSuggestionsTests):
         ops = {
             '+{0}': ('__pos__', "'__doc__'"),
             '-{0}': ('__neg__', None),
-            '~{0}': ('__invert__', "'__init__'"),
+            '~{0}': ('__invert__', None),
             'abs({0})': ('__abs__', None),
         }
         obj = 'CustomClass()'
@@ -1226,10 +1226,12 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_len_on_custom(self):
         """len() can't be called on custom."""
+        v3 = (3, 0)
         code = 'o = {0}()\nlen(o)'
         bad, good = format_str(code, 'CustomClass', 'LenClass')
         sugg = 'implement "__len__" on CustomClass'
-        self.throws(bad, OBJECTHASNOFUNC, sugg)
+        self.throws(bad, ATTRIBUTEERROR, [], up_to_version(v3))
+        self.throws(bad, OBJECTHASNOFUNC, sugg, from_version(v3))
         self.runs(good)
 
     def test_nb_args(self):
@@ -1498,7 +1500,7 @@ class TypeErrorTests(GetSuggestionsTests):
             bad, good = format_str(code, 'CustomClass()', 'IndexClass()')
             self.throws(bad, ATTRIBUTEERROR, [], up_to_version(v3))
             self.throws(bad, CANNOTBEINTERPRETED, [], from_version(v3))
-            self.runs(good)
+            self.runs(good)  # Fails on old python ?
 
     def test_indices_cant_be_str(self):
         """Use str as index."""
@@ -1613,10 +1615,12 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_assignment_to_custom(self):
         """Trying to assign to custom obj."""
+        v3 = (3, 0)
         code = "o = {0}()\no[1] = 'd'"
         bad, good = format_str(code, 'CustomClass', 'SetItemClass')
         sugg = 'implement "__setitem__" on CustomClass'
-        self.throws(bad, OBJECTDOESNOTSUPPORT, sugg)
+        self.throws(bad, ATTRIBUTEERROR, [], up_to_version(v3))
+        self.throws(bad, OBJECTDOESNOTSUPPORT, sugg, from_version(v3))
         self.runs(good)
 
     def test_deletion_from_string(self):
@@ -1631,10 +1635,12 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_deletion_from_custom(self):
         """Delete from custom obj does not work."""
+        v3 = (3, 0)
         code = "o = {0}()\ndel o[1]"
         bad, good = format_str(code, 'CustomClass', 'DelItemClass')
         sugg = 'implement "__delitem__" on CustomClass'
-        self.throws(bad, OBJECTDOESNOTSUPPORT, sugg)
+        self.throws(bad, ATTRIBUTEERROR, [], up_to_version(v3))
+        self.throws(bad, OBJECTDOESNOTSUPPORT, sugg, from_version(v3))
         self.runs(good)
 
     def test_object_indexing(self):
@@ -1683,10 +1689,12 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_not_callable_custom(self):
         """One must define __call__ to call custom objects."""
+        v3 = (3, 0)
         code = 'o = {0}()\no()'
         bad, good = format_str(code, 'CustomClass', 'CallClass')
         sugg = 'implement "__call__" on CustomClass'
-        self.throws(bad, NOTCALLABLE, sugg)
+        self.throws(bad, ATTRIBUTEERROR, [], up_to_version(v3))
+        self.throws(bad, NOTCALLABLE, sugg, from_version(v3))
         self.runs(good)
 
     def test_exc_must_derive_from(self):
