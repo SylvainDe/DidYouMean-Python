@@ -91,6 +91,8 @@ MUST_BE_CALLED_WITH_INST_RE = r"^unbound method (\w+)\(\) must be called " \
     r"\(got ({0}) instance instead\)$".format(TYPE_NAME)
 OBJECT_HAS_NO_FUNC_RE = r"^(?:object of type )?'({0})' has no " \
     r"(\w+)(?:\(\))?$".format(TYPE_NAME)
+INSTANCE_HAS_NO_METH_RE = r"^({0}) instance has no " \
+    r"({1}) method$".format(TYPE_NAME, ATTR_NAME)
 NO_BINDING_NONLOCAL_RE = r"^no binding for nonlocal '({0})' " \
     r"found$".format(VAR_NAME)
 NONLOCAL_AT_MODULE_RE = r"^nonlocal declaration not allowed at module level$"

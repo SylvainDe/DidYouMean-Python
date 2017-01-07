@@ -275,6 +275,7 @@ TIMEDATAFORMAT = (ValueError, re.TIME_DATA_DOES_NOT_MATCH_FORMAT_RE)
 # AttributeError for AttributeErrorTests
 ATTRIBUTEERROR = (AttributeError, re.ATTRIBUTEERROR_RE)
 MODATTRIBUTEERROR = (AttributeError, re.MODULEHASNOATTRIBUTE_RE)
+INSTHASNOMETH = (AttributeError, re.INSTANCE_HAS_NO_METH_RE)
 UNKNOWN_ATTRIBUTEERROR = (AttributeError, None)
 # SyntaxError for SyntaxErrorTests
 INVALIDSYNTAX = (SyntaxError, re.INVALID_SYNTAX_RE)
@@ -1230,7 +1231,7 @@ class TypeErrorTests(GetSuggestionsTests):
         code = 'o = {0}()\nlen(o)'
         bad, good = format_str(code, 'CustomClass', 'LenClass')
         sugg = 'implement "__len__" on CustomClass'
-        self.throws(bad, ATTRIBUTEERROR, [], up_to_version(v3))
+        self.throws(bad, ATTRIBUTEERROR, ["'__module__'"], up_to_version(v3))
         self.throws(bad, OBJECTHASNOFUNC, sugg, from_version(v3))
         self.runs(good)
 
@@ -1500,7 +1501,7 @@ class TypeErrorTests(GetSuggestionsTests):
             bad, good = format_str(code, 'CustomClass()', 'IndexClass()')
             self.throws(bad, ATTRIBUTEERROR, [], up_to_version(v3))
             self.throws(bad, CANNOTBEINTERPRETED, [], from_version(v3))
-            self.runs(good)  # Fails on old python ?
+            self.runs(good, from_version(v3))  # Fails on old python ?
 
     def test_indices_cant_be_str(self):
         """Use str as index."""
@@ -1693,7 +1694,8 @@ class TypeErrorTests(GetSuggestionsTests):
         code = 'o = {0}()\no()'
         bad, good = format_str(code, 'CustomClass', 'CallClass')
         sugg = 'implement "__call__" on CustomClass'
-        self.throws(bad, ATTRIBUTEERROR, [], up_to_version(v3))
+        self.throws(bad, INSTHASNOMETH, [], up_to_version(v3), 'cython')
+        self.throws(bad, ATTRIBUTEERROR, [], up_to_version(v3), 'pypy')
         self.throws(bad, NOTCALLABLE, sugg, from_version(v3))
         self.runs(good)
 

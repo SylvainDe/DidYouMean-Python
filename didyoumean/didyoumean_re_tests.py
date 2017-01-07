@@ -591,6 +591,15 @@ class RegexTests(unittest2.TestCase):
             results = (groups, dict())
             self.re_matches(msg, re.OBJECT_HAS_NO_FUNC_RE, results)
 
+    def test_instance_has_no_meth(self):
+        """Test INSTANCE_HAS_NO_METH_RE."""
+        # Python 2.6/2.7
+        msg = "CustomClass instance has no __call__ method"
+        class_, method = 'CustomClass', '__call__'
+        groups = (class_, method)
+        results = (groups, dict())
+        self.re_matches(msg, re.INSTANCE_HAS_NO_METH_RE, results)
+
     def test_nobinding_nonlocal(self):
         """Test NO_BINDING_NONLOCAL_RE."""
         msg = "no binding for nonlocal 'foo' found"
