@@ -155,18 +155,13 @@ def listify(value, default):
     return value
 
 
-def no_exception(code):
-    """Helper function to run code and check it works."""
-    exec(code)
-
-
 def get_exception(code):
-    """Helper function to run code and get what it throws."""
+    """Helper function to run code and get what it throws (or None)."""
     try:
-        no_exception(code)
+        exec(code)
     except:
         return sys.exc_info()
-    assert False, "No exception thrown running\n---\n{0}\n---".format(code)
+    return None
 
 
 # NameError for NameErrorTests
@@ -278,7 +273,9 @@ class GetSuggestionsTests(unittest2.TestCase):
         if version_range is None:
             version_range = ALL_VERSIONS
         if version_in_range(version_range) and interpreter_in(interpreters):
-            no_exception(code)
+            details = "Running following code :\n---\n{0}\n---".format(code)
+            exc = get_exception(code)
+            self.assertTrue(exc is None, "Exc thrown : " + str(exc) + details)
 
     def throws(self, code, error_info,
                sugg=None, version_range=None, interpreters=None):
@@ -295,8 +292,10 @@ class GetSuggestionsTests(unittest2.TestCase):
         sugg = sorted(listify(sugg, []))
         if version_in_range(version_range) and interpreter_in(interpreters):
             error_type, error_msg = error_info
-            type_caught, value, traceback = get_exception(code)
             details = "Running following code :\n---\n{0}\n---".format(code)
+            exc = get_exception(code)
+            self.assertFalse(exc is None, "No exc thrown." + details)
+            type_caught, value, traceback = exc
             self.assertTrue(isinstance(value, type_caught))
             self.assertTrue(
                 issubclass(type_caught, error_type),
