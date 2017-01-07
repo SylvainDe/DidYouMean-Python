@@ -110,13 +110,13 @@ class FoobarClass():
 
 
 # More dummy classes
-class CustomClass:
+class CustomClass():
     """Custom class with nothing special."""
 
     pass
 
 
-class IndexClass:
+class IndexClass():
     """Custom class with __index__."""
 
     def __index__(self):
@@ -124,7 +124,7 @@ class IndexClass:
         return 2
 
 
-class CallClass:
+class CallClass():
     """Custom class with __call__."""
 
     def __call__(self):  # arg list may differ
@@ -132,7 +132,7 @@ class CallClass:
         return 0
 
 
-class GetItemClass:
+class GetItemClass():
     """Custom class with __getitem__."""
 
     def __getitem__(self, key):
@@ -140,7 +140,7 @@ class GetItemClass:
         return 0
 
 
-class DelItemClass:
+class DelItemClass():
     """Custom class with __delitem__."""
 
     def __delitem__(self, key):
@@ -148,7 +148,7 @@ class DelItemClass:
         pass
 
 
-class SetItemClass:
+class SetItemClass():
     """Custom class with __setitem__."""
 
     def __setitem__(self, key, val):
@@ -156,7 +156,7 @@ class SetItemClass:
         pass
 
 
-class LenClass:
+class LenClass():
     """Custom class with __len__."""
 
     def __len__(self):
