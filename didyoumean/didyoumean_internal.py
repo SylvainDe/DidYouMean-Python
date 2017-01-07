@@ -519,7 +519,7 @@ def suggest_feature_not_supported(attr, type_str, frame):
     # methods except for the fact that we do not want to
     # have any fuzzy logic on the magic method name.
     # Also, we want to suggest the implementation of the
-    # missing method (it is it not on a builtin object).
+    # missing method (if is it not on a builtin object).
     types = get_types_for_str(type_str, frame)
     attributes = set(a for t in types for a in dir(t))
     for s in suggest_attribute_alternative(attr, type_str, attributes):
