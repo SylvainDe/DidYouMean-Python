@@ -429,6 +429,15 @@ def suggest_attribute_alternative(attribute, type_str, attributes):
     elif attribute == '__or__':
         if '__pow__' in attributes:
             yield quote('val1 ** val2')
+    elif attribute == '__index__':
+        if '__len__' in attributes:
+            yield quote('len(' + type_str + ')')
+        if type_str in ('str', 'float'):
+            yield quote('int(' + type_str + ')')
+            if type_str == 'float' and sys.version_info >= (3, 0):
+                # These methods return 'float' before Python 3
+                yield quote('math.floor(' + type_str + ')')
+                yield quote('math.ceil(' + type_str + ')')
 
 
 def suggest_attribute_synonyms(attribute, attributes):
@@ -605,6 +614,15 @@ def suggest_unsupported_op(value, frame, groups):
     # Suggestion is based on first type which may not be the best
     del type2  # unused value
     return suggest_feature_not_supported(attr, type1, frame)
+
+
+@register_suggestion_for(TypeError, re.CANNOT_BE_INTERPRETED_INT_RE)
+@register_suggestion_for(TypeError, re.INTEGER_EXPECTED_GOT_RE)
+def suggest_integer_type_expected(value, frame, groups):
+    """Get suggestions when an int is wanted."""
+    del value  # unused param
+    type_str, = groups
+    return suggest_feature_not_supported('__index__', type_str, frame)
 
 
 def get_func_by_name(func_name, frame):

@@ -1448,13 +1448,13 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_iter_cannot_be_interpreted_as_int(self):
         """Trying to call `range(len(iterable))` (bad) and forget the len."""
-        # NICE_TO_HAVE
         v3 = (3, 0)
         bad_code = 'range([0, 1, 2])'
-        sugg = 'range(len([0, 1, 2]))'
-        self.runs(sugg)
-        self.throws(bad_code, INTEXPECTED, [], up_to_version(v3))
-        self.throws(bad_code, CANNOTBEINTERPRETED, [], from_version(v3))
+        good_code = 'range(len([0, 1, 2]))'
+        sugg = "'len(list)'"
+        self.runs(good_code)
+        self.throws(bad_code, INTEXPECTED, sugg, up_to_version(v3))
+        self.throws(bad_code, CANNOTBEINTERPRETED, sugg, from_version(v3))
 
     RANGE_CODE_TEMPLATES = [
         'range({0})',
@@ -1465,19 +1465,20 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_str_cannot_be_interpreted_as_int(self):
         """Forget to convert str to int."""
-        # NICE_TO_HAVE
         v3 = (3, 0)
+        suggs = ["'int(str)'", "'len(str)'"]
         for code in self.RANGE_CODE_TEMPLATES:
             bad_code, good_code = format_str(code, '"12"', 'int("12")')
             self.runs(good_code)
-            self.throws(bad_code, INTEXPECTED, [], up_to_version(v3))
-            self.throws(bad_code, CANNOTBEINTERPRETED, [], from_version(v3))
+            self.throws(bad_code, INTEXPECTED, suggs, up_to_version(v3))
+            self.throws(bad_code, CANNOTBEINTERPRETED, suggs, from_version(v3))
 
     def test_float_cannot_be_interpreted_as_int(self):
         """Use float instead of int."""
-        # NICE_TO_HAVE
         v27 = (2, 7)
         v3 = (3, 0)
+        sugg = ["'int(float)'"]
+        suggs = ["'int(float)'", "'math.ceil(float)'", "'math.floor(float)'"]
         for code in self.RANGE_CODE_TEMPLATES:
             full_code = 'import math\n' + code
             good1, good2, bad = format_str(
@@ -1485,22 +1486,22 @@ class TypeErrorTests(GetSuggestionsTests):
             self.runs(good1)
             self.runs(good2, up_to_version(v27))
             # floor returns a float before Python 3 -_-
-            self.throws(good2, INTEXPECTED, [], (v27, v3))
+            self.throws(good2, INTEXPECTED, sugg, (v27, v3))
             self.runs(good2, from_version(v3))
             self.runs(bad, up_to_version(v27))
-            self.throws(bad, INTEXPECTED, [], (v27, v3))
-            self.throws(bad, CANNOTBEINTERPRETED, [], from_version(v3))
+            self.throws(bad, INTEXPECTED, sugg, (v27, v3))
+            self.throws(bad, CANNOTBEINTERPRETED, suggs, from_version(v3))
 
     def test_customclass_cannot_be_interpreter_as_int(self):
         """Forget to implement the __index__ method."""
-        # NICE_TO_HAVE : 'implement "__index__" on CustomClass'
         # http://stackoverflow.com/questions/17342899/object-cannot-be-interpreted-as-an-integer
         # https://twitter.com/raymondh/status/773224135409360896
         v3 = (3, 0)
+        sugg = 'implement "__index__" on CustomClass'
         for code in self.RANGE_CODE_TEMPLATES:
             bad, good = format_str(code, 'CustomClass()', 'IndexClass()')
             self.throws(bad, ATTRIBUTEERROR, [], up_to_version(v3))
-            self.throws(bad, CANNOTBEINTERPRETED, [], from_version(v3))
+            self.throws(bad, CANNOTBEINTERPRETED, sugg, from_version(v3))
             self.runs(good, from_version(v3))  # Fails on old python ?
 
     def test_indices_cant_be_str(self):
