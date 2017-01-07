@@ -109,6 +109,60 @@ class FoobarClass():
         pass
 
 
+# More dummy classes
+class CustomClass:
+    """Custom class with nothing special."""
+
+    pass
+
+
+class IndexClass:
+    """Custom class with __index__."""
+
+    def __index__(self):
+        """Dummy implementation of __index__."""
+        return 2
+
+
+class CallClass:
+    """Custom class with __call__."""
+
+    def __call__(self):  # arg list may differ
+        """Dummy implementation of __call__."""
+        return 0
+
+
+class GetItemClass:
+    """Custom class with __getitem__."""
+
+    def __getitem__(self, key):
+        """Dummy implementation of __getitem__."""
+        return 0
+
+
+class DelItemClass:
+    """Custom class with __delitem__."""
+
+    def __delitem__(self, key):
+        """Dummy implementation of __delitem__."""
+        pass
+
+
+class SetItemClass:
+    """Custom class with __setitem__."""
+
+    def __setitem__(self, key, val):
+        """Dummy implementation of __setitem__."""
+        pass
+
+
+class LenClass:
+    """Custom class with __len__."""
+
+    def __len__(self):
+        """Dummy implementation of __len__."""
+        return 0
+
 # Logic to be able to have different tests on various version of Python
 FIRST_VERSION = (0, 0)
 LAST_VERSION = (10, 0)
@@ -1139,8 +1193,8 @@ class TypeErrorTests(GetSuggestionsTests):
             '~{0}': ('__invert__', "'__init__'"),
             'abs({0})': ('__abs__', None),
         }
-        obj = 'FoobarClass()'
-        sugg = 'implement "{0}" on FoobarClass'
+        obj = 'CustomClass()'
+        sugg = 'implement "{0}" on CustomClass'
         for op, suggestions in ops.items():
             code = op.format(obj)
             magic, sugg_attr = suggestions
@@ -1169,6 +1223,14 @@ class TypeErrorTests(GetSuggestionsTests):
         sugg = 'len(list(my_generator()))'
         self.throws(code, OBJECTHASNOFUNC, "'len(list(generator))'")
         self.runs(sugg)
+
+    def test_len_on_custom(self):
+        """len() can't be called on custom."""
+        code = 'o = {0}()\nlen(o)'
+        bad, good = format_str(code, 'CustomClass', 'LenClass')
+        sugg = 'implement "__len__" on CustomClass'
+        self.throws(bad, OBJECTHASNOFUNC, sugg)
+        self.runs(good)
 
     def test_nb_args(self):
         """Should have 1 arg."""
@@ -1428,14 +1490,15 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_customclass_cannot_be_interpreter_as_int(self):
         """Forget to implement the __index__ method."""
-        # NICE_TO_HAVE
+        # NICE_TO_HAVE : 'implement "__index__" on CustomClass'
         # http://stackoverflow.com/questions/17342899/object-cannot-be-interpreted-as-an-integer
         # https://twitter.com/raymondh/status/773224135409360896
         v3 = (3, 0)
         for code in self.RANGE_CODE_TEMPLATES:
-            bad,  = format_str(code, 'FoobarClass()')
+            bad, good = format_str(code, 'CustomClass()', 'IndexClass()')
             self.throws(bad, ATTRIBUTEERROR, [], up_to_version(v3))
             self.throws(bad, CANNOTBEINTERPRETED, [], from_version(v3))
+            self.runs(good)
 
     def test_indices_cant_be_str(self):
         """Use str as index."""
@@ -1464,7 +1527,7 @@ class TypeErrorTests(GetSuggestionsTests):
         # NICE_TO_HAVE
         v3 = (3, 0)
         for code in self.INDEX_CODE_TEMPLATES:
-            bad,  = format_str(code, 'FoobarClass()')
+            bad,  = format_str(code, 'CustomClass()')
             self.throws(bad, INDICESMUSTBEINT, [], up_to_version(v3), 'pypy')
             self.throws(
                     bad, CANNOTBEINTERPRETEDINDEX,
@@ -1548,6 +1611,14 @@ class TypeErrorTests(GetSuggestionsTests):
             OBJECTDOESNOTSUPPORT,
             'convert to list to edit the list and use "join()" on the list')
 
+    def test_assignment_to_custom(self):
+        """Trying to assign to custom obj."""
+        code = "o = {0}()\no[1] = 'd'"
+        bad, good = format_str(code, 'CustomClass', 'SetItemClass')
+        sugg = 'implement "__setitem__" on CustomClass'
+        self.throws(bad, OBJECTDOESNOTSUPPORT, sugg)
+        self.runs(good)
+
     def test_deletion_from_string(self):
         """Delete from string does not work."""
         code = "s = 'abc'\ndel s[1]"
@@ -1558,33 +1629,44 @@ class TypeErrorTests(GetSuggestionsTests):
             OBJECTDOESNOTSUPPORT,
             'convert to list to edit the list and use "join()" on the list')
 
+    def test_deletion_from_custom(self):
+        """Delete from custom obj does not work."""
+        code = "o = {0}()\ndel o[1]"
+        bad, good = format_str(code, 'CustomClass', 'DelItemClass')
+        sugg = 'implement "__delitem__" on CustomClass'
+        self.throws(bad, OBJECTDOESNOTSUPPORT, sugg)
+        self.runs(good)
+
     def test_object_indexing(self):
         """Index from object does not work if __getitem__ is not defined."""
         version = (3, 0)
         code = "{0}[0]"
-        good_code, set_code, custom_code = \
-            format_str(code, '"a_string"', "set()", "FoobarClass()")
+        good_code, set_code, custom_bad, custom_good = \
+            format_str(code, '"a_string"', "set()",
+                       "CustomClass()", "GetItemClass()")
         self.runs(good_code)
         sugg_for_iterable = 'convert to list first or use the iterator ' \
             'protocol to get the different elements'
+        sugg_imp = 'implement "__getitem__" on CustomClass'
         self.throws(set_code,
                     OBJECTDOESNOTSUPPORT,
                     sugg_for_iterable, ALL_VERSIONS, 'cython')
         self.throws(set_code,
                     UNSUBSCRIPTABLE,
                     sugg_for_iterable, ALL_VERSIONS, 'pypy')
-        self.throws(custom_code,
+        self.throws(custom_bad,
                     ATTRIBUTEERROR, [], up_to_version(version), 'pypy')
-        self.throws(custom_code,
+        self.throws(custom_bad,
                     UNSUBSCRIPTABLE,
-                    'implement "__getitem__" on FoobarClass',
+                    sugg_imp,
                     from_version(version), 'pypy')
-        self.throws(custom_code,
+        self.throws(custom_bad,
                     ATTRIBUTEERROR, [], up_to_version(version), 'cython')
-        self.throws(custom_code,
+        self.throws(custom_bad,
                     OBJECTDOESNOTSUPPORT,
-                    'implement "__getitem__" on FoobarClass',
+                    sugg_imp,
                     from_version(version), 'cython')
+        self.runs(custom_good)
 
     def test_not_callable(self):
         """Sometimes, one uses parenthesis instead of brackets."""
@@ -1598,6 +1680,14 @@ class TypeErrorTests(GetSuggestionsTests):
             self.runs(ex + getitem)
         for ex in ['1', 'set()']:
             self.throws(ex + typo, NOTCALLABLE)
+
+    def test_not_callable_custom(self):
+        """One must define __call__ to call custom objects."""
+        code = 'o = {0}()\no()'
+        bad, good = format_str(code, 'CustomClass', 'CallClass')
+        sugg = 'implement "__call__" on CustomClass'
+        self.throws(bad, NOTCALLABLE, sugg)
+        self.runs(good)
 
     def test_exc_must_derive_from(self):
         """Test when a non-exc object is raised."""
@@ -1619,7 +1709,7 @@ class TypeErrorTests(GetSuggestionsTests):
         version = (3, 0)
         version2 = (3, 6)
         for op in ['>', '>=', '<', '<=']:
-            code = "FoobarClass() {0} FoobarClass()".format(op)
+            code = "CustomClass() {0} CustomClass()".format(op)
             self.runs(code, up_to_version(version))
             self.throws(code, UNORDERABLE, [], (version, version2))
             self.throws(code, OPNOTSUPPBETWEENINST, [], from_version(version2))
@@ -1629,7 +1719,7 @@ class TypeErrorTests(GetSuggestionsTests):
         version = (3, 0)
         version2 = (3, 6)
         for op in ['>', '>=', '<', '<=']:
-            code = "FoobarClass() {0} 2".format(op)
+            code = "CustomClass() {0} 2".format(op)
             self.runs(code, up_to_version(version))
             self.throws(code, UNORDERABLE, [], (version, version2))
             self.throws(code, OPNOTSUPPBETWEENINST, [], from_version(version2))
