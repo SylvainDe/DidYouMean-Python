@@ -392,7 +392,7 @@ def suggest_attribute_as_builtin(attribute, type_str, frame):
 
     Example: 'lst.len()' -> 'len(lst)'.
     """
-    obj = frame.f_builtins.get(attribute, None)
+    obj = frame.f_builtins.get(attribute)
     if obj is not None and '__call__' in dir(obj):
         yield quote(attribute + '(' + type_str + ')')
 
