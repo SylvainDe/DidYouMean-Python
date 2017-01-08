@@ -1525,7 +1525,8 @@ class TypeErrorTests(GetSuggestionsTests):
             # floor returns a float before Python 3 -_-
             self.throws(good2, INDICESMUSTBEINT, sugg, up_to_version(v3))
             self.runs(good2, from_version(v3))
-            self.throws(bad, INDICESMUSTBEINT, suggs)
+            self.throws(bad, INDICESMUSTBEINT, sugg, up_to_version(v3))
+            self.throws(bad, INDICESMUSTBEINT, suggs, from_version(v3))
 
     def test_indices_cant_be_custom(self):
         """Use custom as index."""
