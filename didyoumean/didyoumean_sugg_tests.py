@@ -1532,9 +1532,14 @@ class TypeErrorTests(GetSuggestionsTests):
         """Use custom as index."""
         v3 = (3, 0)
         sugg = 'implement "__index__" on CustomClass'
+        # On Pypy, detected type is 'instance' so attribute detection is much
+        # less precise, leading to additional suggestions
+        suggs = ["'len(instance)'", 'implement "__index__" on instance']
         for code in self.INDEX_CODE_TEMPLATES:
             bad, good = format_str(code, 'CustomClass()', 'IndexClass()')
-            self.throws(bad, INDICESMUSTBEINT, sugg, up_to_version(v3), 'pypy')
+            self.throws(
+                    bad, INDICESMUSTBEINT,
+                    suggs, up_to_version(v3), 'pypy')
             self.throws(
                     bad, CANNOTBEINTERPRETEDINDEX,
                     [], up_to_version(v3), 'cython')
