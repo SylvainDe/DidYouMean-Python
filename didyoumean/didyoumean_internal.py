@@ -619,6 +619,7 @@ def suggest_unsupported_op(value, frame, groups):
 
 @register_suggestion_for(TypeError, re.CANNOT_BE_INTERPRETED_INT_RE)
 @register_suggestion_for(TypeError, re.INTEGER_EXPECTED_GOT_RE)
+@register_suggestion_for(TypeError, re.INDICES_MUST_BE_INT_RE)
 def suggest_integer_type_expected(value, frame, groups):
     """Get suggestions when an int is wanted."""
     del value  # unused param

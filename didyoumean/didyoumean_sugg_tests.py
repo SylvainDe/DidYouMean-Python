@@ -1506,37 +1506,39 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_indices_cant_be_str(self):
         """Use str as index."""
-        # NICE_TO_HAVE
+        suggs = ["'int(str)'", "'len(str)'"]
         for code in self.INDEX_CODE_TEMPLATES:
             bad, good = format_str(code, '"2"', 'int("2")')
             self.runs(good)
-            self.throws(bad, INDICESMUSTBEINT)
+            self.throws(bad, INDICESMUSTBEINT, suggs)
 
     def test_indices_cant_be_float(self):
         """Use float as index."""
-        # NICE_TO_HAVE
         v27 = (2, 7)
         v3 = (3, 0)
+        sugg = ["'int(float)'"]
+        suggs = ["'int(float)'", "'math.ceil(float)'", "'math.floor(float)'"]
         for code in self.INDEX_CODE_TEMPLATES:
             good1, good2, bad = format_str(
                     code, 'int(2.0)', 'math.floor(2.0)', '2.0')
             self.runs(good1)
             # floor returns a float before Python 3 -_-
-            self.throws(good2, INDICESMUSTBEINT, [], up_to_version(v3))
+            self.throws(good2, INDICESMUSTBEINT, sugg, up_to_version(v3))
             self.runs(good2, from_version(v3))
-            self.throws(bad, INDICESMUSTBEINT, [])
+            self.throws(bad, INDICESMUSTBEINT, suggs)
 
     def test_indices_cant_be_custom(self):
         """Use custom as index."""
-        # NICE_TO_HAVE
         v3 = (3, 0)
+        sugg = 'implement "__index__" on CustomClass'
         for code in self.INDEX_CODE_TEMPLATES:
-            bad,  = format_str(code, 'CustomClass()')
-            self.throws(bad, INDICESMUSTBEINT, [], up_to_version(v3), 'pypy')
+            bad, good = format_str(code, 'CustomClass()', 'IndexClass()')
+            self.throws(bad, INDICESMUSTBEINT, sugg, up_to_version(v3), 'pypy')
             self.throws(
                     bad, CANNOTBEINTERPRETEDINDEX,
                     [], up_to_version(v3), 'cython')
-            self.throws(bad, INDICESMUSTBEINT, [], from_version(v3))
+            self.throws(bad, INDICESMUSTBEINT, sugg, from_version(v3))
+            self.runs(good)
 
     def test_no_implicit_str_conv(self):
         """Trying to concatenate a non-string value to a string."""
