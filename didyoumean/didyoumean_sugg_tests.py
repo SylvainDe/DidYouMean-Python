@@ -198,14 +198,42 @@ def format_str(template, *args):
     return [template.format(arg) for arg in args]
 
 
-def listify(value, default):
+class PythonEnvRange(object):
+    """Class to describe a (range of) Python environment.
+
+    A range of Python environments consist of:
+     - a range of Python version (tuple)
+     - a list of interpreters (strings).
+    """
+
+    def __init__(self, version_range=None, interpreters=None):
+        """Init a PythonEnvRange.
+
+        The parameters are:
+         - a range of version (optional - ALL if not provided)
+         - a list of interpreters (optional - ALL if not provided).
+            Also, a single interpreter can be provided.
+        """
+        self.interpreters = listify(interpreters, INTERPRETERS, str)
+        self.version_range = \
+            ALL_VERSIONS if version_range is None else version_range
+
+    def contains_current_env(self):
+        """Check if current environment is in PythonEnvRange object."""
+        return version_in_range(self.version_range) and \
+            interpreter_in(self.interpreters)
+
+
+def listify(value, default, expected_types):
     """Return list from value, using default value if value is None."""
     if value is None:
-        value = default
+        value = list(default)
     if not isinstance(value, list):
         value = [value]
     if default:
         assert all(v in default for v in value)
+    if expected_types is not None:
+        assert all(isinstance(v, expected_types) for v in value)
     return value
 
 
@@ -324,11 +352,8 @@ class GetSuggestionsTests(unittest2.TestCase):
         version_range and interpreters can be provided if the test depends on
         the used environment.
         """
-        interpreters = listify(interpreters, INTERPRETERS)
-        if version_range is None:
-            version_range = ALL_VERSIONS
-        if version_in_range(version_range) and interpreter_in(interpreters):
-            details = "Running following code :\n---\n{0}\n---".format(code)
+        details = "Running following code :\n---\n{0}\n---".format(code)
+        if PythonEnvRange(version_range, interpreters).contains_current_env():
             exc = get_exception(code)
             self.assertTrue(exc is None, "Exc thrown : " + str(exc) + details)
 
@@ -341,13 +366,10 @@ class GetSuggestionsTests(unittest2.TestCase):
         version_range and interpreters can be provided if the test depends on
         the used environment.
         """
-        if version_range is None:
-            version_range = ALL_VERSIONS
-        interpreters = listify(interpreters, INTERPRETERS)
-        sugg = sorted(listify(sugg, []))
-        if version_in_range(version_range) and interpreter_in(interpreters):
-            error_type, error_msg = error_info
-            details = "Running following code :\n---\n{0}\n---".format(code)
+        sugg = sorted(listify(sugg, [], str))
+        error_type, error_msg = error_info
+        details = "Running following code :\n---\n{0}\n---".format(code)
+        if PythonEnvRange(version_range, interpreters).contains_current_env():
             exc = get_exception(code)
             self.assertFalse(exc is None, "No exc thrown." + details)
             type_caught, value, traceback = exc
@@ -550,11 +572,9 @@ class NameErrorTests(GetSuggestionsTests):
         code = 'intern("toto")'
         new_code = 'sys.intern("toto")'
         version = (3, 0)
+        suggs = ["'iter' (builtin)", "'sys.intern'"]
         self.runs(code, up_to_version(version))
-        self.throws(
-            code, NAMEERROR,
-            ["'iter' (builtin)", "'sys.intern'"],
-            from_version(version))
+        self.throws(code, NAMEERROR, suggs, from_version(version))
         self.runs(new_code, from_version(version))
 
     def test_removed_execfile(self):
@@ -826,12 +846,10 @@ class AttributeErrorTests(GetSuggestionsTests):
         """Should be 'next(gen)'."""
         code = 'my_generator().next()'
         new_code = 'next(my_generator())'
+        sugg = "'next(generator)'"
         version = (3, 0)
         self.runs(code, up_to_version(version))
-        self.throws(
-            code, ATTRIBUTEERROR,
-            "'next(generator)'",
-            from_version(version))
+        self.throws(code, ATTRIBUTEERROR, sugg, from_version(version))
         self.runs(new_code)
 
     def test_wrongmethod(self):
@@ -863,25 +881,23 @@ class AttributeErrorTests(GetSuggestionsTests):
     def test_from_module(self):
         """Should be math.pi."""
         code = 'import math\nmath.{0}'
-        typo, sugg = 'pie', 'pi'
+        typo, good = 'pie', 'pi'
+        sugg = "'" + good + "'"
         version = (3, 5)
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, ATTRIBUTEERROR, "'" + sugg + "'",
-                    up_to_version(version))
-        self.throws(bad_code, MODATTRIBUTEERROR, "'" + sugg + "'",
-                    from_version(version))
+        bad_code, good_code = format_str(code, typo, good)
+        self.throws(bad_code, ATTRIBUTEERROR, sugg, up_to_version(version))
+        self.throws(bad_code, MODATTRIBUTEERROR, sugg, from_version(version))
         self.runs(good_code)
 
     def test_from_module2(self):
         """Should be math.pi."""
         code = 'import math\nm = math\nm.{0}'
-        typo, sugg = 'pie', 'pi'
+        typo, good = 'pie', 'pi'
+        sugg = "'" + good + "'"
         version = (3, 5)
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, ATTRIBUTEERROR, "'" + sugg + "'",
-                    up_to_version(version))
-        self.throws(bad_code, MODATTRIBUTEERROR, "'" + sugg + "'",
-                    from_version(version))
+        bad_code, good_code = format_str(code, typo, good)
+        self.throws(bad_code, ATTRIBUTEERROR, sugg, up_to_version(version))
+        self.throws(bad_code, MODATTRIBUTEERROR, sugg, from_version(version))
         self.runs(good_code)
 
     def test_from_class(self):
@@ -935,13 +951,10 @@ class AttributeErrorTests(GetSuggestionsTests):
         """Method has_key is removed from dict."""
         code = 'dict().has_key(1)'
         new_code = '1 in dict()'
+        sugg = "'key in dict' (has_key is removed)"
         version = (3, 0)
         self.runs(code, up_to_version(version))
-        self.throws(
-            code,
-            ATTRIBUTEERROR,
-            "'key in dict' (has_key is removed)",
-            from_version(version))
+        self.throws(code, ATTRIBUTEERROR, sugg, from_version(version))
         self.runs(new_code)
 
     def test_removed_dict_methods(self):
@@ -978,14 +991,11 @@ class AttributeErrorTests(GetSuggestionsTests):
         code = "import os\nwith open(os.path.realpath(__file__)) as f:" \
             "\n\tf.{0}"
         old, sugg1, sugg2 = 'xreadlines', 'readline', 'readlines'
+        suggs = ["'" + sugg1 + "'", "'" + sugg2 + "'", "'writelines'"]
         old_code, new_code1, new_code2 = format_str(code, old, sugg1, sugg2)
         version = (3, 0)
         self.runs(old_code, up_to_version(version))
-        self.throws(
-            old_code,
-            ATTRIBUTEERROR,
-            ["'" + sugg1 + "'", "'" + sugg2 + "'", "'writelines'"],
-            from_version(version))
+        self.throws(old_code, ATTRIBUTEERROR, suggs, from_version(version))
         self.runs(new_code1)
         self.runs(new_code2)
 
@@ -1121,8 +1131,7 @@ class TypeErrorTests(GetSuggestionsTests):
         # (leading to more suggestions based on fuzzy matches)
         version1 = (2, 7)
         version2 = (3, 0)
-        self.throws(bad_code, UNSUBSCRIPTABLE, suggestion,
-                    ALL_VERSIONS, 'pypy')
+        self.throws(bad_code, UNSUBSCRIPTABLE, suggestion, interpreters='pypy')
         self.throws(bad_code, UNSUBSCRIPTABLE, suggestion,
                     up_to_version(version1), 'cython')
         self.throws(bad_code, UNSUBSCRIPTABLE, suggestion,
@@ -1148,7 +1157,7 @@ class TypeErrorTests(GetSuggestionsTests):
                 ('0 in list{0}', not_iterable)]:
             bad_code, good_code = format_str(code, '', '()')
             self.runs(good_code)
-            self.throws(bad_code, err_cy, [], ALL_VERSIONS, 'cython')
+            self.throws(bad_code, err_cy, [], interpreters='cython')
             self.throws(bad_code, err_pyp, [], up_to_version(version), 'pypy')
             self.throws(bad_code, err_pyp3, [], from_version(version), 'pypy')
 
@@ -1419,8 +1428,8 @@ class TypeErrorTests(GetSuggestionsTests):
         # message and are not relevant here
         for builtin in ['int', 'float', 'bool', 'complex']:
             code = builtin + '(this_doesnt_exist=2)'
-            self.throws(code, UNEXPECTEDKWARG2, [], ALL_VERSIONS, 'cython')
-            self.throws(code, UNEXPECTEDKWARG, [], ALL_VERSIONS, 'pypy')
+            self.throws(code, UNEXPECTEDKWARG2, interpreters='cython')
+            self.throws(code, UNEXPECTEDKWARG, interpreters='pypy')
 
     def test_keyword_builtin_print(self):
         """Builtin "print" has a different error message."""
@@ -1565,8 +1574,8 @@ class TypeErrorTests(GetSuggestionsTests):
                        'range(10)', 'dict().keys()', 'dict().iterkeys()')
         self.runs(good)
         self.runs(sugg)
-        self.throws(bad, ONLYCONCAT, [], ALL_VERSIONS, 'cython')
-        self.throws(bad, UNSUPPORTEDOPERAND, [], ALL_VERSIONS, 'pypy')
+        self.throws(bad, ONLYCONCAT, interpreters='cython')
+        self.throws(bad, UNSUPPORTEDOPERAND, interpreters='pypy')
         # Other examples are more interesting but depend on the version used:
         #  - range returns a list or a range object
         self.runs(bad2, up_to_version(v3))
@@ -1595,23 +1604,19 @@ class TypeErrorTests(GetSuggestionsTests):
             bad_code, CANTCONVERT, [], (version, version2), 'cython')
         self.throws(
             bad_code, MUSTBETYPENOTTYPE, [], from_version(version2), 'cython')
-        self.throws(
-            bad_code, UNSUPPORTEDOPERAND, [], ALL_VERSIONS, 'pypy')
+        self.throws(bad_code, UNSUPPORTEDOPERAND, interpreters='pypy')
         self.runs(good_code)
 
     def test_assignment_to_range(self):
         """Trying to assign to range works on list, not on range."""
         code = '{0}[2] = 1'
-        typo, sugg = 'range(4)', 'list(range(4))'
-        version = (3, 0)
-        bad_code, good_code = format_str(code, typo, sugg)
+        typo, good = 'range(4)', 'list(range(4))'
+        sugg = 'convert to list to edit the list'
+        v3 = (3, 0)
+        bad_code, good_code = format_str(code, typo, good)
         self.runs(good_code)
-        self.runs(bad_code, up_to_version(version))
-        self.throws(
-            bad_code,
-            OBJECTDOESNOTSUPPORT,
-            'convert to list to edit the list',
-            from_version(version))
+        self.runs(bad_code, up_to_version(v3))
+        self.throws(bad_code, OBJECTDOESNOTSUPPORT, sugg, from_version(v3))
 
     def test_assignment_to_string(self):
         """Trying to assign to string does not work."""
@@ -1666,10 +1671,10 @@ class TypeErrorTests(GetSuggestionsTests):
         sugg_imp = 'implement "__getitem__" on CustomClass'
         self.throws(set_code,
                     OBJECTDOESNOTSUPPORT,
-                    sugg_for_iterable, ALL_VERSIONS, 'cython')
+                    sugg_for_iterable, interpreters='cython')
         self.throws(set_code,
                     UNSUBSCRIPTABLE,
-                    sugg_for_iterable, ALL_VERSIONS, 'pypy')
+                    sugg_for_iterable, interpreters='pypy')
         self.throws(custom_bad,
                     ATTRIBUTEERROR, [], up_to_version(version), 'pypy')
         self.throws(custom_bad,
@@ -2043,7 +2048,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=SyntaxWarning)
             for code in codes:
-                self.throws(code, IMPORTSTAR, [])
+                self.throws(code, IMPORTSTAR)
 
     def test_unpack(self):
         """Extended tuple unpacking does not work prior to Python 3."""
@@ -2161,7 +2166,7 @@ class MemoryErrorTests(GetSuggestionsTests):
         code = '{0}(999999999999999)'
         typo, sugg = 'range', 'xrange'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.runs(bad_code, ALL_VERSIONS, 'pypy')
+        self.runs(bad_code, interpreters='pypy')
         version = (2, 7)
         version2 = (3, 0)
         self.throws(
@@ -2187,7 +2192,7 @@ class ValueErrorTests(GetSuggestionsTests):
         version = (3, 0)
         self.throws(code, EXPECTEDLENGTH, [], up_to_version(version), 'pypy')
         self.throws(code, TOOMANYVALUES, [], from_version(version), 'pypy')
-        self.throws(code, TOOMANYVALUES, [], ALL_VERSIONS, 'cython')
+        self.throws(code, TOOMANYVALUES, interpreters='cython')
 
     def test_not_enough_values(self):
         """Unpack 2 values in 3 variables."""
@@ -2195,7 +2200,7 @@ class ValueErrorTests(GetSuggestionsTests):
         version = (3, 0)
         self.throws(code, EXPECTEDLENGTH, [], up_to_version(version), 'pypy')
         self.throws(code, NEEDMOREVALUES, [], from_version(version), 'pypy')
-        self.throws(code, NEEDMOREVALUES, [], ALL_VERSIONS, 'cython')
+        self.throws(code, NEEDMOREVALUES, interpreters='cython')
 
     def test_conversion_fails(self):
         """Conversion fails."""
