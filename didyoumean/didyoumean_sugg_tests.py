@@ -180,6 +180,11 @@ def up_to_version(version):
     return (FIRST_VERSION, version)
 
 
+def before_and_after(version):
+    """Return a tuple with the version ranges before/after a given version."""
+    return up_to_version(version), from_version(version)
+
+
 def version_in_range(version_range):
     """Test if current version is in a range version."""
     beg, end = version_range
@@ -525,32 +530,28 @@ class NameErrorTests(GetSuggestionsTests):
         code = 'cmp(1, 2)'
         sugg1 = '1 < 2'
         sugg2 = 'def cmp(a, b):\n\treturn (a > b) - (a < b)\ncmp(1, 2)'
-        version = (3, 0, 1)
-        self.runs(code, up_to_version(version))
-        self.throws(code, NAMEERROR, CMP_REMOVED_MSG, from_version(version))
+        before, after = before_and_after((3, 0, 1))
+        self.runs(code, before)
+        self.throws(code, NAMEERROR, CMP_REMOVED_MSG, after)
         self.runs(sugg1)
         self.runs(sugg2)
 
     def test_removed_reduce(self):
         """Builtin reduce is removed - moved to functools."""
         code = 'reduce(lambda x, y: x + y, [1, 2, 3, 4, 5])'
-        version = (3, 0)
-        self.runs(code, up_to_version(version))
-        self.runs('from functools import reduce\n' + code,
-                  from_version(version))
-        self.throws(
-            code,
-            NAMEERROR,
-            "'reduce' from functools (not imported)",
-            from_version(version))
+        sugg = "'reduce' from functools (not imported)"
+        before, after = before_and_after((3, 0))
+        self.runs(code, before)
+        self.throws(code, NAMEERROR, sugg, after)
+        self.runs('from functools import reduce\n' + code, after)
 
     def test_removed_apply(self):
         """Builtin apply is removed."""
         code = 'apply(sum, [[1, 2, 3]])'
         sugg = 'sum([1, 2, 3])'
-        version = (3, 0)
-        self.runs(code, up_to_version(version))
-        self.throws(code, NAMEERROR, APPLY_REMOVED_MSG, from_version(version))
+        before, after = before_and_after((3, 0))
+        self.runs(code, before)
+        self.throws(code, NAMEERROR, APPLY_REMOVED_MSG, after)
         self.runs(sugg)
 
     def test_removed_reload(self):
@@ -571,27 +572,26 @@ class NameErrorTests(GetSuggestionsTests):
         """Builtin intern is removed - moved to sys."""
         code = 'intern("toto")'
         new_code = 'sys.intern("toto")'
-        version = (3, 0)
         suggs = ["'iter' (builtin)", "'sys.intern'"]
-        self.runs(code, up_to_version(version))
-        self.throws(code, NAMEERROR, suggs, from_version(version))
-        self.runs(new_code, from_version(version))
+        before, after = before_and_after((3, 0))
+        self.runs(code, before)
+        self.throws(code, NAMEERROR, suggs, after)
+        self.runs(new_code, after)
 
     def test_removed_execfile(self):
         """Builtin execfile is removed - use exec() and compile()."""
         # NICE_TO_HAVE
         code = 'execfile("some_filename")'
-        version = (3, 0)
-        # self.runs(code, up_to_version(version))
-        self.throws(code, NAMEERROR, [], from_version(version))
+        _, after = before_and_after((3, 0))
+        # self.runs(code, before)
+        self.throws(code, NAMEERROR, [], after)
 
     def test_removed_raw_input(self):
         """Builtin raw_input is removed - use input() instead."""
         code = 'i = raw_input("Prompt:")'
-        version = (3, 0)
-        # self.runs(code, up_to_version(version))
-        self.throws(
-            code, NAMEERROR, "'input' (builtin)", from_version(version))
+        _, after = before_and_after((3, 0))
+        # self.runs(code, before)
+        self.throws(code, NAMEERROR, "'input' (builtin)", after)
 
     def test_removed_buffer(self):
         """Builtin buffer is removed - use memoryview instead."""
@@ -604,16 +604,16 @@ class NameErrorTests(GetSuggestionsTests):
 
     def test_added_2_7(self):
         """Test for names added in 2.7."""
-        version = (2, 7)
+        before, after = before_and_after((2, 7))
         for name, suggs in {
                 'memoryview': [MEMVIEW_ADDED_MSG],
                 }.items():
-            self.runs(name, from_version(version))
-            self.throws(name, NAMEERROR, suggs, up_to_version(version))
+            self.throws(name, NAMEERROR, suggs, before)
+            self.runs(name, after)
 
     def test_removed_3_0(self):
         """Test for names removed in 3.0."""
-        version = (3, 0)
+        before, after = before_and_after((3, 0))
         for name, suggs in {
                 'StandardError': [STDERR_REMOVED_MSG],
                 'apply': [APPLY_REMOVED_MSG],
@@ -632,23 +632,23 @@ class NameErrorTests(GetSuggestionsTests):
                 'unicode': ["'code' (local)"],
                 'xrange': ["'range' (builtin)"],
                 }.items():
-            self.throws(name, NAMEERROR, suggs, from_version(version))
-            self.runs(name, up_to_version(version))
+            self.runs(name, before)
+            self.throws(name, NAMEERROR, suggs, after)
 
     def test_added_3_0(self):
         """Test for names added in 3.0."""
-        version = (3, 0)
+        before, after = before_and_after((3, 0))
         for name, suggs in {
                 'ascii': [],
                 'ResourceWarning': ["'FutureWarning' (builtin)"],
                 '__build_class__': [],
                 }.items():
-            self.runs(name, from_version(version))
-            self.throws(name, NAMEERROR, suggs, up_to_version(version))
+            self.throws(name, NAMEERROR, suggs, before)
+            self.runs(name, after)
 
     def test_added_3_3(self):
         """Test for names added in 3.3."""
-        version = (3, 3)
+        before, after = before_and_after((3, 3))
         for name, suggs in {
                 'BrokenPipeError': [],
                 'ChildProcessError': [],
@@ -666,26 +666,26 @@ class NameErrorTests(GetSuggestionsTests):
                 'TimeoutError': [],
                 '__loader__': [],
                 }.items():
-            self.runs(name, from_version(version))
-            self.throws(name, NAMEERROR, suggs, up_to_version(version))
+            self.throws(name, NAMEERROR, suggs, before)
+            self.runs(name, after)
 
     def test_added_3_4(self):
         """Test for names added in 3.4."""
-        version = (3, 4)
+        before, after = before_and_after((3, 4))
         for name, suggs in {
                 '__spec__': [],
                 }.items():
-            self.runs(name, from_version(version))
-            self.throws(name, NAMEERROR, suggs, up_to_version(version))
+            self.throws(name, NAMEERROR, suggs, before)
+            self.runs(name, after)
 
     def test_added_3_5(self):
         """Test for names added in 3.5."""
-        version = (3, 5)
+        before, after = before_and_after((3, 5))
         for name, suggs in {
                 'StopAsyncIteration': ["'StopIteration' (builtin)"],
                 }.items():
-            self.runs(name, from_version(version))
-            self.throws(name, NAMEERROR, suggs, up_to_version(version))
+            self.throws(name, NAMEERROR, suggs, before)
+            self.runs(name, after)
 
     def test_import_sugg(self):
         """Should import module first."""
@@ -792,9 +792,9 @@ class UnboundLocalErrorTests(GetSuggestionsTests):
         sugg = 'nonlocal nb'
         bad_code, good_code = format_str(code, "", sugg)
         self.throws(bad_code, UNBOUNDLOCAL)
-        version = (3, 0)
-        self.runs(good_code, from_version(version))
-        self.throws(good_code, INVALIDSYNTAX, [], up_to_version(version))
+        before, after = before_and_after((3, 0))
+        self.throws(good_code, INVALIDSYNTAX, [], before)
+        self.runs(good_code, after)
 
     def test_unbound_nonlocal_and_global(self):
         """Shoud be nonlocal nb or global."""
@@ -805,9 +805,9 @@ class UnboundLocalErrorTests(GetSuggestionsTests):
         bad_code, good_code1, good_code2 = format_str(code, "", sugg1, sugg2)
         self.throws(bad_code, UNBOUNDLOCAL)
         self.runs(good_code2)
-        version = (3, 0)
-        self.runs(good_code1, from_version(version))
-        self.throws(good_code1, INVALIDSYNTAX, [], up_to_version(version))
+        before, after = before_and_after((3, 0))
+        self.throws(good_code1, INVALIDSYNTAX, [], before)
+        self.runs(good_code1, after)
 
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""
@@ -847,9 +847,9 @@ class AttributeErrorTests(GetSuggestionsTests):
         code = 'my_generator().next()'
         new_code = 'next(my_generator())'
         sugg = "'next(generator)'"
-        version = (3, 0)
-        self.runs(code, up_to_version(version))
-        self.throws(code, ATTRIBUTEERROR, sugg, from_version(version))
+        before, after = before_and_after((3, 0))
+        self.runs(code, before)
+        self.throws(code, ATTRIBUTEERROR, sugg, after)
         self.runs(new_code)
 
     def test_wrongmethod(self):
@@ -883,10 +883,10 @@ class AttributeErrorTests(GetSuggestionsTests):
         code = 'import math\nmath.{0}'
         typo, good = 'pie', 'pi'
         sugg = "'" + good + "'"
-        version = (3, 5)
+        before, after = before_and_after((3, 5))
         bad_code, good_code = format_str(code, typo, good)
-        self.throws(bad_code, ATTRIBUTEERROR, sugg, up_to_version(version))
-        self.throws(bad_code, MODATTRIBUTEERROR, sugg, from_version(version))
+        self.throws(bad_code, ATTRIBUTEERROR, sugg, before)
+        self.throws(bad_code, MODATTRIBUTEERROR, sugg, after)
         self.runs(good_code)
 
     def test_from_module2(self):
@@ -894,10 +894,10 @@ class AttributeErrorTests(GetSuggestionsTests):
         code = 'import math\nm = math\nm.{0}'
         typo, good = 'pie', 'pi'
         sugg = "'" + good + "'"
-        version = (3, 5)
+        before, after = before_and_after((3, 5))
         bad_code, good_code = format_str(code, typo, good)
-        self.throws(bad_code, ATTRIBUTEERROR, sugg, up_to_version(version))
-        self.throws(bad_code, MODATTRIBUTEERROR, sugg, from_version(version))
+        self.throws(bad_code, ATTRIBUTEERROR, sugg, before)
+        self.throws(bad_code, MODATTRIBUTEERROR, sugg, after)
         self.runs(good_code)
 
     def test_from_class(self):
@@ -952,14 +952,14 @@ class AttributeErrorTests(GetSuggestionsTests):
         code = 'dict().has_key(1)'
         new_code = '1 in dict()'
         sugg = "'key in dict' (has_key is removed)"
-        version = (3, 0)
-        self.runs(code, up_to_version(version))
-        self.throws(code, ATTRIBUTEERROR, sugg, from_version(version))
+        before, after = before_and_after((3, 0))
+        self.runs(code, before)
+        self.throws(code, ATTRIBUTEERROR, sugg, after)
         self.runs(new_code)
 
     def test_removed_dict_methods(self):
         """Different methos (iterXXX) have been removed from dict."""
-        version = (3, 0)
+        before, after = before_and_after((3, 0))
         code = 'dict().{0}()'
         for method, sugg in {
             'iterkeys': [],
@@ -967,8 +967,8 @@ class AttributeErrorTests(GetSuggestionsTests):
             'iteritems': ["'items'"],
         }.items():
             meth_code, = format_str(code, method)
-            self.runs(meth_code, up_to_version(version))
-            self.throws(meth_code, ATTRIBUTEERROR, sugg, from_version(version))
+            self.runs(meth_code, before)
+            self.throws(meth_code, ATTRIBUTEERROR, sugg, after)
 
     def test_remove_exc_attr(self):
         """Attribute sys.exc_xxx have been removed."""
@@ -993,16 +993,16 @@ class AttributeErrorTests(GetSuggestionsTests):
         old, sugg1, sugg2 = 'xreadlines', 'readline', 'readlines'
         suggs = ["'" + sugg1 + "'", "'" + sugg2 + "'", "'writelines'"]
         old_code, new_code1, new_code2 = format_str(code, old, sugg1, sugg2)
-        version = (3, 0)
-        self.runs(old_code, up_to_version(version))
-        self.throws(old_code, ATTRIBUTEERROR, suggs, from_version(version))
+        before, after = before_and_after((3, 0))
+        self.runs(old_code, before)
+        self.throws(old_code, ATTRIBUTEERROR, suggs, after)
         self.runs(new_code1)
         self.runs(new_code2)
 
     def test_removed_function_attributes(self):
         """Some functions attributes are removed."""
         # NICE_TO_HAVE
-        version = (3, 0)
+        before, after = before_and_after((3, 0))
         code = func_gen() + 'some_func.{0}'
         attributes = [('func_name', '__name__', []),
                       ('func_doc', '__doc__', []),
@@ -1013,22 +1013,22 @@ class AttributeErrorTests(GetSuggestionsTests):
                       ('func_code', '__code__', [])]
         for (old_att, new_att, sugg) in attributes:
             old_code, new_code = format_str(code, old_att, new_att)
-            self.runs(old_code, up_to_version(version))
-            self.throws(old_code, ATTRIBUTEERROR, sugg, from_version(version))
+            self.runs(old_code, before)
+            self.throws(old_code, ATTRIBUTEERROR, sugg, after)
             self.runs(new_code)
 
     def test_removed_method_attributes(self):
         """Some methods attributes are removed."""
         # NICE_TO_HAVE
-        version = (3, 0)
+        before, after = before_and_after((3, 0))
         code = 'FoobarClass().some_method.{0}'
         attributes = [('im_func', '__func__', []),
                       ('im_self', '__self__', []),
                       ('im_class', '__self__.__class__', ["'__class__'"])]
         for (old_att, new_att, sugg) in attributes:
             old_code, new_code = format_str(code, old_att, new_att)
-            self.runs(old_code, up_to_version(version))
-            self.throws(old_code, ATTRIBUTEERROR, sugg, from_version(version))
+            self.runs(old_code, before)
+            self.throws(old_code, ATTRIBUTEERROR, sugg, after)
             self.runs(new_code)
 
     def test_moved_between_str_string(self):
@@ -1086,7 +1086,7 @@ class AttributeErrorTests(GetSuggestionsTests):
     def test_set_dict_comprehension(self):
         """{} creates a dict and not an empty set leading to errors."""
         # NICE_TO_HAVE
-        version = (2, 7)
+        before, after = before_and_after((2, 7))
         for method in set(dir(set)) - set(dir(dict)):
             if not method.startswith('__'):  # boring suggestions
                 code = "a = {0}\na." + method
@@ -1096,8 +1096,8 @@ class AttributeErrorTests(GetSuggestionsTests):
                 self.throws(dict1, ATTRIBUTEERROR)
                 self.throws(dict2, ATTRIBUTEERROR)
                 self.runs(sugg)
-                self.throws(set1, INVALIDSYNTAX, [], up_to_version(version))
-                self.runs(set1, from_version(version))
+                self.throws(set1, INVALIDSYNTAX, [], before)
+                self.runs(set1, after)
 
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""
@@ -1150,16 +1150,16 @@ class TypeErrorTests(GetSuggestionsTests):
         # NICE_TO_HAVE
         wrong_type = (DESCREXPECT, MUSTCALLWITHINST, NBARGERROR)
         not_iterable = (ARGNOTITERABLE, ARGNOTITERABLE, ARGNOTITERABLE)
-        version = (3, 0)
+        before, after = before_and_after((3, 0))
         for code, (err_cy, err_pyp, err_pyp3) in [
                 ('set{0}.add(0)', wrong_type),
                 ('list{0}.append(0)', wrong_type),
                 ('0 in list{0}', not_iterable)]:
             bad_code, good_code = format_str(code, '', '()')
             self.runs(good_code)
-            self.throws(bad_code, err_cy, [], interpreters='cython')
-            self.throws(bad_code, err_pyp, [], up_to_version(version), 'pypy')
-            self.throws(bad_code, err_pyp3, [], from_version(version), 'pypy')
+            self.throws(bad_code, err_cy, interpreters='cython')
+            self.throws(bad_code, err_pyp, [], before, 'pypy')
+            self.throws(bad_code, err_pyp3, [], after, 'pypy')
 
     def test_set_operations(self):
         """+, +=, etc doesn't work on sets. A suggestion would be nice."""
@@ -1196,7 +1196,7 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_unary_operand_custom(self):
         """Test unary operand errors on custom types."""
-        version = (3, 0)
+        before, after = before_and_after((3, 0))
         ops = {
             '+{0}': ('__pos__', "'__doc__'"),
             '-{0}': ('__neg__', None),
@@ -1209,10 +1209,8 @@ class TypeErrorTests(GetSuggestionsTests):
             code = op.format(obj)
             magic, sugg_attr = suggestions
             sugg_unary = sugg.format(magic)
-            self.throws(code, ATTRIBUTEERROR, sugg_attr,
-                        up_to_version(version))
-            self.throws(code, BADOPERANDUNARY, sugg_unary,
-                        from_version(version))
+            self.throws(code, ATTRIBUTEERROR, sugg_attr, before)
+            self.throws(code, BADOPERANDUNARY, sugg_unary, after)
 
     def test_unary_operand_builtin(self):
         """Test unary operand errors on builtin types."""
@@ -1236,12 +1234,12 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_len_on_custom(self):
         """len() can't be called on custom."""
-        v3 = (3, 0)
+        before, after = before_and_after((3, 0))
         code = 'o = {0}()\nlen(o)'
         bad, good = format_str(code, 'CustomClass', 'LenClass')
         sugg = 'implement "__len__" on CustomClass'
-        self.throws(bad, ATTRIBUTEERROR, ["'__module__'"], up_to_version(v3))
-        self.throws(bad, OBJECTHASNOFUNC, sugg, from_version(v3))
+        self.throws(bad, ATTRIBUTEERROR, ["'__module__'"], before)
+        self.throws(bad, OBJECTHASNOFUNC, sugg, after)
         self.runs(good)
 
     def test_nb_args(self):
@@ -1263,55 +1261,55 @@ class TypeErrorTests(GetSuggestionsTests):
     def test_nb_args2(self):
         """Should have 1 arg."""
         typo, sugg = '', '1'
-        version = (3, 3)
+        before, after = before_and_after((3, 3))
         code = func_gen(param='a', args='{0}')
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NBARGERROR, [], up_to_version(version))
-        self.throws(bad_code, MISSINGPOSERROR, [], from_version(version))
+        self.throws(bad_code, NBARGERROR, [], before)
+        self.throws(bad_code, MISSINGPOSERROR, [], after)
         self.runs(good_code)
 
     def test_nb_args3(self):
         """Should have 3 args."""
         typo, sugg = '1', '1, 2, 3'
-        version = (3, 3)
+        before, after = before_and_after((3, 3))
         code = func_gen(param='so, much, args', args='{0}')
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NBARGERROR, [], up_to_version(version))
-        self.throws(bad_code, MISSINGPOSERROR, [], from_version(version))
+        self.throws(bad_code, NBARGERROR, [], before)
+        self.throws(bad_code, MISSINGPOSERROR, [], after)
         self.runs(good_code)
 
     def test_nb_args4(self):
         """Should have 3 args."""
         typo, sugg = '', '1, 2, 3'
-        version = (3, 3)
+        before, after = before_and_after((3, 3))
         code = func_gen(param='so, much, args', args='{0}')
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NBARGERROR, [], up_to_version(version))
-        self.throws(bad_code, MISSINGPOSERROR, [], from_version(version))
+        self.throws(bad_code, NBARGERROR, [], before)
+        self.throws(bad_code, MISSINGPOSERROR, [], after)
         self.runs(good_code)
 
     def test_nb_args5(self):
         """Should have 3 args."""
         typo, sugg = '1, 2', '1, 2, 3'
-        version = (3, 3)
+        before, after = before_and_after((3, 3))
         code = func_gen(param='so, much, args', args='{0}')
         bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NBARGERROR, [], up_to_version(version))
-        self.throws(bad_code, MISSINGPOSERROR, [], from_version(version))
+        self.throws(bad_code, NBARGERROR, [], before)
+        self.throws(bad_code, MISSINGPOSERROR, [], after)
         self.runs(good_code)
 
     def test_nb_args6(self):
         """Should provide more args."""
         # Amusing message: 'func() takes exactly 2 arguments (2 given)'
-        version = (3, 3)
+        before, after = before_and_after((3, 3))
         code = func_gen(param='a, b, c=3', args='{0}')
         bad_code, good_code1, good_code2 = format_str(
             code,
             'b=2, c=3',
             'a=1, b=2, c=3',
             '1, b=2, c=3')
-        self.throws(bad_code, NBARGERROR, [], up_to_version(version))
-        self.throws(bad_code, MISSINGPOSERROR, [], from_version(version))
+        self.throws(bad_code, NBARGERROR, [], before)
+        self.throws(bad_code, MISSINGPOSERROR, [], after)
         self.runs(good_code1)
         self.runs(good_code2)
 
@@ -1434,36 +1432,36 @@ class TypeErrorTests(GetSuggestionsTests):
     def test_keyword_builtin_print(self):
         """Builtin "print" has a different error message."""
         # It would be NICE_TO_HAVE suggestions on keyword arguments
-        v3 = (3, 0)
+        before, after = before_and_after((3, 0))
         code = "c = 'string'\nb = print(c, end_='toto')"
-        self.throws(code, INVALIDSYNTAX, [], up_to_version(v3))
-        self.throws(code, UNEXPECTEDKWARG2, [], from_version(v3), 'cython')
-        self.throws(code, UNEXPECTEDKWARG3, [], from_version(v3), 'pypy')
+        self.throws(code, INVALIDSYNTAX, [], before)
+        self.throws(code, UNEXPECTEDKWARG2, [], after, 'cython')
+        self.throws(code, UNEXPECTEDKWARG3, [], after, 'pypy')
 
     def test_keyword_sort_cmpkey(self):
         """Sort and sorted functions have a cmp/key param dep. on the vers."""
-        v3 = (3, 0)
+        before, after = before_and_after((3, 0))
         code = "import functools as f\nl = [1, 8, 3]\n" \
                "def comp(a, b): return (a > b) - (a < b)\nl.sort({0})"
         cmp_arg, key_arg, cmp_to_key = format_str(
                 code, 'cmp=comp', 'key=id', 'key=f.cmp_to_key(comp)')
-        self.runs(cmp_arg, up_to_version(v3))
+        self.runs(cmp_arg, before)
         self.throws(cmp_arg, UNEXPECTEDKWARG2,
-                    CMP_ARG_REMOVED_MSG, from_version(v3), 'cython')
+                    CMP_ARG_REMOVED_MSG, after, 'cython')
         self.throws(cmp_arg, UNEXPECTEDKWARG,
-                    CMP_ARG_REMOVED_MSG, from_version(v3), 'pypy')
+                    CMP_ARG_REMOVED_MSG, after, 'pypy')
         self.runs(key_arg)
         self.runs(cmp_to_key, from_version((2, 7)))
 
     def test_iter_cannot_be_interpreted_as_int(self):
         """Trying to call `range(len(iterable))` (bad) and forget the len."""
-        v3 = (3, 0)
+        before, after = before_and_after((3, 0))
         bad_code = 'range([0, 1, 2])'
         good_code = 'range(len([0, 1, 2]))'
         sugg = "'len(list)'"
         self.runs(good_code)
-        self.throws(bad_code, INTEXPECTED, sugg, up_to_version(v3))
-        self.throws(bad_code, CANNOTBEINTERPRETED, sugg, from_version(v3))
+        self.throws(bad_code, INTEXPECTED, sugg, before)
+        self.throws(bad_code, CANNOTBEINTERPRETED, sugg, after)
 
     RANGE_CODE_TEMPLATES = [
         'range({0})',
@@ -1474,13 +1472,13 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_str_cannot_be_interpreted_as_int(self):
         """Forget to convert str to int."""
-        v3 = (3, 0)
+        before, after = before_and_after((3, 0))
         suggs = ["'int(str)'", "'len(str)'"]
         for code in self.RANGE_CODE_TEMPLATES:
             bad_code, good_code = format_str(code, '"12"', 'int("12")')
             self.runs(good_code)
-            self.throws(bad_code, INTEXPECTED, suggs, up_to_version(v3))
-            self.throws(bad_code, CANNOTBEINTERPRETED, suggs, from_version(v3))
+            self.throws(bad_code, INTEXPECTED, suggs, before)
+            self.throws(bad_code, CANNOTBEINTERPRETED, suggs, after)
 
     def test_float_cannot_be_interpreted_as_int(self):
         """Use float instead of int."""
@@ -1505,13 +1503,13 @@ class TypeErrorTests(GetSuggestionsTests):
         """Forget to implement the __index__ method."""
         # http://stackoverflow.com/questions/17342899/object-cannot-be-interpreted-as-an-integer
         # https://twitter.com/raymondh/status/773224135409360896
-        v3 = (3, 0)
+        before, after = before_and_after((3, 0))
         sugg = 'implement "__index__" on CustomClass'
         for code in self.RANGE_CODE_TEMPLATES:
             bad, good = format_str(code, 'CustomClass()', 'IndexClass()')
-            self.throws(bad, ATTRIBUTEERROR, [], up_to_version(v3))
-            self.throws(bad, CANNOTBEINTERPRETED, sugg, from_version(v3))
-            self.runs(good, from_version(v3))  # Fails on old python ?
+            self.throws(bad, ATTRIBUTEERROR, [], before)
+            self.throws(bad, CANNOTBEINTERPRETED, sugg, after)
+            self.runs(good, after)  # Fails on old python ?
 
     def test_indices_cant_be_str(self):
         """Use str as index."""
@@ -1523,8 +1521,7 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_indices_cant_be_float(self):
         """Use float as index."""
-        v27 = (2, 7)
-        v3 = (3, 0)
+        before, after = before_and_after((3, 0))
         sugg = ["'int(float)'"]
         suggs = ["'int(float)'", "'math.ceil(float)'", "'math.floor(float)'"]
         for code in self.INDEX_CODE_TEMPLATES:
@@ -1532,27 +1529,23 @@ class TypeErrorTests(GetSuggestionsTests):
                     code, 'int(2.0)', 'math.floor(2.0)', '2.0')
             self.runs(good1)
             # floor returns a float before Python 3 -_-
-            self.throws(good2, INDICESMUSTBEINT, sugg, up_to_version(v3))
-            self.runs(good2, from_version(v3))
-            self.throws(bad, INDICESMUSTBEINT, sugg, up_to_version(v3))
-            self.throws(bad, INDICESMUSTBEINT, suggs, from_version(v3))
+            self.throws(good2, INDICESMUSTBEINT, sugg, before)
+            self.runs(good2, after)
+            self.throws(bad, INDICESMUSTBEINT, sugg, before)
+            self.throws(bad, INDICESMUSTBEINT, suggs, after)
 
     def test_indices_cant_be_custom(self):
         """Use custom as index."""
-        v3 = (3, 0)
+        before, after = before_and_after((3, 0))
         sugg = 'implement "__index__" on CustomClass'
         # On Pypy, detected type is 'instance' so attribute detection is much
         # less precise, leading to additional suggestions
         suggs = ["'len(instance)'", 'implement "__index__" on instance']
         for code in self.INDEX_CODE_TEMPLATES:
             bad, good = format_str(code, 'CustomClass()', 'IndexClass()')
-            self.throws(
-                    bad, INDICESMUSTBEINT,
-                    suggs, up_to_version(v3), 'pypy')
-            self.throws(
-                    bad, CANNOTBEINTERPRETEDINDEX,
-                    [], up_to_version(v3), 'cython')
-            self.throws(bad, INDICESMUSTBEINT, sugg, from_version(v3))
+            self.throws(bad, INDICESMUSTBEINT, suggs, before, 'pypy')
+            self.throws(bad, CANNOTBEINTERPRETEDINDEX, [], before, 'cython')
+            self.throws(bad, INDICESMUSTBEINT, sugg, after)
             self.runs(good)
 
     def test_no_implicit_str_conv(self):
@@ -1567,7 +1560,7 @@ class TypeErrorTests(GetSuggestionsTests):
     def test_cannot_concatenate_iter_to_list(self):
         """Trying to concatenate a non-list iterable to a list."""
         # NICE_TO_HAVE
-        v3 = (3, 0)
+        before, after = before_and_after((3, 0))
         code = 'list() + {0}'
         good, bad, sugg, bad2, bad3, bad4 = \
             format_str(code, 'list()', 'set()', 'list(set())',
@@ -1578,17 +1571,17 @@ class TypeErrorTests(GetSuggestionsTests):
         self.throws(bad, UNSUPPORTEDOPERAND, interpreters='pypy')
         # Other examples are more interesting but depend on the version used:
         #  - range returns a list or a range object
-        self.runs(bad2, up_to_version(v3))
-        self.throws(bad2, ONLYCONCAT, [], from_version(v3), 'cython')
-        self.throws(bad2, UNSUPPORTEDOPERAND, [], from_version(v3), 'pypy')
+        self.runs(bad2, before)
+        self.throws(bad2, ONLYCONCAT, [], after, 'cython')
+        self.throws(bad2, UNSUPPORTEDOPERAND, [], after, 'pypy')
         #  - keys return a list or a view object
-        self.runs(bad3, up_to_version(v3))
-        self.throws(bad3, ONLYCONCAT, [], from_version(v3), 'cython')
-        self.throws(bad3, UNSUPPORTEDOPERAND, [], from_version(v3), 'pypy')
+        self.runs(bad3, before)
+        self.throws(bad3, ONLYCONCAT, [], after, 'cython')
+        self.throws(bad3, UNSUPPORTEDOPERAND, [], after, 'pypy')
         #  - iterkeys returns an iterator or doesn't exist
-        self.throws(bad4, ONLYCONCAT, [], up_to_version(v3), 'cython')
-        self.throws(bad4, UNSUPPORTEDOPERAND, [], up_to_version(v3), 'pypy')
-        self.throws(bad4, ATTRIBUTEERROR, [], from_version(v3))
+        self.throws(bad4, ONLYCONCAT, [], before, 'cython')
+        self.throws(bad4, UNSUPPORTEDOPERAND, [], before, 'pypy')
+        self.throws(bad4, ATTRIBUTEERROR, [], after)
 
     def test_no_implicit_str_conv2(self):
         """Trying to concatenate a non-string value to a string."""
@@ -1612,11 +1605,11 @@ class TypeErrorTests(GetSuggestionsTests):
         code = '{0}[2] = 1'
         typo, good = 'range(4)', 'list(range(4))'
         sugg = 'convert to list to edit the list'
-        v3 = (3, 0)
+        before, after = before_and_after((3, 0))
         bad_code, good_code = format_str(code, typo, good)
         self.runs(good_code)
-        self.runs(bad_code, up_to_version(v3))
-        self.throws(bad_code, OBJECTDOESNOTSUPPORT, sugg, from_version(v3))
+        self.runs(bad_code, before)
+        self.throws(bad_code, OBJECTDOESNOTSUPPORT, sugg, after)
 
     def test_assignment_to_string(self):
         """Trying to assign to string does not work."""
@@ -1630,37 +1623,35 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_assignment_to_custom(self):
         """Trying to assign to custom obj."""
-        v3 = (3, 0)
+        before, after = before_and_after((3, 0))
         code = "o = {0}()\no[1] = 'd'"
         bad, good = format_str(code, 'CustomClass', 'SetItemClass')
         sugg = 'implement "__setitem__" on CustomClass'
-        self.throws(bad, ATTRIBUTEERROR, [], up_to_version(v3))
-        self.throws(bad, OBJECTDOESNOTSUPPORT, sugg, from_version(v3))
+        self.throws(bad, ATTRIBUTEERROR, [], before)
+        self.throws(bad, OBJECTDOESNOTSUPPORT, sugg, after)
         self.runs(good)
 
     def test_deletion_from_string(self):
         """Delete from string does not work."""
         code = "s = 'abc'\ndel s[1]"
         good_code = "s = 'abc'\nl = list(s)\ndel l[1]\ns = ''.join(l)"
+        sugg = 'convert to list to edit the list and use "join()" on the list'
         self.runs(good_code)
-        self.throws(
-            code,
-            OBJECTDOESNOTSUPPORT,
-            'convert to list to edit the list and use "join()" on the list')
+        self.throws(code, OBJECTDOESNOTSUPPORT, sugg)
 
     def test_deletion_from_custom(self):
         """Delete from custom obj does not work."""
-        v3 = (3, 0)
+        before, after = before_and_after((3, 0))
         code = "o = {0}()\ndel o[1]"
         bad, good = format_str(code, 'CustomClass', 'DelItemClass')
         sugg = 'implement "__delitem__" on CustomClass'
-        self.throws(bad, ATTRIBUTEERROR, [], up_to_version(v3))
-        self.throws(bad, OBJECTDOESNOTSUPPORT, sugg, from_version(v3))
+        self.throws(bad, ATTRIBUTEERROR, [], before)
+        self.throws(bad, OBJECTDOESNOTSUPPORT, sugg, after)
         self.runs(good)
 
     def test_object_indexing(self):
         """Index from object does not work if __getitem__ is not defined."""
-        version = (3, 0)
+        before, after = before_and_after((3, 0))
         code = "{0}[0]"
         good_code, set_code, custom_bad, custom_good = \
             format_str(code, '"a_string"', "set()",
@@ -1675,18 +1666,13 @@ class TypeErrorTests(GetSuggestionsTests):
         self.throws(set_code,
                     UNSUBSCRIPTABLE,
                     sugg_for_iterable, interpreters='pypy')
-        self.throws(custom_bad,
-                    ATTRIBUTEERROR, [], up_to_version(version), 'pypy')
-        self.throws(custom_bad,
-                    UNSUBSCRIPTABLE,
-                    sugg_imp,
-                    from_version(version), 'pypy')
-        self.throws(custom_bad,
-                    ATTRIBUTEERROR, [], up_to_version(version), 'cython')
+        self.throws(custom_bad, ATTRIBUTEERROR, [], before, 'pypy')
+        self.throws(custom_bad, UNSUBSCRIPTABLE, sugg_imp, after, 'pypy')
+        self.throws(custom_bad, ATTRIBUTEERROR, [], before, 'cython')
         self.throws(custom_bad,
                     OBJECTDOESNOTSUPPORT,
                     sugg_imp,
-                    from_version(version), 'cython')
+                    after, 'cython')
         self.runs(custom_good)
 
     def test_not_callable(self):
@@ -1704,13 +1690,13 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_not_callable_custom(self):
         """One must define __call__ to call custom objects."""
-        v3 = (3, 0)
+        before, after = before_and_after((3, 0))
         code = 'o = {0}()\no()'
         bad, good = format_str(code, 'CustomClass', 'CallClass')
         sugg = 'implement "__call__" on CustomClass'
-        self.throws(bad, INSTHASNOMETH, [], up_to_version(v3), 'cython')
-        self.throws(bad, ATTRIBUTEERROR, [], up_to_version(v3), 'pypy')
-        self.throws(bad, NOTCALLABLE, sugg, from_version(v3))
+        self.throws(bad, INSTHASNOMETH, [], before, 'cython')
+        self.throws(bad, ATTRIBUTEERROR, [], before, 'pypy')
+        self.throws(bad, NOTCALLABLE, sugg, after)
         self.runs(good)
 
     def test_exc_must_derive_from(self):
@@ -1929,31 +1915,22 @@ class SyntaxErrorTests(GetSuggestionsTests):
         """<> comparison is removed, != always works."""
         code = '1 {0} 2'
         old, new = '<>', '!='
-        version = (3, 0)
+        sugg = "'!='"
+        before, after = before_and_after((3, 0))
         old_code, new_code = format_str(code, old, new)
-        self.runs(old_code, up_to_version(version))
-        self.throws(
-            old_code,
-            INVALIDCOMP,
-            "'!='",
-            from_version(version),
-            'pypy')
-        self.throws(
-            old_code,
-            INVALIDSYNTAX,
-            "'!='",
-            from_version(version),
-            'cython')
+        self.runs(old_code, before)
+        self.throws(old_code, INVALIDCOMP, sugg, after, 'pypy')
+        self.throws(old_code, INVALIDSYNTAX, sugg, after, 'cython')
         self.runs(new_code)
 
     def test_backticks(self):
         """String with backticks is removed in Python3, use 'repr' instead."""
         # NICE_TO_HAVE
-        version = (3, 0)
+        before, after = before_and_after((3, 0))
         expr = "2+3"
         backtick_str, repr_str = "`%s`" % expr, "repr(%s)" % expr
-        self.runs(backtick_str, up_to_version(version))
-        self.throws(backtick_str, INVALIDSYNTAX, [], from_version(version))
+        self.runs(backtick_str, before)
+        self.throws(backtick_str, INVALIDSYNTAX, [], after)
         self.runs(repr_str)
 
     def test_missing_colon(self):
@@ -2025,7 +2002,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
     def test_unqualified_exec(self):
         """Exec in nested functions."""
         # NICE_TO_HAVE
-        version = (3, 0)
+        before, after = before_and_after((3, 0))
         codes = [
             "def func1():\n\tbar='1'\n\tdef func2():"
             "\n\t\texec(bar)\n\tfunc2()\nfunc1()",
@@ -2033,8 +2010,8 @@ class SyntaxErrorTests(GetSuggestionsTests):
             "\n\t\tTrue",
         ]
         for code in codes:
-            self.throws(code, UNQUALIFIED_EXEC, [], up_to_version(version))
-            self.runs(code, from_version(version))
+            self.throws(code, UNQUALIFIED_EXEC, [], before)
+            self.runs(code, after)
 
     def test_import_star(self):
         """'import *' in nested functions."""
@@ -2053,34 +2030,34 @@ class SyntaxErrorTests(GetSuggestionsTests):
     def test_unpack(self):
         """Extended tuple unpacking does not work prior to Python 3."""
         # NICE_TO_HAVE
-        version = (3, 0)
+        before, after = before_and_after((3, 0))
         code = 'a, *b = (1, 2, 3)'
-        self.throws(code, INVALIDSYNTAX, [], up_to_version(version))
-        self.runs(code, from_version(version))
+        self.throws(code, INVALIDSYNTAX, [], before)
+        self.runs(code, after)
 
     def test_unpack2(self):
         """Unpacking in function arguments was supported up to Python 3."""
         # NICE_TO_HAVE
-        version = (3, 0)
+        before, after = before_and_after((3, 0))
         code = 'def addpoints((x1, y1), (x2, y2)):\n\tpass'
-        self.runs(code, up_to_version(version))
-        self.throws(code, INVALIDSYNTAX, [], from_version(version))
+        self.runs(code, before)
+        self.throws(code, INVALIDSYNTAX, [], after)
 
     def test_nonlocal(self):
         """nonlocal keyword is added in Python 3."""
         # NICE_TO_HAVE
-        version = (3, 0)
+        before, after = before_and_after((3, 0))
         code = 'def func():\n\tfoo = 1\n\tdef nested():\n\t\tnonlocal foo'
-        self.runs(code, from_version(version))
-        self.throws(code, INVALIDSYNTAX, [], up_to_version(version))
+        self.throws(code, INVALIDSYNTAX, [], before)
+        self.runs(code, after)
 
     def test_nonlocal2(self):
         """nonlocal must be used only when binding exists."""
         # NICE_TO_HAVE
-        version = (3, 0)
+        before, after = before_and_after((3, 0))
         code = 'def func():\n\tdef nested():\n\t\tnonlocal foo'
-        self.throws(code, NOBINDING, [], from_version(version))
-        self.throws(code, INVALIDSYNTAX, [], up_to_version(version))
+        self.throws(code, INVALIDSYNTAX, [], before)
+        self.throws(code, NOBINDING, [], after)
 
     def test_nonlocal3(self):
         """nonlocal must be used only when binding to non-global exists."""
@@ -2089,27 +2066,25 @@ class SyntaxErrorTests(GetSuggestionsTests):
         this_is_a_global_list
         self.assertFalse(name in locals())
         self.assertTrue(name in globals())
-        version = (3, 0)
+        before, after = before_and_after((3, 0))
         code = 'def func():\n\tdef nested():\n\t\t{0} ' + name
         typo, sugg = 'nonlocal', 'global'
         bad_code, good_code = format_str(code, typo, sugg)
         self.runs(good_code)
-        self.throws(bad_code,
-                    NOBINDING, "'{0} {1}'".format(sugg, name),
-                    from_version(version))
-        self.throws(bad_code, INVALIDSYNTAX, [], up_to_version(version))
+        self.throws(bad_code, INVALIDSYNTAX, [], before)
+        self.throws(bad_code, NOBINDING, "'{0} {1}'".format(sugg, name), after)
 
     def test_nonlocal4(self):
         """suggest close matches to variable name."""
         # NICE_TO_HAVE (needs access to variable in enclosing scope)
-        version = (3, 0)
+        before, after = before_and_after((3, 0))
         code = 'def func():\n\tfoo = 1\n\tdef nested():\n\t\tnonlocal {0}'
         typo, sugg = 'foob', 'foo'
         bad_code, good_code = format_str(code, typo, sugg)
-        self.runs(good_code, from_version(version))
-        self.throws(good_code, INVALIDSYNTAX, [], up_to_version(version))
-        self.throws(bad_code, NOBINDING, [], from_version(version))
-        self.throws(bad_code, INVALIDSYNTAX, [], up_to_version(version))
+        self.throws(good_code, INVALIDSYNTAX, [], before)
+        self.runs(good_code, after)
+        self.throws(bad_code, INVALIDSYNTAX, [], before)
+        self.throws(bad_code, NOBINDING, [], after)
 
     def test_nonlocal_at_module_level(self):
         """nonlocal must be used in function."""
@@ -2123,34 +2098,34 @@ class SyntaxErrorTests(GetSuggestionsTests):
     def test_octal_literal(self):
         """Syntax for octal liberals has changed."""
         # NICE_TO_HAVE
-        version = (3, 0)
+        before, after = before_and_after((3, 0))
         bad, good = '0720', '0o720'
         self.runs(good)
-        self.runs(bad, up_to_version(version))
-        self.throws(bad, INVALIDTOKEN, [], from_version(version), 'cython')
-        self.throws(bad, INVALIDSYNTAX, [], from_version(version), 'pypy')
+        self.runs(bad, before)
+        self.throws(bad, INVALIDTOKEN, [], after, 'cython')
+        self.throws(bad, INVALIDSYNTAX, [], after, 'pypy')
 
     def test_extended_unpacking(self):
         """Extended iterable unpacking is added with Python 3."""
-        version = (3, 0)
+        before, after = before_and_after((3, 0))
         code = '(a, *rest, b) = range(5)'
-        self.throws(code, INVALIDSYNTAX, [], up_to_version(version))
-        self.runs(code, from_version(version))
+        self.throws(code, INVALIDSYNTAX, [], before)
+        self.runs(code, after)
 
     def test_ellipsis(self):
         """Triple dot (...) aka Ellipsis can be used anywhere in Python 3."""
-        version = (3, 0)
+        before, after = before_and_after((3, 0))
         code = '...'
-        self.throws(code, INVALIDSYNTAX, [], up_to_version(version))
-        self.runs(code, from_version(version))
+        self.throws(code, INVALIDSYNTAX, [], before)
+        self.runs(code, after)
 
     def test_fstring(self):
         """Fstring (see PEP 498) appeared in Python 3.6."""
         # NICE_TO_HAVE
-        version = (3, 6)
+        before, after = before_and_after((3, 6))
         code = 'f"toto"'
-        self.throws(code, INVALIDSYNTAX, [], up_to_version(version))
-        self.runs(code, from_version(version))
+        self.throws(code, INVALIDSYNTAX, [], before)
+        self.runs(code, after)
 
 
 class MemoryErrorTests(GetSuggestionsTests):
@@ -2189,17 +2164,17 @@ class ValueErrorTests(GetSuggestionsTests):
     def test_too_many_values(self):
         """Unpack 4 values in 3 variables."""
         code = 'a, b, c = [1, 2, 3, 4]'
-        version = (3, 0)
-        self.throws(code, EXPECTEDLENGTH, [], up_to_version(version), 'pypy')
-        self.throws(code, TOOMANYVALUES, [], from_version(version), 'pypy')
+        before, after = before_and_after((3, 0))
+        self.throws(code, EXPECTEDLENGTH, [], before, 'pypy')
+        self.throws(code, TOOMANYVALUES, [], after, 'pypy')
         self.throws(code, TOOMANYVALUES, interpreters='cython')
 
     def test_not_enough_values(self):
         """Unpack 2 values in 3 variables."""
         code = 'a, b, c = [1, 2]'
-        version = (3, 0)
-        self.throws(code, EXPECTEDLENGTH, [], up_to_version(version), 'pypy')
-        self.throws(code, NEEDMOREVALUES, [], from_version(version), 'pypy')
+        before, after = before_and_after((3, 0))
+        self.throws(code, EXPECTEDLENGTH, [], before, 'pypy')
+        self.throws(code, NEEDMOREVALUES, [], after, 'pypy')
         self.throws(code, NEEDMOREVALUES, interpreters='cython')
 
     def test_conversion_fails(self):
@@ -2216,10 +2191,10 @@ class ValueErrorTests(GetSuggestionsTests):
         code = '"{0}".format(0)'
         old, new = '{0}', '{}'
         old_code, new_code = format_str(code, old, new)
-        version = (2, 7)
+        before, after = before_and_after((2, 7))
         self.runs(old_code)
-        self.throws(new_code, ZEROLENERROR, '{0}', up_to_version(version))
-        self.runs(new_code, from_version(version))
+        self.throws(new_code, ZEROLENERROR, '{0}', before)
+        self.runs(new_code, after)
 
     def test_timedata_does_not_match(self):
         """Strptime arguments are in wrong order."""
@@ -2228,9 +2203,9 @@ class ValueErrorTests(GetSuggestionsTests):
         timedata, timeformat = '"30 Nov 00"', '"%d %b %y"'
         good_code = code.format(*(timedata, timeformat))
         bad_code = code.format(*(timeformat, timedata))
+        sugg = 'to swap value and format parameters'
         self.runs(good_code)
-        self.throws(bad_code, TIMEDATAFORMAT,
-                    ['to swap value and format parameters'])
+        self.throws(bad_code, TIMEDATAFORMAT, sugg)
 
 
 class RuntimeErrorTests(GetSuggestionsTests):
@@ -2387,15 +2362,15 @@ class AnyErrorTests(GetSuggestionsTests):
         Adding parenthesis solves the issue.
         """
         # NICE_TO_HAVE
-        version = (3, 0)
+        before, after = before_and_after((3, 0))
         raised_exc, other_exc = KeyError, TypeError
         raised, other = raised_exc.__name__, other_exc.__name__
         code = "try:\n\traise {0}()\nexcept {{0}}:\n\tpass".format(raised)
         typo = "{0}, {1}".format(other, raised)
         sugg = "({0})".format(typo)
         bad1, bad2, good1, good2 = format_str(code, typo, other, sugg, raised)
-        self.throws(bad1, (raised_exc, None), [], up_to_version(version))
-        self.throws(bad1, INVALIDSYNTAX, [], from_version(version))
+        self.throws(bad1, (raised_exc, None), [], before)
+        self.throws(bad1, INVALIDSYNTAX, [], after)
         self.throws(bad2, (raised_exc, None))
         self.runs(good1)
         self.runs(good2)
