@@ -1964,7 +1964,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
             code2 = code + end
             for op in ('-', '+'):
                 typo, sugg = 2 * op, op + '=1'
-                bad_code, good_code = format_str(code + end, typo, sugg)
+                bad_code, good_code = format_str(code2, typo, sugg)
                 self.throws(bad_code, INVALIDSYNTAX)
                 self.runs(good_code)
 
