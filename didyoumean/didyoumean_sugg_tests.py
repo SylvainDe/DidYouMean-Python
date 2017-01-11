@@ -985,10 +985,10 @@ class AttributeErrorTests(GetSuggestionsTests):
             'exc_traceback': ["'last_traceback'", EXC_ATTR_REMOVED_MSG],
         }.items():
             code = 'import sys\nsys.' + att_name
-            # TODO: Check pypy / check runs(code, before) ?
-            self.throws(code, ATTRIBUTEERROR, sugg, mid, 'cython')
+            if att_name == 'exc_type':
+                self.runs(code, before)  # others may be undef
+            self.throws(code, ATTRIBUTEERROR, sugg, mid)
             self.throws(code, MODATTRIBUTEERROR, sugg, after)
-        self.runs('import sys\nsys.exc_type', before)
         self.runs('import sys\nsys.exc_info()')
 
     def test_removed_xreadlines(self):
