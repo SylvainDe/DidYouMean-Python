@@ -185,6 +185,12 @@ def before_and_after(version):
     return up_to_version(version), from_version(version)
 
 
+def before_mid_and_after(vers1, vers2):
+    """Return a tuple with the versions before/in/after given versions."""
+    assert vers1 < vers2
+    return up_to_version(vers1), (vers1, vers2), from_version(vers2)
+
+
 def version_in_range(version_range):
     """Test if current version is in a range version."""
     beg, end = version_range
@@ -972,17 +978,17 @@ class AttributeErrorTests(GetSuggestionsTests):
 
     def test_remove_exc_attr(self):
         """Attribute sys.exc_xxx have been removed."""
-        v3 = (3, 0)
-        v35 = (3, 5)
+        before, mid, after = before_mid_and_after((3, 0), (3, 5))
         for att_name, sugg in {
             'exc_type': [EXC_ATTR_REMOVED_MSG],
             'exc_value': [EXC_ATTR_REMOVED_MSG],
             'exc_traceback': ["'last_traceback'", EXC_ATTR_REMOVED_MSG],
         }.items():
             code = 'import sys\nsys.' + att_name
-            self.throws(code, ATTRIBUTEERROR, sugg, (v3, v35), 'cython')
-            self.throws(code, MODATTRIBUTEERROR, sugg, from_version(v35))
-        self.runs('import sys\nsys.exc_type', up_to_version(v3))
+            # TODO: Check pypy / check runs(code, before) ?
+            self.throws(code, ATTRIBUTEERROR, sugg, mid, 'cython')
+            self.throws(code, MODATTRIBUTEERROR, sugg, after)
+        self.runs('import sys\nsys.exc_type', before)
         self.runs('import sys\nsys.exc_info()')
 
     def test_removed_xreadlines(self):
@@ -1127,18 +1133,14 @@ class TypeErrorTests(GetSuggestionsTests):
         code = func_gen(param='a') + 'some_func{0}'
         bad_code, good_code = format_str(code, typo, sugg)
         suggestion = "'function(value)'"
+        suggs = ["'__get__'", "'__getattribute__'", suggestion]
         # Only Python 2.7 with cpython has a different error message
         # (leading to more suggestions based on fuzzy matches)
-        version1 = (2, 7)
-        version2 = (3, 0)
+        before, mid, after = before_mid_and_after((2, 7), (3, 0))
         self.throws(bad_code, UNSUBSCRIPTABLE, suggestion, interpreters='pypy')
-        self.throws(bad_code, UNSUBSCRIPTABLE, suggestion,
-                    up_to_version(version1), 'cython')
-        self.throws(bad_code, UNSUBSCRIPTABLE, suggestion,
-                    from_version(version2), 'cython')
-        self.throws(bad_code, NOATTRIBUTE_TYPEERROR,
-                    ["'__get__'", "'__getattribute__'", suggestion],
-                    (version1, version2), 'cython')
+        self.throws(bad_code, UNSUBSCRIPTABLE, suggestion, before, 'cython')
+        self.throws(bad_code, NOATTRIBUTE_TYPEERROR, suggs, mid, 'cython')
+        self.throws(bad_code, UNSUBSCRIPTABLE, suggestion, after, 'cython')
         self.runs(good_code)
 
     def test_method_called_on_class(self):
@@ -1443,13 +1445,12 @@ class TypeErrorTests(GetSuggestionsTests):
         before, after = before_and_after((3, 0))
         code = "import functools as f\nl = [1, 8, 3]\n" \
                "def comp(a, b): return (a > b) - (a < b)\nl.sort({0})"
+        sugg = CMP_ARG_REMOVED_MSG
         cmp_arg, key_arg, cmp_to_key = format_str(
                 code, 'cmp=comp', 'key=id', 'key=f.cmp_to_key(comp)')
         self.runs(cmp_arg, before)
-        self.throws(cmp_arg, UNEXPECTEDKWARG2,
-                    CMP_ARG_REMOVED_MSG, after, 'cython')
-        self.throws(cmp_arg, UNEXPECTEDKWARG,
-                    CMP_ARG_REMOVED_MSG, after, 'pypy')
+        self.throws(cmp_arg, UNEXPECTEDKWARG2, sugg, after, 'cython')
+        self.throws(cmp_arg, UNEXPECTEDKWARG, sugg, after, 'pypy')
         self.runs(key_arg)
         self.runs(cmp_to_key, from_version((2, 7)))
 
@@ -1482,8 +1483,7 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_float_cannot_be_interpreted_as_int(self):
         """Use float instead of int."""
-        v27 = (2, 7)
-        v3 = (3, 0)
+        before, mid, after = before_mid_and_after((2, 7), (3, 0))
         sugg = ["'int(float)'"]
         suggs = ["'int(float)'", "'math.ceil(float)'", "'math.floor(float)'"]
         for code in self.RANGE_CODE_TEMPLATES:
@@ -1491,13 +1491,13 @@ class TypeErrorTests(GetSuggestionsTests):
             good1, good2, bad = format_str(
                 full_code, 'int(12.0)', 'math.floor(12.0)', '12.0')
             self.runs(good1)
-            self.runs(good2, up_to_version(v27))
+            self.runs(good2, before)
             # floor returns a float before Python 3 -_-
-            self.throws(good2, INTEXPECTED, sugg, (v27, v3))
-            self.runs(good2, from_version(v3))
-            self.runs(bad, up_to_version(v27))
-            self.throws(bad, INTEXPECTED, sugg, (v27, v3))
-            self.throws(bad, CANNOTBEINTERPRETED, suggs, from_version(v3))
+            self.throws(good2, INTEXPECTED, sugg, mid)
+            self.runs(good2, after)
+            self.runs(bad, before)
+            self.throws(bad, INTEXPECTED, sugg, mid)
+            self.throws(bad, CANNOTBEINTERPRETED, suggs, after)
 
     def test_customclass_cannot_be_interpreter_as_int(self):
         """Forget to implement the __index__ method."""
@@ -1589,14 +1589,10 @@ class TypeErrorTests(GetSuggestionsTests):
         code = '"things " + {0}'
         typo, sugg = '12', 'str(12)'
         bad_code, good_code = format_str(code, typo, sugg)
-        version = (3, 0)
-        version2 = (3, 6)
-        self.throws(
-            bad_code, CANNOTCONCAT, [], up_to_version(version), 'cython')
-        self.throws(
-            bad_code, CANTCONVERT, [], (version, version2), 'cython')
-        self.throws(
-            bad_code, MUSTBETYPENOTTYPE, [], from_version(version2), 'cython')
+        before, mid, after = before_mid_and_after((3, 0), (3, 6))
+        self.throws(bad_code, CANNOTCONCAT, [], before, 'cython')
+        self.throws(bad_code, CANTCONVERT, [], mid, 'cython')
+        self.throws(bad_code, MUSTBETYPENOTTYPE, [], after, 'cython')
         self.throws(bad_code, UNSUPPORTEDOPERAND, interpreters='pypy')
         self.runs(good_code)
 
@@ -1706,33 +1702,30 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_unordered_builtin(self):
         """Test for UNORDERABLE exception on builtin types."""
-        version = (3, 0)
-        version2 = (3, 6)
+        before, mid, after = before_mid_and_after((3, 0), (3, 6))
         for op in ['>', '>=', '<', '<=']:
             code = "'10' {0} 2".format(op)
-            self.runs(code, up_to_version(version))
-            self.throws(code, UNORDERABLE, [], (version, version2))
-            self.throws(code, OPNOTSUPPBETWEENINST, [], from_version(version2))
+            self.runs(code, before)
+            self.throws(code, UNORDERABLE, [], mid)
+            self.throws(code, OPNOTSUPPBETWEENINST, [], after)
 
     def test_unordered_custom(self):
         """Test for UNORDERABLE exception on custom types."""
-        version = (3, 0)
-        version2 = (3, 6)
+        before, mid, after = before_mid_and_after((3, 0), (3, 6))
         for op in ['>', '>=', '<', '<=']:
             code = "CustomClass() {0} CustomClass()".format(op)
-            self.runs(code, up_to_version(version))
-            self.throws(code, UNORDERABLE, [], (version, version2))
-            self.throws(code, OPNOTSUPPBETWEENINST, [], from_version(version2))
+            self.runs(code, before)
+            self.throws(code, UNORDERABLE, [], mid)
+            self.throws(code, OPNOTSUPPBETWEENINST, [], after)
 
     def test_unordered_custom2(self):
         """Test for UNORDERABLE exception on custom types."""
-        version = (3, 0)
-        version2 = (3, 6)
+        before, mid, after = before_mid_and_after((3, 0), (3, 6))
         for op in ['>', '>=', '<', '<=']:
             code = "CustomClass() {0} 2".format(op)
-            self.runs(code, up_to_version(version))
-            self.throws(code, UNORDERABLE, [], (version, version2))
-            self.throws(code, OPNOTSUPPBETWEENINST, [], from_version(version2))
+            self.runs(code, before)
+            self.throws(code, UNORDERABLE, [], mid)
+            self.throws(code, OPNOTSUPPBETWEENINST, [], after)
 
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""
@@ -1848,12 +1841,12 @@ class ImportErrorTests(GetSuggestionsTests):
     def test_module_removed(self):
         """Sometimes, modules are deleted/moved/renamed."""
         # NICE_TO_HAVE
-        version1 = (2, 7)  # result for 2.6 seems to vary
-        version2 = (3, 0)
+        # result for 2.6 seems to vary
+        _, mid, after = before_mid_and_after((2, 7), (3, 0))
         code = 'import {0}'
         lower, upper = format_str(code, 'tkinter', 'Tkinter')
-        self.throws(lower, NOMODULE, [], (version1, version2))
-        self.throws(upper, NOMODULE, [], from_version(version2))
+        self.throws(lower, NOMODULE, [], mid)
+        self.throws(upper, NOMODULE, [], after)
 
 
 class LookupErrorTests(GetSuggestionsTests):
@@ -1890,25 +1883,21 @@ class SyntaxErrorTests(GetSuggestionsTests):
         self.throws("return 1", OUTSIDEFUNC, ["'sys.exit([arg])'", sugg])
 
     def test_print(self):
-        """print is a functions now and needs parenthesis."""
+        """print is a function now and needs parenthesis."""
         # NICE_TO_HAVE
         code, new_code = 'print ""', 'print("")'
-        version = (3, 0)
-        version2 = (3, 4)
-        self.runs(code, up_to_version(version))
-        self.throws(code, INVALIDSYNTAX, [], (version, version2))
-        self.throws(code, INVALIDSYNTAX, [], from_version(version2))
+        before, after = before_and_after((3, 0))
+        self.runs(code, before)
+        self.throws(code, INVALIDSYNTAX, [], after)
         self.runs(new_code)
 
     def test_exec(self):
-        """exec is a functions now and needs parenthesis."""
+        """exec is a function now and needs parenthesis."""
         # NICE_TO_HAVE
         code, new_code = 'exec "1"', 'exec("1")'
-        version = (3, 0)
-        version2 = (3, 4)
-        self.runs(code, up_to_version(version))
-        self.throws(code, INVALIDSYNTAX, [], (version, version2))
-        self.throws(code, INVALIDSYNTAX, [], from_version(version2))
+        before, after = before_and_after((3, 0))
+        self.runs(code, before)
+        self.throws(code, INVALIDSYNTAX, [], after)
         self.runs(new_code)
 
     def test_old_comparison(self):
@@ -2088,12 +2077,11 @@ class SyntaxErrorTests(GetSuggestionsTests):
 
     def test_nonlocal_at_module_level(self):
         """nonlocal must be used in function."""
-        version1 = (2, 7)
-        version2 = (3, 0)
+        before, mid, after = before_mid_and_after((2, 7), (3, 0))
         code = 'nonlocal foo'
-        self.throws(code, UNEXPECTED_OEF, [], up_to_version(version1))
-        self.throws(code, INVALIDSYNTAX, [], (version1, version2))
-        self.throws(code, NONLOCALMODULE, [], from_version(version2))
+        self.throws(code, UNEXPECTED_OEF, [], before)
+        self.throws(code, INVALIDSYNTAX, [], mid)
+        self.throws(code, NONLOCALMODULE, [], after)
 
     def test_octal_literal(self):
         """Syntax for octal liberals has changed."""
@@ -2141,21 +2129,13 @@ class MemoryErrorTests(GetSuggestionsTests):
         code = '{0}(999999999999999)'
         typo, sugg = 'range', 'xrange'
         bad_code, good_code = format_str(code, typo, sugg)
+        before, mid, after = before_mid_and_after((2, 7), (3, 0))
         self.runs(bad_code, interpreters='pypy')
-        version = (2, 7)
-        version2 = (3, 0)
-        self.throws(
-            bad_code,
-            OVERFLOWERR, "'" + sugg + "'",
-            up_to_version(version),
-            'cython')
-        self.throws(
-            bad_code,
-            MEMORYERROR, "'" + sugg + "'",
-            (version, version2),
-            'cython')
-        self.runs(good_code, up_to_version(version2), 'cython')
-        self.runs(bad_code, from_version(version2), 'cython')
+        self.throws(bad_code, OVERFLOWERR, "'" + sugg + "'", before, 'cython')
+        self.throws(bad_code, MEMORYERROR, "'" + sugg + "'", mid, 'cython')
+        self.runs(bad_code, after, 'cython')
+        self.runs(good_code, before, 'cython')
+        self.runs(good_code, mid, 'cython')
 
 
 class ValueErrorTests(GetSuggestionsTests):
