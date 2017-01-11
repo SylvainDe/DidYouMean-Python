@@ -987,7 +987,8 @@ class AttributeErrorTests(GetSuggestionsTests):
             code = 'import sys\nsys.' + att_name
             if att_name == 'exc_type':
                 self.runs(code, before)  # others may be undef
-            self.throws(code, ATTRIBUTEERROR, sugg, mid)
+            self.runs(code, mid, 'pypy')
+            self.throws(code, ATTRIBUTEERROR, sugg, mid, 'cython')
             self.throws(code, MODATTRIBUTEERROR, sugg, after)
         self.runs('import sys\nsys.exc_info()')
 
