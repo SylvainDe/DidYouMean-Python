@@ -1,6 +1,6 @@
 # -*- coding: utf-8
 """Unit tests for get_suggestions_for_exception."""
-from didyoumean_internal import get_suggestions_for_exception, \
+from didyoumean_internal import get_suggestions_for_exception, quote, \
     STAND_MODULES, AVOID_REC_MSG, \
     APPLY_REMOVED_MSG, BUFFER_REMOVED_MSG, CMP_REMOVED_MSG, \
     CMP_ARG_REMOVED_MSG, EXC_ATTR_REMOVED_MSG, LONG_REMOVED_MSG, \
@@ -403,94 +403,106 @@ class NameErrorTests(GetSuggestionsTests):
     def test_local(self):
         """Should be 'foo'."""
         code = "foo = 0\n{0}"
-        typo, sugg = "foob", "foo"
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NAMEERROR, "'" + sugg + "' (local)")
+        typo, good = "foob", "foo"
+        sugg = "'{0}' (local)".format(good)
+        bad_code, good_code = format_str(code, typo, good)
+        self.throws(bad_code, NAMEERROR, sugg)
         self.runs(good_code)
 
     def test_1_arg(self):
         """Should be 'foo'."""
-        typo, sugg = "foob", "foo"
-        code = func_gen(param=sugg, body='{0}', args='1')
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NAMEERROR, "'" + sugg + "' (local)")
+        typo, good = "foob", "foo"
+        sugg = "'{0}' (local)".format(good)
+        code = func_gen(param=good, body='{0}', args='1')
+        bad_code, good_code = format_str(code, typo, good)
+        self.throws(bad_code, NAMEERROR, sugg)
         self.runs(good_code)
 
     def test_n_args(self):
         """Should be 'fool' or 'foot'."""
         typo, sugg1, sugg2 = "foob", "foot", "fool"
         code = func_gen(param='fool, foot', body='{0}', args='1, 2')
+        suggs = ["'fool' (local)", "'foot' (local)"]
         bad, good1, good2 = format_str(code, typo, sugg1, sugg2)
-        self.throws(bad, NAMEERROR, ["'fool' (local)", "'foot' (local)"])
+        self.throws(bad, NAMEERROR, suggs)
         self.runs(good1)
         self.runs(good2)
 
     def test_builtin(self):
         """Should be 'max'."""
-        typo, sugg = 'maxi', 'max'
-        self.throws(typo, NAMEERROR, "'" + sugg + "' (builtin)")
-        self.runs(sugg)
+        typo, good = 'maxi', 'max'
+        sugg = "'{0}' (builtin)".format(good)
+        self.throws(typo, NAMEERROR, sugg)
+        self.runs(good)
 
     def test_keyword(self):
         """Should be 'pass'."""
-        typo, sugg = 'passs', 'pass'
-        self.throws(typo, NAMEERROR, "'" + sugg + "' (keyword)")
-        self.runs(sugg)
+        typo, good = 'passs', 'pass'
+        sugg = "'{0}' (keyword)".format(good)
+        self.throws(typo, NAMEERROR, sugg)
+        self.runs(good)
 
     def test_global(self):
         """Should be this_is_a_global_list."""
-        typo, sugg = 'this_is_a_global_lis', 'this_is_a_global_list'
+        typo, good = 'this_is_a_global_lis', 'this_is_a_global_list'
         # just a way to say that this_is_a_global_list is needed in globals
         this_is_a_global_list
-        self.assertFalse(sugg in locals())
-        self.assertTrue(sugg in globals())
-        self.throws(typo, NAMEERROR, "'" + sugg + "' (global)")
-        self.runs(sugg)
+        self.assertFalse(good in locals())
+        self.assertTrue(good in globals())
+        sugg = "'{0}' (global)".format(good)
+        self.throws(typo, NAMEERROR, sugg)
+        self.runs(good)
 
     def test_name(self):
         """Should be '__name__'."""
-        typo, sugg = '__name_', '__name__'
-        self.throws(typo, NAMEERROR, "'" + sugg + "' (global)")
-        self.runs(sugg)
+        typo, good = '__name_', '__name__'
+        sugg = "'{0}' (global)".format(good)
+        self.throws(typo, NAMEERROR, sugg)
+        self.runs(good)
 
     def test_decorator(self):
         """Should be classmethod."""
-        typo, sugg = "class_method", "classmethod"
+        typo, good = "class_method", "classmethod"
+        sugg = "'{0}' (builtin)".format(good)
         code = "@{0}\n" + func_gen()
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NAMEERROR, "'" + sugg + "' (builtin)")
+        bad_code, good_code = format_str(code, typo, good)
+        self.throws(bad_code, NAMEERROR, sugg)
         self.runs(good_code)
 
     def test_import(self):
         """Should be math."""
         code = 'import math\n{0}'
-        typo, sugg = 'maths', 'math'
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NAMEERROR, "'" + sugg + "' (local)")
+        typo, good = 'maths', 'math'
+        sugg = "'{0}' (local)".format(good)
+        bad_code, good_code = format_str(code, typo, good)
+        self.throws(bad_code, NAMEERROR, sugg)
         self.runs(good_code)
 
     def test_import2(self):
         """Should be my_imported_math."""
         code = 'import math as my_imported_math\n{0}'
-        typo, sugg = 'my_imported_maths', 'my_imported_math'
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NAMEERROR, "'" + sugg + "' (local)")
+        typo, good = 'my_imported_maths', 'my_imported_math'
+        sugg = "'{0}' (local)".format(good)
+        bad_code, good_code = format_str(code, typo, good)
+        self.throws(bad_code, NAMEERROR, sugg)
         self.runs(good_code)
 
     def test_imported(self):
         """Should be math.pi."""
         code = 'import math\n{0}'
-        typo, sugg = 'pi', 'math.pi'
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NAMEERROR, "'" + sugg + "'")
+        typo, good = 'pi', 'math.pi'
+        sugg = quote(good)
+        bad_code, good_code = format_str(code, typo, good)
+        self.throws(bad_code, NAMEERROR, sugg)
         self.runs(good_code)
 
     def test_imported_twice(self):
         """Should be math.pi."""
         code = 'import math\nimport math\n{0}'
-        typo, sugg = 'pi', 'math.pi'
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NAMEERROR, "'" + sugg + "'")
+        typo, good = 'pi', 'math.pi'
+        sugg = quote(good)
+        bad_code, good_code = format_str(code, typo, good)
+        self.throws(bad_code, NAMEERROR, sugg)
         self.runs(good_code)
 
     def test_not_imported(self):
@@ -502,17 +514,16 @@ class NameErrorTests(GetSuggestionsTests):
         self.assertTrue(module in STAND_MODULES)
         bad_code = attr
         good_code = 'from {0} import {1}\n{2}'.format(module, attr, bad_code)
+        sugg = "'{0}' from {1} (not imported)".format(attr, module)
         self.runs(good_code)
-        self.throws(
-            bad_code, NAMEERROR,
-            "'{0}' from {1} (not imported)".format(attr, module))
+        self.throws(bad_code, NAMEERROR, sugg)
 
     def test_enclosing_scope(self):
         """Test that variables from enclosing scope are suggested."""
         # NICE_TO_HAVE
-        typo, sugg = 'foob', 'foo'
+        typo, good = 'foob', 'foo'
         code = 'def f():\n\tfoo = 0\n\tdef g():\n\t\t{0}\n\tg()\nf()'
-        bad_code, good_code = format_str(code, typo, sugg)
+        bad_code, good_code = format_str(code, typo, good)
         self.throws(bad_code, NAMEERROR)
         self.runs(good_code)
 
@@ -738,24 +749,24 @@ class NameErrorTests(GetSuggestionsTests):
     def test_complex_numbers(self):
         """Should be 1j."""
         code = 'assert {0} ** 2 == -1'
-        sugg = '1j'
-        good_code, bad_code_i, bad_code_j = format_str(code, sugg, 'i', 'j')
-        suggestion = "'" + sugg + "' (imaginary unit)"
-        self.throws(bad_code_i, NAMEERROR, suggestion)
-        self.throws(bad_code_j, NAMEERROR, suggestion)
+        good = '1j'
+        good_code, bad_code_i, bad_code_j = format_str(code, good, 'i', 'j')
+        sugg = "'{0}' (imaginary unit)".format(good)
+        self.throws(bad_code_i, NAMEERROR, sugg)
+        self.throws(bad_code_j, NAMEERROR, sugg)
         self.runs(good_code)
 
     def test_shell_commands(self):
         """Trying shell commands."""
-        cmd, sugg = 'ls', 'os.listdir(os.getcwd())'
-        self.throws(cmd, NAMEERROR, "'" + sugg + "'")
-        self.runs(sugg)
-        cmd, sugg = 'pwd', 'os.getcwd()'
-        self.throws(cmd, NAMEERROR, "'" + sugg + "'")
-        self.runs(sugg)
-        cmd, sugg = 'cd', 'os.chdir(path)'
-        self.throws(cmd, NAMEERROR, "'" + sugg + "'")
-        self.runs(sugg.replace('path', 'os.getcwd()'))
+        cmd, good = 'ls', 'os.listdir(os.getcwd())'
+        self.throws(cmd, NAMEERROR, quote(good))
+        self.runs(good)
+        cmd, good = 'pwd', 'os.getcwd()'
+        self.throws(cmd, NAMEERROR, quote(good))
+        self.runs(good)
+        cmd, good = 'cd', 'os.chdir(path)'
+        self.throws(cmd, NAMEERROR, quote(good))
+        self.runs(good.replace('path', 'os.getcwd()'))
         cmd = 'rm'
         sugg = "'os.remove(filename)', 'shutil.rmtree(dir)' for recursive"
         self.throws(cmd, NAMEERROR, sugg)
@@ -773,9 +784,10 @@ class UnboundLocalErrorTests(GetSuggestionsTests):
     def test_unbound_typo(self):
         """Should be foo."""
         code = 'def func():\n\tfoo = 1\n\t{0} +=1\nfunc()'
-        typo, sugg = "foob", "foo"
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, UNBOUNDLOCAL, "'" + sugg + "' (local)")
+        typo, good = "foob", "foo"
+        sugg = "'{0}' (local)".format(good)
+        bad_code, good_code = format_str(code, typo, good)
+        self.throws(bad_code, UNBOUNDLOCAL, sugg)
         self.runs(good_code)
 
     def test_unbound_global(self):
@@ -837,9 +849,10 @@ class AttributeErrorTests(GetSuggestionsTests):
     def test_method(self):
         """Should be 'append'."""
         code = '[0].{0}(1)'
-        typo, sugg = 'appendh', 'append'
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, ATTRIBUTEERROR, "'" + sugg + "'")
+        typo, good = 'appendh', 'append'
+        sugg = quote(good)
+        bad_code, good_code = format_str(code, typo, good)
+        self.throws(bad_code, ATTRIBUTEERROR, sugg)
         self.runs(good_code)
 
     def test_builtin(self):
@@ -861,17 +874,19 @@ class AttributeErrorTests(GetSuggestionsTests):
     def test_wrongmethod(self):
         """Should be 'lst.append(1)'."""
         code = '[0].{0}(1)'
-        typo, sugg = 'add', 'append'
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, ATTRIBUTEERROR, "'" + sugg + "'")
+        typo, good = 'add', 'append'
+        sugg = quote(good)
+        bad_code, good_code = format_str(code, typo, good)
+        self.throws(bad_code, ATTRIBUTEERROR, sugg)
         self.runs(good_code)
 
     def test_wrongmethod2(self):
         """Should be 'lst.extend([4, 5, 6])'."""
         code = '[0].{0}([4, 5, 6])'
-        typo, sugg = 'update', 'extend'
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, ATTRIBUTEERROR, "'" + sugg + "'")
+        typo, good = 'update', 'extend'
+        sugg = quote(good)
+        bad_code, good_code = format_str(code, typo, good)
+        self.throws(bad_code, ATTRIBUTEERROR, sugg)
         self.runs(good_code)
 
     def test_hidden(self):
@@ -888,7 +903,7 @@ class AttributeErrorTests(GetSuggestionsTests):
         """Should be math.pi."""
         code = 'import math\nmath.{0}'
         typo, good = 'pie', 'pi'
-        sugg = "'" + good + "'"
+        sugg = quote(good)
         before, after = before_and_after((3, 5))
         bad_code, good_code = format_str(code, typo, good)
         self.throws(bad_code, ATTRIBUTEERROR, sugg, before)
@@ -899,7 +914,7 @@ class AttributeErrorTests(GetSuggestionsTests):
         """Should be math.pi."""
         code = 'import math\nm = math\nm.{0}'
         typo, good = 'pie', 'pi'
-        sugg = "'" + good + "'"
+        sugg = quote(good)
         before, after = before_and_after((3, 5))
         bad_code, good_code = format_str(code, typo, good)
         self.throws(bad_code, ATTRIBUTEERROR, sugg, before)
@@ -909,17 +924,19 @@ class AttributeErrorTests(GetSuggestionsTests):
     def test_from_class(self):
         """Should be 'this_is_cls_mthd'."""
         code = 'FoobarClass().{0}()'
-        typo, sugg = 'this_is_cls_mth', 'this_is_cls_mthd'
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, ATTRIBUTEERROR, "'" + sugg + "'")
+        typo, good = 'this_is_cls_mth', 'this_is_cls_mthd'
+        bad_code, good_code = format_str(code, typo, good)
+        sugg = quote(good)
+        self.throws(bad_code, ATTRIBUTEERROR, sugg)
         self.runs(good_code)
 
     def test_from_class2(self):
         """Should be 'this_is_cls_mthd'."""
         code = 'FoobarClass.{0}()'
-        typo, sugg = 'this_is_cls_mth', 'this_is_cls_mthd'
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, ATTRIBUTEERROR, "'" + sugg + "'")
+        typo, good = 'this_is_cls_mth', 'this_is_cls_mthd'
+        bad_code, good_code = format_str(code, typo, good)
+        sugg = quote(good)
+        self.throws(bad_code, ATTRIBUTEERROR, sugg)
         self.runs(good_code)
 
     def test_private_attr(self):
@@ -931,15 +948,13 @@ class AttributeErrorTests(GetSuggestionsTests):
         code = 'FoobarClass().{0}'
         method = '__some_private_method'
         method2 = '_some_semi_private_method'
-        typo, sugg, sugg2 = method, '_FoobarClass' + method, method2
-        bad_code, bad_sugg, good_sugg = format_str(code, typo, sugg, sugg2)
-        self.throws(
-            bad_code,
-            ATTRIBUTEERROR,
-            ["'{0}' (but it is supposed to be private)".format(sugg),
-             "'{0}'".format(sugg2)])
-        self.runs(bad_sugg)
-        self.runs(good_sugg)
+        typo, priv, good = method, '_FoobarClass' + method, method2
+        suggs = ["'{0}' (but it is supposed to be private)".format(priv),
+                 "'{0}'".format(good)]
+        bad_code, priv_code, good_code = format_str(code, typo, priv, good)
+        self.throws(bad_code, ATTRIBUTEERROR, suggs)
+        self.runs(priv_code)
+        self.runs(good_code)
 
     def test_get_on_nondict_cont(self):
         """Method get does not exist on all containers."""
@@ -997,9 +1012,9 @@ class AttributeErrorTests(GetSuggestionsTests):
         # NICE_TO_HAVE
         code = "import os\nwith open(os.path.realpath(__file__)) as f:" \
             "\n\tf.{0}"
-        old, sugg1, sugg2 = 'xreadlines', 'readline', 'readlines'
-        suggs = ["'" + sugg1 + "'", "'" + sugg2 + "'", "'writelines'"]
-        old_code, new_code1, new_code2 = format_str(code, old, sugg1, sugg2)
+        old, good1, good2 = 'xreadlines', 'readline', 'readlines'
+        suggs = [quote(good1), quote(good2), "'writelines'"]
+        old_code, new_code1, new_code2 = format_str(code, old, good1, good2)
         before, after = before_and_after((3, 0))
         self.runs(old_code, before)
         self.throws(old_code, ATTRIBUTEERROR, suggs, after)
@@ -1130,9 +1145,9 @@ class TypeErrorTests(GetSuggestionsTests):
     def test_not_sub(self):
         """Should be function call, not [] operator."""
         # https://twitter.com/raymondh/status/772957699478663169
-        typo, sugg = '[2]', '(2)'
+        typo, good = '[2]', '(2)'
         code = func_gen(param='a') + 'some_func{0}'
-        bad_code, good_code = format_str(code, typo, sugg)
+        bad_code, good_code = format_str(code, typo, good)
         suggestion = "'function(value)'"
         suggs = ["'__get__'", "'__getattribute__'", suggestion]
         # Only Python 2.7 with cpython has a different error message
@@ -1247,56 +1262,56 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_nb_args(self):
         """Should have 1 arg."""
-        typo, sugg = '1, 2', '1'
+        typo, good = '1, 2', '1'
         code = func_gen(param='a', args='{0}')
-        bad_code, good_code = format_str(code, typo, sugg)
+        bad_code, good_code = format_str(code, typo, good)
         self.throws(bad_code, NBARGERROR)
         self.runs(good_code)
 
     def test_nb_args1(self):
         """Should have 0 args."""
-        typo, sugg = '1', ''
+        typo, good = '1', ''
         code = func_gen(param='', args='{0}')
-        bad_code, good_code = format_str(code, typo, sugg)
+        bad_code, good_code = format_str(code, typo, good)
         self.throws(bad_code, NBARGERROR)
         self.runs(good_code)
 
     def test_nb_args2(self):
         """Should have 1 arg."""
-        typo, sugg = '', '1'
+        typo, good = '', '1'
         before, after = before_and_after((3, 3))
         code = func_gen(param='a', args='{0}')
-        bad_code, good_code = format_str(code, typo, sugg)
+        bad_code, good_code = format_str(code, typo, good)
         self.throws(bad_code, NBARGERROR, [], before)
         self.throws(bad_code, MISSINGPOSERROR, [], after)
         self.runs(good_code)
 
     def test_nb_args3(self):
         """Should have 3 args."""
-        typo, sugg = '1', '1, 2, 3'
+        typo, good = '1', '1, 2, 3'
         before, after = before_and_after((3, 3))
         code = func_gen(param='so, much, args', args='{0}')
-        bad_code, good_code = format_str(code, typo, sugg)
+        bad_code, good_code = format_str(code, typo, good)
         self.throws(bad_code, NBARGERROR, [], before)
         self.throws(bad_code, MISSINGPOSERROR, [], after)
         self.runs(good_code)
 
     def test_nb_args4(self):
         """Should have 3 args."""
-        typo, sugg = '', '1, 2, 3'
+        typo, good = '', '1, 2, 3'
         before, after = before_and_after((3, 3))
         code = func_gen(param='so, much, args', args='{0}')
-        bad_code, good_code = format_str(code, typo, sugg)
+        bad_code, good_code = format_str(code, typo, good)
         self.throws(bad_code, NBARGERROR, [], before)
         self.throws(bad_code, MISSINGPOSERROR, [], after)
         self.runs(good_code)
 
     def test_nb_args5(self):
         """Should have 3 args."""
-        typo, sugg = '1, 2', '1, 2, 3'
+        typo, good = '1, 2', '1, 2, 3'
         before, after = before_and_after((3, 3))
         code = func_gen(param='so, much, args', args='{0}')
-        bad_code, good_code = format_str(code, typo, sugg)
+        bad_code, good_code = format_str(code, typo, good)
         self.throws(bad_code, NBARGERROR, [], before)
         self.throws(bad_code, MISSINGPOSERROR, [], after)
         self.runs(good_code)
@@ -1335,18 +1350,19 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_keyword_args(self):
         """Should be param 'babar' not 'a' but it's hard to guess."""
-        typo, sugg = 'a', 'babar'
-        code = func_gen(param=sugg, args='{0}=1')
-        bad_code, good_code = format_str(code, typo, sugg)
+        typo, good = 'a', 'babar'
+        code = func_gen(param=good, args='{0}=1')
+        bad_code, good_code = format_str(code, typo, good)
         self.throws(bad_code, UNEXPECTEDKWARG)
         self.runs(good_code)
 
     def test_keyword_args2(self):
         """Should be param 'abcdef' not 'abcdf'."""
-        typo, sugg = 'abcdf', 'abcdef'
-        code = func_gen(param=sugg, args='{0}=1')
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, UNEXPECTEDKWARG, "'" + sugg + "'")
+        typo, good = 'abcdf', 'abcdef'
+        code = func_gen(param=good, args='{0}=1')
+        bad_code, good_code = format_str(code, typo, good)
+        sugg = quote(good)
+        self.throws(bad_code, UNEXPECTEDKWARG, sugg)
         self.runs(good_code)
 
     def test_keyword_arg_method(self):
@@ -1359,11 +1375,12 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_keyword_arg_method2(self):
         """Should be the same as previous test but on a method."""
-        typo, sugg = 'abcdf', 'abcdef'
-        code = 'class MyClass:\n\tdef func(self, ' + sugg + '):' \
+        typo, good = 'abcdf', 'abcdef'
+        code = 'class MyClass:\n\tdef func(self, ' + good + '):' \
                '\n\t\tpass\nMyClass().func({0}=1)'
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, UNEXPECTEDKWARG, "'" + sugg + "'")
+        bad_code, good_code = format_str(code, typo, good)
+        sugg = quote(good)
+        self.throws(bad_code, UNEXPECTEDKWARG, sugg)
         self.runs(good_code)
 
     def test_keyword_arg_class_method(self):
@@ -1376,38 +1393,42 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_keyword_arg_class_method2(self):
         """Should be the same as previous test but on a class method."""
-        typo, sugg = 'abcdf', 'abcdef'
+        typo, good = 'abcdf', 'abcdef'
         code = 'class MyClass:\n\t@classmethod ' \
-               '\n\tdef func(cls, ' + sugg + '):\n ' \
+               '\n\tdef func(cls, ' + good + '):\n ' \
                '\t\tpass\nMyClass.func({0}=1)'
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, UNEXPECTEDKWARG, "'" + sugg + "'")
+        bad_code, good_code = format_str(code, typo, good)
+        sugg = quote(good)
+        self.throws(bad_code, UNEXPECTEDKWARG, sugg)
         self.runs(good_code)
 
     def test_keyword_arg_multiples_instances(self):
         """If multiple functions are found, suggestions should be unique."""
-        typo, sugg = 'abcdf', 'abcdef'
-        code = 'class MyClass:\n\tdef func(self, ' + sugg + '):' \
+        typo, good = 'abcdf', 'abcdef'
+        code = 'class MyClass:\n\tdef func(self, ' + good + '):' \
                '\n\t\tpass\na = MyClass()\nb = MyClass()\na.func({0}=1)'
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, UNEXPECTEDKWARG, "'" + sugg + "'")
+        bad_code, good_code = format_str(code, typo, good)
+        sugg = quote(good)
+        self.throws(bad_code, UNEXPECTEDKWARG, sugg)
         self.runs(good_code)
 
     def test_keyword_arg_lambda(self):
         """Test with lambda functions instead of usual function."""
-        typo, sugg = 'abcdf', 'abcdef'
-        code = 'f = lambda arg1, ' + sugg + ': None\nf(42, {0}=None)'
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, UNEXPECTEDKWARG, "'" + sugg + "'")
+        typo, good = 'abcdf', 'abcdef'
+        sugg = quote(good)
+        code = 'f = lambda arg1, ' + good + ': None\nf(42, {0}=None)'
+        bad_code, good_code = format_str(code, typo, good)
+        self.throws(bad_code, UNEXPECTEDKWARG, sugg)
         self.runs(good_code)
 
     def test_keyword_arg_lambda_method(self):
         """Test with lambda methods instead of usual methods."""
-        typo, sugg = 'abcdf', 'abcdef'
-        code = 'class MyClass:\n\tfunc = lambda self, ' + sugg + ': None' \
+        typo, good = 'abcdf', 'abcdef'
+        sugg = quote(good)
+        code = 'class MyClass:\n\tfunc = lambda self, ' + good + ': None' \
                '\nMyClass().func({0}=1)'
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, UNEXPECTEDKWARG, "'" + sugg + "'")
+        bad_code, good_code = format_str(code, typo, good)
+        self.throws(bad_code, UNEXPECTEDKWARG, sugg)
         self.runs(good_code)
 
     def test_keyword_arg_other_objects_with_name(self):
@@ -1553,8 +1574,8 @@ class TypeErrorTests(GetSuggestionsTests):
         """Trying to concatenate a non-string value to a string."""
         # NICE_TO_HAVE
         code = '{0} + " things"'
-        typo, sugg = '12', 'str(12)'
-        bad_code, good_code = format_str(code, typo, sugg)
+        typo, good = '12', 'str(12)'
+        bad_code, good_code = format_str(code, typo, good)
         self.throws(bad_code, UNSUPPORTEDOPERAND)
         self.runs(good_code)
 
@@ -1588,8 +1609,8 @@ class TypeErrorTests(GetSuggestionsTests):
         """Trying to concatenate a non-string value to a string."""
         # NICE_TO_HAVE
         code = '"things " + {0}'
-        typo, sugg = '12', 'str(12)'
-        bad_code, good_code = format_str(code, typo, sugg)
+        typo, good = '12', 'str(12)'
+        bad_code, good_code = format_str(code, typo, good)
         before, mid, after = before_mid_and_after((3, 0), (3, 6))
         self.throws(bad_code, CANNOTCONCAT, [], before, 'cython')
         self.throws(bad_code, CANTCONVERT, [], mid, 'cython')
@@ -1612,11 +1633,9 @@ class TypeErrorTests(GetSuggestionsTests):
         """Trying to assign to string does not work."""
         code = "s = 'abc'\ns[1] = 'd'"
         good_code = "s = 'abc'\nl = list(s)\nl[1] = 'd'\ns = ''.join(l)"
+        sugg = 'convert to list to edit the list and use "join()" on the list'
         self.runs(good_code)
-        self.throws(
-            code,
-            OBJECTDOESNOTSUPPORT,
-            'convert to list to edit the list and use "join()" on the list')
+        self.throws(code, OBJECTDOESNOTSUPPORT, sugg)
 
     def test_assignment_to_custom(self):
         """Trying to assign to custom obj."""
@@ -1745,55 +1764,61 @@ class ImportErrorTests(GetSuggestionsTests):
     def test_no_module(self):
         """Should be 'math'."""
         code = 'import {0}'
-        typo, sugg = 'maths', 'math'
-        self.assertTrue(sugg in STAND_MODULES)
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NOMODULE, "'" + sugg + "'")
+        typo, good = 'maths', 'math'
+        self.assertTrue(good in STAND_MODULES)
+        bad_code, good_code = format_str(code, typo, good)
+        sugg = quote(good)
+        self.throws(bad_code, NOMODULE, sugg)
         self.runs(good_code)
 
     def test_no_module2(self):
         """Should be 'math'."""
         code = 'from {0} import pi'
-        typo, sugg = 'maths', 'math'
-        self.assertTrue(sugg in STAND_MODULES)
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NOMODULE, "'" + sugg + "'")
+        typo, good = 'maths', 'math'
+        self.assertTrue(good in STAND_MODULES)
+        bad_code, good_code = format_str(code, typo, good)
+        sugg = quote(good)
+        self.throws(bad_code, NOMODULE, sugg)
         self.runs(good_code)
 
     def test_no_module3(self):
         """Should be 'math'."""
         code = 'import {0} as my_imported_math'
-        typo, sugg = 'maths', 'math'
-        self.assertTrue(sugg in STAND_MODULES)
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NOMODULE, "'" + sugg + "'")
+        typo, good = 'maths', 'math'
+        self.assertTrue(good in STAND_MODULES)
+        bad_code, good_code = format_str(code, typo, good)
+        sugg = quote(good)
+        self.throws(bad_code, NOMODULE, sugg)
         self.runs(good_code)
 
     def test_no_module4(self):
         """Should be 'math'."""
         code = 'from {0} import pi as three_something'
-        typo, sugg = 'maths', 'math'
-        self.assertTrue(sugg in STAND_MODULES)
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NOMODULE, "'" + sugg + "'")
+        typo, good = 'maths', 'math'
+        self.assertTrue(good in STAND_MODULES)
+        bad_code, good_code = format_str(code, typo, good)
+        sugg = quote(good)
+        self.throws(bad_code, NOMODULE, sugg)
         self.runs(good_code)
 
     def test_no_module5(self):
         """Should be 'math'."""
         code = '__import__("{0}")'
-        typo, sugg = 'maths', 'math'
-        self.assertTrue(sugg in STAND_MODULES)
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NOMODULE, "'" + sugg + "'")
+        typo, good = 'maths', 'math'
+        self.assertTrue(good in STAND_MODULES)
+        bad_code, good_code = format_str(code, typo, good)
+        sugg = quote(good)
+        self.throws(bad_code, NOMODULE, sugg)
         self.runs(good_code)
 
     def test_import_future_nomodule(self):
         """Should be '__future__'."""
         code = 'import {0}'
-        typo, sugg = '__future_', '__future__'
-        self.assertTrue(sugg in STAND_MODULES)
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, NOMODULE, "'" + sugg + "'")
+        typo, good = '__future_', '__future__'
+        self.assertTrue(good in STAND_MODULES)
+        bad_code, good_code = format_str(code, typo, good)
+        sugg = quote(good)
+        self.throws(bad_code, NOMODULE, sugg)
         self.runs(good_code)
 
     def test_no_name_no_sugg(self):
@@ -1803,34 +1828,38 @@ class ImportErrorTests(GetSuggestionsTests):
     def test_wrong_import(self):
         """Should be 'math'."""
         code = 'from {0} import pi'
-        typo, sugg = 'itertools', 'math'
-        self.assertTrue(sugg in STAND_MODULES)
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, CANNOTIMPORT, "'" + good_code + "'")
+        typo, good = 'itertools', 'math'
+        self.assertTrue(good in STAND_MODULES)
+        bad_code, good_code = format_str(code, typo, good)
+        sugg = "'{0}'".format(good_code)
+        self.throws(bad_code, CANNOTIMPORT, sugg)
         self.runs(good_code)
 
     def test_typo_in_method(self):
         """Should be 'pi'."""
         code = 'from math import {0}'
-        typo, sugg = 'pie', 'pi'
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, CANNOTIMPORT, "'" + sugg + "'")
+        typo, good = 'pie', 'pi'
+        sugg = quote(good)
+        bad_code, good_code = format_str(code, typo, good)
+        self.throws(bad_code, CANNOTIMPORT, sugg)
         self.runs(good_code)
 
     def test_typo_in_method2(self):
         """Should be 'pi'."""
         code = 'from math import e, {0}, log'
-        typo, sugg = 'pie', 'pi'
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, CANNOTIMPORT, "'" + sugg + "'")
+        typo, good = 'pie', 'pi'
+        sugg = quote(good)
+        bad_code, good_code = format_str(code, typo, good)
+        self.throws(bad_code, CANNOTIMPORT, sugg)
         self.runs(good_code)
 
     def test_typo_in_method3(self):
         """Should be 'pi'."""
         code = 'from math import {0} as three_something'
-        typo, sugg = 'pie', 'pi'
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, CANNOTIMPORT, "'" + sugg + "'")
+        typo, good = 'pie', 'pi'
+        sugg = quote(good)
+        bad_code, good_code = format_str(code, typo, good)
+        self.throws(bad_code, CANNOTIMPORT, sugg)
         self.runs(good_code)
 
     def test_unmatched_msg(self):
@@ -1905,7 +1934,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         """<> comparison is removed, != always works."""
         code = '1 {0} 2'
         old, new = '<>', '!='
-        sugg = "'!='"
+        sugg = "'{0}'".format(new)
         before, after = before_and_after((3, 0))
         old_code, new_code = format_str(code, old, new)
         self.runs(old_code, before)
@@ -1963,17 +1992,18 @@ class SyntaxErrorTests(GetSuggestionsTests):
         for end in ('', '  ', ';', ' ;'):
             code2 = code + end
             for op in ('-', '+'):
-                typo, sugg = 2 * op, op + '=1'
-                bad_code, good_code = format_str(code2, typo, sugg)
+                typo, good = 2 * op, op + '=1'
+                bad_code, good_code = format_str(code2, typo, good)
                 self.throws(bad_code, INVALIDSYNTAX)
                 self.runs(good_code)
 
     def test_wrong_bool_operator(self):
         """Trying to use '&&' or '||'."""
         code = 'True {0} False'
-        for typo, sugg in (('&&', 'and'), ('||', 'or')):
-            bad_code, good_code = format_str(code, typo, sugg)
-            self.throws(bad_code, INVALIDSYNTAX, "'" + sugg + "'")
+        for typo, good in (('&&', 'and'), ('||', 'or')):
+            bad_code, good_code = format_str(code, typo, good)
+            sugg = quote(good)
+            self.throws(bad_code, INVALIDSYNTAX, sugg)
             self.runs(good_code)
 
     def test_import_future_not_first(self):
@@ -1984,9 +2014,10 @@ class SyntaxErrorTests(GetSuggestionsTests):
     def test_import_future_not_def(self):
         """Should be 'division'."""
         code = 'from __future__ import {0}'
-        typo, sugg = 'divisio', 'division'
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(bad_code, FUTFEATNOTDEF, "'" + sugg + "'")
+        typo, good = 'divisio', 'division'
+        bad_code, good_code = format_str(code, typo, good)
+        sugg = quote(good)
+        self.throws(bad_code, FUTFEATNOTDEF, sugg)
         self.runs(good_code)
 
     def test_unqualified_exec(self):
@@ -2058,19 +2089,20 @@ class SyntaxErrorTests(GetSuggestionsTests):
         self.assertTrue(name in globals())
         before, after = before_and_after((3, 0))
         code = 'def func():\n\tdef nested():\n\t\t{0} ' + name
-        typo, sugg = 'nonlocal', 'global'
-        bad_code, good_code = format_str(code, typo, sugg)
+        typo, good = 'nonlocal', 'global'
+        sugg = "'{0} {1}'".format(good, name)
+        bad_code, good_code = format_str(code, typo, good)
         self.runs(good_code)
         self.throws(bad_code, INVALIDSYNTAX, [], before)
-        self.throws(bad_code, NOBINDING, "'{0} {1}'".format(sugg, name), after)
+        self.throws(bad_code, NOBINDING, sugg, after)
 
     def test_nonlocal4(self):
         """suggest close matches to variable name."""
         # NICE_TO_HAVE (needs access to variable in enclosing scope)
         before, after = before_and_after((3, 0))
         code = 'def func():\n\tfoo = 1\n\tdef nested():\n\t\tnonlocal {0}'
-        typo, sugg = 'foob', 'foo'
-        bad_code, good_code = format_str(code, typo, sugg)
+        typo, good = 'foob', 'foo'
+        bad_code, good_code = format_str(code, typo, good)
         self.throws(good_code, INVALIDSYNTAX, [], before)
         self.runs(good_code, after)
         self.throws(bad_code, INVALIDSYNTAX, [], before)
@@ -2128,12 +2160,13 @@ class MemoryErrorTests(GetSuggestionsTests):
     def test_out_of_memory_range(self):
         """Test what happens in case of MemoryError."""
         code = '{0}(999999999999999)'
-        typo, sugg = 'range', 'xrange'
-        bad_code, good_code = format_str(code, typo, sugg)
+        typo, good = 'range', 'xrange'
+        sugg = quote(good)
+        bad_code, good_code = format_str(code, typo, good)
         before, mid, after = before_mid_and_after((2, 7), (3, 0))
         self.runs(bad_code, interpreters='pypy')
-        self.throws(bad_code, OVERFLOWERR, "'" + sugg + "'", before, 'cython')
-        self.throws(bad_code, MEMORYERROR, "'" + sugg + "'", mid, 'cython')
+        self.throws(bad_code, OVERFLOWERR, sugg, before, 'cython')
+        self.throws(bad_code, MEMORYERROR, sugg, mid, 'cython')
         self.runs(bad_code, after, 'cython')
         self.runs(good_code, before, 'cython')
         self.runs(good_code, mid, 'cython')
@@ -2197,10 +2230,9 @@ class RuntimeErrorTests(GetSuggestionsTests):
         original_limit = sys.getrecursionlimit()
         sys.setrecursionlimit(200)
         code = 'endlessly_recursive_func(0)'
-        self.throws(code, MAXRECURDEPTH,
-                    ["increase the limit with `sys.setrecursionlimit(limit)`"
-                        " (current value is 200)",
-                     AVOID_REC_MSG])
+        suggs = ["increase the limit with `sys.setrecursionlimit(limit)`"
+                 " (current value is 200)", AVOID_REC_MSG]
+        self.throws(code, MAXRECURDEPTH, suggs)
         sys.setrecursionlimit(original_limit)
 
     def test_dict_size_changed_during_iter(self):
@@ -2240,24 +2272,22 @@ class IOErrorTests(GetSuggestionsTests):
     def test_no_such_file_user(self):
         """Suggestion when one needs to expanduser."""
         code = 'os.listdir("{0}")'
-        typo, sugg = "~", os.path.expanduser("~")
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(
-            bad_code, NOFILE_OS,
-            "'" + sugg + "' (calling os.path.expanduser)")
+        typo, good = "~", os.path.expanduser("~")
+        sugg = "'{0}' (calling os.path.expanduser)".format(good)
+        bad_code, good_code = format_str(code, typo, good)
+        self.throws(bad_code, NOFILE_OS, sugg)
         self.runs(good_code)
 
     def test_no_such_file_vars(self):
         """Suggestion when one needs to expandvars."""
         code = 'os.listdir("{0}")'
         key = 'HOME'
-        typo, sugg = "$" + key, os.path.expanduser("~")
+        typo, good = "$" + key, os.path.expanduser("~")
         original_home = os.environ.get('HOME')
-        os.environ[key] = sugg
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(
-            bad_code, NOFILE_OS,
-            "'" + sugg + "' (calling os.path.expandvars)")
+        os.environ[key] = good
+        bad_code, good_code = format_str(code, typo, good)
+        sugg = "'{0}' (calling os.path.expandvars)".format(good)
+        self.throws(bad_code, NOFILE_OS, sugg)
         self.runs(good_code)
         if original_home is None:
             del os.environ[key]
@@ -2278,8 +2308,8 @@ class IOErrorTests(GetSuggestionsTests):
         tmpdir, _ = self.create_tmp_dir_with_files([])
         code = 'with open("{0}") as f:\n\tpass'
         bad_code, _ = format_str(code, tmpdir, "TODO")
-        self.throws(
-            bad_code, ISADIR_IO, "to add content to {0} first".format(tmpdir))
+        sugg = "to add content to {0} first".format(tmpdir)
+        self.throws(bad_code, ISADIR_IO, sugg)
         rmtree(tmpdir)
 
     def test_is_dir_small(self):
@@ -2290,9 +2320,8 @@ class IOErrorTests(GetSuggestionsTests):
         tmpdir, absfiles = self.create_tmp_dir_with_files(files)
         code = 'with open("{0}") as f:\n\tpass'
         bad_code, good_code = format_str(code, tmpdir, absfiles[0])
-        self.throws(
-            bad_code, ISADIR_IO,
-            "any of the 3 files in directory ('0.txt', '1.txt', '2.txt')")
+        suggs = "any of the 3 files in directory ('0.txt', '1.txt', '2.txt')"
+        self.throws(bad_code, ISADIR_IO, suggs)
         self.runs(good_code)
         rmtree(tmpdir)
 
@@ -2305,10 +2334,9 @@ class IOErrorTests(GetSuggestionsTests):
         tmpdir, absfiles = self.create_tmp_dir_with_files(files)
         code = 'with open("{0}") as f:\n\tpass'
         bad_code, good_code = format_str(code, tmpdir, absfiles[0])
-        self.throws(
-            bad_code, ISADIR_IO,
-            "any of the 30 files in directory "
-            "('0.txt', '1.txt', '10.txt', '11.txt', etc)")
+        suggs = "any of the 30 files in directory " \
+            "('0.txt', '1.txt', '10.txt', '11.txt', etc)"
+        self.throws(bad_code, ISADIR_IO, suggs)
         self.runs(good_code)
         rmtree(tmpdir)
 
@@ -2316,11 +2344,10 @@ class IOErrorTests(GetSuggestionsTests):
         """Suggestion when file is not a directory."""
         code = 'with open("{0}") as f:\n\tpass'
         code = 'os.listdir("{0}")'
-        typo, sugg = __file__, os.path.dirname(__file__)
-        bad_code, good_code = format_str(code, typo, sugg)
-        self.throws(
-            bad_code, NOTADIR_OS,
-            "'" + sugg + "' (calling os.path.dirname)")
+        typo, good = __file__, os.path.dirname(__file__)
+        sugg = "'{0}' (calling os.path.dirname)".format(good)
+        bad_code, good_code = format_str(code, typo, good)
+        self.throws(bad_code, NOTADIR_OS, sugg)
         self.runs(good_code)
 
     def test_dir_is_not_empty(self):
