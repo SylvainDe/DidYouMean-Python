@@ -556,20 +556,21 @@ class NameErrorTests(GetSuggestionsTests):
     def test_removed_reduce(self):
         """Builtin reduce is removed - moved to functools."""
         code = 'reduce(lambda x, y: x + y, [1, 2, 3, 4, 5])'
+        new_code = 'from functools import reduce\n' + code
         sugg = "'reduce' from functools (not imported)"
         before, after = before_and_after((3, 0))
         self.runs(code, before)
         self.throws(code, NAMEERROR, sugg, after)
-        self.runs('from functools import reduce\n' + code, after)
+        self.runs(new_code, after)
 
     def test_removed_apply(self):
         """Builtin apply is removed."""
         code = 'apply(sum, [[1, 2, 3]])'
-        sugg = 'sum([1, 2, 3])'
+        good = 'sum([1, 2, 3])'
         before, after = before_and_after((3, 0))
         self.runs(code, before)
         self.throws(code, NAMEERROR, APPLY_REMOVED_MSG, after)
-        self.runs(sugg)
+        self.runs(good)
 
     def test_removed_reload(self):
         """Builtin reload is removed.
@@ -579,9 +580,9 @@ class NameErrorTests(GetSuggestionsTests):
         code = 'reload(math)'
         sugg_template = 'import {0}\n{0}.reload(math)'
         sugg1, sugg2 = format_str(sugg_template, 'importlib', 'imp')
-        version = (3, 0)
-        self.runs(code, up_to_version(version))
-        self.throws(code, NAMEERROR, RELOAD_REMOVED_MSG, from_version(version))
+        before, after = before_and_after((3, 0))
+        self.runs(code, before)
+        self.throws(code, NAMEERROR, RELOAD_REMOVED_MSG, after)
         self.runs(sugg1, from_version((3, 4)))
         self.runs(sugg2)
 
@@ -613,11 +614,11 @@ class NameErrorTests(GetSuggestionsTests):
     def test_removed_buffer(self):
         """Builtin buffer is removed - use memoryview instead."""
         code = 'buffer(b"abc")'
-        sugg = 'memoryview(b"abc")'
-        version = (3, 0)
-        self.runs(code, up_to_version(version))
-        self.throws(code, NAMEERROR, BUFFER_REMOVED_MSG, from_version(version))
-        self.runs(sugg, from_version((2, 7)))
+        new_code = 'memoryview(b"abc")'
+        before, after = before_and_after((3, 0))
+        self.runs(code, before)
+        self.throws(code, NAMEERROR, BUFFER_REMOVED_MSG, after)
+        self.runs(new_code, from_version((2, 7)))
 
     def test_added_2_7(self):
         """Test for names added in 2.7."""
@@ -726,25 +727,26 @@ class NameErrorTests(GetSuggestionsTests):
         self.assertFalse('math' in locals())
         self.assertTrue('math' in globals())
         code = 'math = ""\npi'
-        self.throws(code, NAMEERROR, "'math.pi' (global hidden by local)")
+        sugg = "'math.pi' (global hidden by local)"
+        self.throws(code, NAMEERROR, sugg)
 
     def test_self(self):
         """"Should be self.babar."""
-        self.throws(
-            'FoobarClass().nameerror_self()',
-            NAMEERROR, "'self.babar'")
+        code = 'FoobarClass().nameerror_self()'
+        sugg = "'self.babar'"
+        self.throws(code, NAMEERROR, sugg)
 
     def test_self2(self):
         """Should be self.this_is_cls_mthd."""
-        self.throws(
-            'FoobarClass().nameerror_self2()', NAMEERROR,
-            ["'FoobarClass.this_is_cls_mthd'", "'self.this_is_cls_mthd'"])
+        code = 'FoobarClass().nameerror_self2()'
+        suggs = ["'FoobarClass.this_is_cls_mthd'", "'self.this_is_cls_mthd'"]
+        self.throws(code, NAMEERROR, suggs)
 
     def test_cls(self):
         """Should be cls.this_is_cls_mthd."""
-        self.throws(
-            'FoobarClass().nameerror_cls()', NAMEERROR,
-            ["'FoobarClass.this_is_cls_mthd'", "'cls.this_is_cls_mthd'"])
+        code = 'FoobarClass().nameerror_cls()'
+        suggs = ["'FoobarClass.this_is_cls_mthd'", "'cls.this_is_cls_mthd'"]
+        self.throws(code, NAMEERROR, suggs)
 
     def test_complex_numbers(self):
         """Should be 1j."""
@@ -773,9 +775,8 @@ class NameErrorTests(GetSuggestionsTests):
 
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""
-        self.throws(
-            'raise NameError("unmatched NAMEERROR")',
-            UNKNOWN_NAMEERROR)
+        code = 'raise NameError("unmatched NAMEERROR")'
+        self.throws(code, UNKNOWN_NAMEERROR)
 
 
 class UnboundLocalErrorTests(GetSuggestionsTests):
@@ -829,9 +830,8 @@ class UnboundLocalErrorTests(GetSuggestionsTests):
 
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""
-        self.throws(
-            'raise UnboundLocalError("unmatched UNBOUNDLOCAL")',
-            UNKNOWN_UNBOUNDLOCAL)
+        code = 'raise UnboundLocalError("unmatched UNBOUNDLOCAL")'
+        self.throws(code, UNKNOWN_UNBOUNDLOCAL)
 
 
 class AttributeErrorTests(GetSuggestionsTests):
@@ -1123,9 +1123,8 @@ class AttributeErrorTests(GetSuggestionsTests):
 
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""
-        self.throws(
-            'raise AttributeError("unmatched ATTRIBUTEERROR")',
-            UNKNOWN_ATTRIBUTEERROR)
+        code = 'raise AttributeError("unmatched ATTRIBUTEERROR")'
+        self.throws(code, UNKNOWN_ATTRIBUTEERROR)
 
     # TODO: Add sugg for situation where self/cls is the missing parameter
 
@@ -1749,9 +1748,8 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""
-        self.throws(
-            'raise TypeError("unmatched TYPEERROR")',
-            UNKNOWN_TYPEERROR)
+        code = 'raise TypeError("unmatched TYPEERROR")'
+        self.throws(code, UNKNOWN_TYPEERROR)
 
 
 class ImportErrorTests(GetSuggestionsTests):
@@ -1864,9 +1862,8 @@ class ImportErrorTests(GetSuggestionsTests):
 
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""
-        self.throws(
-            'raise ImportError("unmatched IMPORTERROR")',
-            UNKNOWN_IMPORTERROR)
+        code = 'raise ImportError("unmatched IMPORTERROR")'
+        self.throws(code, UNKNOWN_IMPORTERROR)
 
     def test_module_removed(self):
         """Sometimes, modules are deleted/moved/renamed."""
