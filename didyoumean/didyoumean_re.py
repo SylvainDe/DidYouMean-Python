@@ -32,6 +32,7 @@ UNEXPECTED_KEYWORDARG_RE = r"^(.+)\(\) " \
 UNEXPECTED_KEYWORDARG2_RE = r"^'(?P<arg>{0})' is an " \
     r"invalid keyword argument for this function$".format(ARG_NAME)
 UNEXPECTED_KEYWORDARG3_RE = r"^invalid keyword arguments to (\w+)\(\)$"
+FUNC_TAKES_NO_KEYWORDARG_RE = r"^(\w+)\(\) takes no keyword arguments$"
 NOMODULE_RE = r"^No module named '?({0})'?$".format(MODULE_NAME)
 CANNOTIMPORT_RE = r"^cannot import name '?(\w+)'?$"
 INDEXOUTOFRANGE_RE = r"^list index out of range$"

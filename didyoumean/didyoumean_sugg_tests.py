@@ -279,7 +279,7 @@ NOATTRIBUTE_TYPEERROR = (TypeError, re.ATTRIBUTEERROR_RE)
 UNEXPECTEDKWARG = (TypeError, re.UNEXPECTED_KEYWORDARG_RE)
 UNEXPECTEDKWARG2 = (TypeError, re.UNEXPECTED_KEYWORDARG2_RE)
 UNEXPECTEDKWARG3 = (TypeError, re.UNEXPECTED_KEYWORDARG3_RE)
-NOKWARGS = (TypeError, r'^get\(\) takes no keyword arguments$')
+NOKWARGS = (TypeError, re.FUNC_TAKES_NO_KEYWORDARG_RE)
 UNSUPPORTEDOPERAND = (TypeError, re.UNSUPPORTED_OP_RE)
 BADOPERANDUNARY = (TypeError, re.BAD_OPERAND_UNARY_RE)
 OBJECTDOESNOTSUPPORT = (TypeError, re.OBJ_DOES_NOT_SUPPORT_RE)
@@ -1484,7 +1484,8 @@ class TypeErrorTests(GetSuggestionsTests):
         code = 'dict().get(0, {0}None)'
         good_code, bad_code = format_str(code, '', 'default=')
         self.runs(good_code)
-        self.throws(bad_code, NOKWARGS, [])
+        self.throws(bad_code, NOKWARGS, interpreters='cython')
+        self.runs(bad_code, interpreters='pypy')
 
     def test_iter_cannot_be_interpreted_as_int(self):
         """Trying to call `range(len(iterable))` (bad) and forget the len."""
