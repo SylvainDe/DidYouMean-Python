@@ -279,6 +279,7 @@ NOATTRIBUTE_TYPEERROR = (TypeError, re.ATTRIBUTEERROR_RE)
 UNEXPECTEDKWARG = (TypeError, re.UNEXPECTED_KEYWORDARG_RE)
 UNEXPECTEDKWARG2 = (TypeError, re.UNEXPECTED_KEYWORDARG2_RE)
 UNEXPECTEDKWARG3 = (TypeError, re.UNEXPECTED_KEYWORDARG3_RE)
+NOKWARGS = (TypeError, r'^get\(\) takes no keyword arguments$')
 UNSUPPORTEDOPERAND = (TypeError, re.UNSUPPORTED_OP_RE)
 BADOPERANDUNARY = (TypeError, re.BAD_OPERAND_UNARY_RE)
 OBJECTDOESNOTSUPPORT = (TypeError, re.OBJ_DOES_NOT_SUPPORT_RE)
@@ -1474,6 +1475,16 @@ class TypeErrorTests(GetSuggestionsTests):
         self.throws(cmp_arg, UNEXPECTEDKWARG, sugg, after, 'pypy')
         self.runs(key_arg)
         self.runs(cmp_to_key, from_version((2, 7)))
+
+    def test_c_func_takes_no_keyword_arguments(self):
+        """TODO."""
+        # http://stackoverflow.com/questions/24463202/typeerror-get-takes-no-keyword-arguments
+        # https://www.python.org/dev/peps/pep-0457/
+        # https://www.python.org/dev/peps/pep-0436/#functions-with-positional-only-parameters
+        code = 'dict().get(0, {0}None)'
+        good_code, bad_code = format_str(code, '', 'default=')
+        self.runs(good_code)
+        self.throws(bad_code, NOKWARGS, [])
 
     def test_iter_cannot_be_interpreted_as_int(self):
         """Trying to call `range(len(iterable))` (bad) and forget the len."""
