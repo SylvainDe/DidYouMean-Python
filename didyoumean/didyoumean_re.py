@@ -9,6 +9,7 @@ ATTR_NAME = IDENTIFIER
 ARG_NAME = IDENTIFIER
 TYPE_NAME = r"[\w\.-]+"
 MODULE_NAME = r"[\w\.]+"
+# TODO: FUNC_NAME
 VARREFBEFOREASSIGN_RE = r"^(?:local|free) variable '(?P<name>{0})' " \
     r"referenced before assignment(?: in enclosing scope)?$".format(VAR_NAME)
 NAMENOTDEFINED_RE = r"^(?:global )?name '(?P<name>{0})' " \

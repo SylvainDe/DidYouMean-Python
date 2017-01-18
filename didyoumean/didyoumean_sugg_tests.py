@@ -1486,6 +1486,14 @@ class TypeErrorTests(GetSuggestionsTests):
         self.runs(good_code)
         self.throws(bad_code, NOKWARGS, interpreters='cython')
         self.runs(bad_code, interpreters='pypy')
+        # Ensure that suggestions are given only when the function doesn't
+        # accept keyword arguments but does accept positional arguments.
+        code2 = 'globals({0})'
+        good_code, bad_code1, bad_code2 = format_str(code2, '', '2', 'foo=2')
+        self.runs(good_code)
+        self.throws(bad_code1, NBARGERROR)
+        self.throws(bad_code2, NBARGERROR, interpreters='pypy')
+        self.throws(bad_code2, NOKWARGS, interpreters='cython')
 
     def test_iter_cannot_be_interpreted_as_int(self):
         """Trying to call `range(len(iterable))` (bad) and forget the len."""
