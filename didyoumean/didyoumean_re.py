@@ -52,9 +52,11 @@ UNHASHABLE_RE = r"^(?:unhashable type: )?'({0})'" \
 MISSING_PARENT_RE = r"^Missing parentheses in call to " \
     r"'(?P<func>{0})'$".format(FUNC_NAME)
 INVALID_LITERAL_RE = r"^invalid literal for (\w+)\(\) with base \d+: '(.*)'$"
-NB_ARG_RE = r"^(?P<func>{0})\(\) takes (?:exactly |at least )?(no|\d+) " \
-    r"(?:positional |non-keyword )?arguments? " \
-    r"\(?(?:but )?(\d+) (?:were |was )?given\)?" \
+NB_ARG_RE = r"^(?P<func>{0})(?:\(\) takes| expected) " \
+    r"(?:exactly |at least |at most )?(?P<expected>no|\d+) " \
+    r"(?:positional |non-keyword )?arguments?,? " \
+    r"\(?(?:but |got )?(?P<actual>\d+)" \
+    r"(?: were given| was given| given)?\)?" \
     r"(?:\. Did you forget 'self' in the function definition\?)?" \
     r"$".format(FUNC_NAME)
 MISSING_POS_ARG_RE = r"^(?P<func>{0})\(\) missing \d+ required positional " \

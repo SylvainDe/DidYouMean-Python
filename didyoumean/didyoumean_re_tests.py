@@ -357,30 +357,34 @@ class RegexTests(unittest2.TestCase):
         msgs = [
             # Python 2.6/2.7/PyPy/PyPy3
             ("some_func() takes exactly 1 argument (2 given)",
-                '1', '2'),
+                'some_func', '1', '2'),
             ("some_func() takes exactly 3 arguments (1 given)",
-                '3', '1'),
+                'some_func', '3', '1'),
             ("some_func() takes no arguments (1 given)",
-                'no', '1'),
+                'some_func', 'no', '1'),
             ("some_func() takes at least 2 non-keyword arguments (0 given)",
-                '2', '0'),
+                'some_func', '2', '0'),
             # Python 3.2
             ("some_func() takes exactly 1 positional argument (2 given)",
-                '1', '2'),
+                'some_func', '1', '2'),
             # Python 3.3/3.4/3.5
             ("some_func() takes 1 positional argument but 2 were given",
-                '1', '2'),
+                'some_func', '1', '2'),
             ("some_func() takes 0 positional arguments but 1 was given",
-                '0', '1'),
+                'some_func', '0', '1'),
             # PyPy adds suggestions sometimes:
             ("some_func() takes no arguments (1 given)"
              ". Did you forget 'self' in the function definition?",
-                'no', '1'),
+                'some_func', 'no', '1'),
+            # More!!!
+            ("get expected at least 1 arguments, got 0",
+                'get', '1', '0'),
+            ("get expected at most 2 arguments, got 3",
+                'get', '2', '3'),
         ]
-        for msg, exp, nb in msgs:
-            func = 'some_func'
+        for msg, func, exp, nb in msgs:
             groups = (func, exp, nb)
-            named_groups = {'func': func}
+            named_groups = {'func': func, 'expected': exp, 'actual': nb}
             results = (groups, named_groups)
             self.re_matches(msg, re.NB_ARG_RE, results)
 

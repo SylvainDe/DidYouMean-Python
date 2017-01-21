@@ -1332,6 +1332,16 @@ class TypeErrorTests(GetSuggestionsTests):
         self.runs(good_code1)
         self.runs(good_code2)
 
+    def test_nb_arg7(self):
+        """More tests."""
+        code = 'dict().get(1, 2, 3)'
+        self.throws(code, NBARGERROR)
+
+    def test_nb_arg8(self):
+        """More tests."""
+        code = 'dict().get()'
+        self.throws(code, NBARGERROR)
+
     def test_nb_arg_missing_self(self):
         """Arg 'self' is missing."""
         # NICE_TO_HAVE
