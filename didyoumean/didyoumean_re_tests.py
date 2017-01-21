@@ -243,11 +243,16 @@ class RegexTests(unittest2.TestCase):
 
     def test_func_takes_no_kwarg(self):
         """Test FUNC_TAKES_NO_KEYWORDARG_RE."""
-        # Cython
-        msg = "get() takes no keyword arguments"
+        msgs = [
+            # Cython : most versions
+            "get() takes no keyword arguments",
+            # Cython nightly (as of 21 January 2017) - Python 3.7
+            "get does not take keyword arguments",
+        ]
         groups = ('get', )
         results = (groups, dict())
-        self.re_matches(msg, re.FUNC_TAKES_NO_KEYWORDARG_RE, results)
+        for msg in msgs:
+            self.re_matches(msg, re.FUNC_TAKES_NO_KEYWORDARG_RE, results)
 
     def test_zero_length_field(self):
         """Test ZERO_LEN_FIELD_RE."""
