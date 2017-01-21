@@ -64,6 +64,8 @@ RELOAD_REMOVED_MSG = '"importlib.reload" or "imp.reload" (`reload` is " \
     "removed since Python 3)'
 STDERR_REMOVED_MSG = '"Exception" (`StandardError` has been removed since " \
     "Python 3)'
+NO_KEYWORD_ARG_MSG = "use positional arguments (functions written in C \
+    do not accept keyword arguments, only positional arguments)"
 
 
 # Helper function for string manipulation
@@ -690,6 +692,30 @@ def suggest_nb_arg(value, frame, groups):
     objs = get_objects_in_frame(frame)
     del expect_nb, given_nb, objs, func_name  # for later
     return []
+
+
+@register_suggestion_for(TypeError, re.FUNC_TAKES_NO_KEYWORDARG_RE)
+def suggest_func_no_kw_arg(value, frame, groups):
+    """Get suggestions for FUNC_TAKES_NO_KEYWORDARG_RE."""
+    # C-Level functions don't have actual names for their arguments.
+    # Therefore, trying to use them with keyword arguments leads to
+    # errors but using them with positional arguments just work fine.
+    # This behavior definitly deserves some suggestion.
+    # More reading:
+    # http://stackoverflow.com/questions/24463202/typeerror-get-takes-no-keyword-arguments
+    # https://www.python.org/dev/peps/pep-0457/
+    # https://www.python.org/dev/peps/pep-0436/#functions-with-positional-only-parameters
+    # Note: a proper implementation of this function would:
+    #  - retrieve the function object using the function name
+    #  - check that the function does accept arguments but does not
+    # accept keyword arguments before yielding the suggestion.
+    # Unfortunately, introspection of builtin function is not possible as per
+    # http://bugs.python.org/issue1748064 . Thus, the only thing we can look
+    # for is if a function has no __code__ attribute.
+    func_name, = groups
+    functions = get_func_by_name(func_name, frame)
+    if any([not hasattr(f, '__code__') for f in functions]):
+        yield NO_KEYWORD_ARG_MSG
 
 
 # Functions related to ValueError

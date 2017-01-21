@@ -4,7 +4,8 @@ from didyoumean_internal import get_suggestions_for_exception, quote, \
     STAND_MODULES, AVOID_REC_MSG, \
     APPLY_REMOVED_MSG, BUFFER_REMOVED_MSG, CMP_REMOVED_MSG, \
     CMP_ARG_REMOVED_MSG, EXC_ATTR_REMOVED_MSG, LONG_REMOVED_MSG, \
-    MEMVIEW_ADDED_MSG, RELOAD_REMOVED_MSG, STDERR_REMOVED_MSG
+    MEMVIEW_ADDED_MSG, RELOAD_REMOVED_MSG, STDERR_REMOVED_MSG, \
+    NO_KEYWORD_ARG_MSG
 import didyoumean_common_tests as common
 import unittest2
 import didyoumean_re as re
@@ -1481,19 +1482,27 @@ class TypeErrorTests(GetSuggestionsTests):
         # http://stackoverflow.com/questions/24463202/typeerror-get-takes-no-keyword-arguments
         # https://www.python.org/dev/peps/pep-0457/
         # https://www.python.org/dev/peps/pep-0436/#functions-with-positional-only-parameters
+        sugg = NO_KEYWORD_ARG_MSG
         code = 'dict().get(0, {0}None)'
         good_code, bad_code = format_str(code, '', 'default=')
         self.runs(good_code)
-        self.throws(bad_code, NOKWARGS, interpreters='cython')
+        self.throws(bad_code, NOKWARGS, sugg, interpreters='cython')
         self.runs(bad_code, interpreters='pypy')
-        # Ensure that suggestions are given only when the function doesn't
-        # accept keyword arguments but does accept positional arguments.
+        # It would be better to have the suggestion only when the function
+        # doesn't accept keyword arguments but does accept positional
+        # arguments but we cannot use introspection on builtin function.
         code2 = 'globals({0})'
         good_code, bad_code1, bad_code2 = format_str(code2, '', '2', 'foo=2')
         self.runs(good_code)
         self.throws(bad_code1, NBARGERROR)
         self.throws(bad_code2, NBARGERROR, interpreters='pypy')
-        self.throws(bad_code2, NOKWARGS, interpreters='cython')
+        self.throws(bad_code2, NOKWARGS, sugg, interpreters='cython')
+        # The explanation is only relevant for C functions
+        code3 = 'def func_no_arg(n):\n\tpass\nfunc_no_arg({0}2)'
+        good_code, good_code2, bad_code = format_str(code3, '', 'n=', 'foo=')
+        self.runs(good_code)
+        self.runs(good_code2)
+        self.throws(bad_code, UNEXPECTEDKWARG)
 
     def test_iter_cannot_be_interpreted_as_int(self):
         """Trying to call `range(len(iterable))` (bad) and forget the len."""
