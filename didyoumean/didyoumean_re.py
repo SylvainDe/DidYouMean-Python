@@ -9,7 +9,7 @@ ATTR_NAME = IDENTIFIER
 ARG_NAME = IDENTIFIER
 TYPE_NAME = r"[\w\.-]+"
 MODULE_NAME = r"[\w\.]+"
-# TODO: FUNC_NAME
+FUNC_NAME = r"<?\w+>?"
 VARREFBEFOREASSIGN_RE = r"^(?:local|free) variable '(?P<name>{0})' " \
     r"referenced before assignment(?: in enclosing scope)?$".format(VAR_NAME)
 NAMENOTDEFINED_RE = r"^(?:global )?name '(?P<name>{0})' " \
@@ -28,13 +28,15 @@ INTEGER_EXPECTED_GOT_RE = r"^" \
     r"got ({0})(?: object|\.)$".format(TYPE_NAME)
 INDICES_MUST_BE_INT_RE = "^{0} ind(?:ices|ex)? must be " \
     r"(?:an integer|integers)(?: or slices)?, not ({0})$".format(TYPE_NAME)
-UNEXPECTED_KEYWORDARG_RE = r"^(.+)\(\) " \
-    r"got an unexpected keyword argument '(?P<arg>{0})'$".format(ARG_NAME)
+UNEXPECTED_KEYWORDARG_RE = r"^(?P<func>{1})\(\) " \
+    r"got an unexpected keyword argument " \
+    r"'(?P<arg>{0})'$".format(ARG_NAME, FUNC_NAME)
 UNEXPECTED_KEYWORDARG2_RE = r"^'(?P<arg>{0})' is an " \
     r"invalid keyword argument for this function$".format(ARG_NAME)
-UNEXPECTED_KEYWORDARG3_RE = r"^invalid keyword arguments to (\w+)\(\)$"
-FUNC_TAKES_NO_KEYWORDARG_RE = r"^(\w+)(?:\(\) takes no| does not take) " \
-    r"keyword arguments$"
+UNEXPECTED_KEYWORDARG3_RE = r"^invalid keyword arguments to " \
+    r"(?P<func>{0})\(\)$".format(FUNC_NAME)
+FUNC_TAKES_NO_KEYWORDARG_RE = r"^(?P<func>{0})" \
+    r"(?:\(\) takes no| does not take) keyword arguments$".format(FUNC_NAME)
 NOMODULE_RE = r"^No module named '?({0})'?$".format(MODULE_NAME)
 CANNOTIMPORT_RE = r"^cannot import name '?(\w+)'?$"
 INDEXOUTOFRANGE_RE = r"^list index out of range$"
@@ -47,14 +49,16 @@ NEED_MORE_VALUES_RE = r"^(?:need more than \d+|not enough) values to unpack" \
     r"(?: \(expected \d+, got \d+\))?$"
 UNHASHABLE_RE = r"^(?:unhashable type: )?'({0})'" \
     r"(?: objects are unhashable)?$".format(TYPE_NAME)
-MISSING_PARENT_RE = r"^Missing parentheses in call to '(\w+)'$"
+MISSING_PARENT_RE = r"^Missing parentheses in call to " \
+    r"'(?P<func>{0})'$".format(FUNC_NAME)
 INVALID_LITERAL_RE = r"^invalid literal for (\w+)\(\) with base \d+: '(.*)'$"
-NB_ARG_RE = r"^(\w+)\(\) takes (?:exactly |at least )?(no|\d+) " \
+NB_ARG_RE = r"^(?P<func>{0})\(\) takes (?:exactly |at least )?(no|\d+) " \
     r"(?:positional |non-keyword )?arguments? " \
     r"\(?(?:but )?(\d+) (?:were |was )?given\)?" \
-    r"(?:\. Did you forget 'self' in the function definition\?)?$"
-MISSING_POS_ARG_RE = r"^(\w+)\(\) missing \d+ required positional " \
-    r"arguments?: .*$"
+    r"(?:\. Did you forget 'self' in the function definition\?)?" \
+    r"$".format(FUNC_NAME)
+MISSING_POS_ARG_RE = r"^(?P<func>{0})\(\) missing \d+ required positional " \
+    r"arguments?: .*$".format(FUNC_NAME)
 INVALID_SYNTAX_RE = r"^invalid syntax$"
 INVALID_COMP_RE = r"^invalid comparison$"
 INVALID_TOKEN_RE = r"^invalid token$"
@@ -62,15 +66,17 @@ EXPECTED_LENGTH_RE = r"^expected length (\d+), got (\d+)$"
 FUTURE_FIRST_RE = r"^(?:from )?__future__ (?:imports|statements) must " \
     r"(?:occur|appear) at (?:the )?beginning of (?:the )?file$"
 FUTURE_FEATURE_NOT_DEF_RE = r"^future feature (\w+) is not defined$"
-RESULT_TOO_MANY_ITEMS_RE = r"^(\w+)\(\) result has too many items$"
-UNQUALIFIED_EXEC_RE = r"^unqualified exec is not allowed in function '\w+' " \
+RESULT_TOO_MANY_ITEMS_RE = r"^(?P<func>{0})\(\) result has too many items" \
+    r"$".format(FUNC_NAME)
+UNQUALIFIED_EXEC_RE = r"^unqualified exec is not allowed in function '{0}' " \
     r"(?:because )?it" \
     r" (?:is a nested function|" \
-    r"contains a nested function with free variables)$"
+    r"contains a nested function with free variables)$".format(FUNC_NAME)
 IMPORTSTAR_RE = r"^import \* (?:only allowed at module level|" \
-    r"is not allowed in function '\w+' because it (?:is )?" \
+    r"is not allowed in function '{0}' because it (?:is )?" \
     r"(?:is a nested function|" \
-    r"(?:)contains a nested function with free variables))$"
+    r"(?:)contains a nested function with free variables))" \
+    r"$".format(FUNC_NAME)
 UNSUPPORTED_OP_RE = r"^unsupported operand type\(s\) for (.*): " \
     r"'({0})' and '({0})'$".format(TYPE_NAME)
 BAD_OPERAND_UNARY_RE = r"^(?:bad|unsupported) operand type for " \

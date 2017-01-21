@@ -93,6 +93,15 @@ class RegexTests(unittest2.TestCase):
         for type_ in types:
             self.assertRegexpMatches(type_, regex)
 
+    def test_func_name(self):
+        """Test FUNC_NAME."""
+        regex = r"^" + re.FUNC_NAME + r"$"
+        real_funcs = [lambda x:x, range, dir, dict.get, classmethod]  # TODO
+        real_func_names = [f.__name__ for f in real_funcs]
+        funcs = ['get', 'range', '<lambda>', 'print'] + list(real_func_names)
+        for func in funcs:
+            self.assertRegexpMatches(func, regex)
+
     def test_module_name(self):
         """Test MODULE_NAME."""
         regex = r"^" + re.MODULE_NAME + r"$"
@@ -217,8 +226,8 @@ class RegexTests(unittest2.TestCase):
                 ('<lambda>', 'a')),
         ]
         for msg, groups in msgs:
-            _, kw_arg = groups
-            named_groups = {'arg': kw_arg}
+            func, kw_arg = groups
+            named_groups = {'arg': kw_arg, 'func': func}
             results = (groups, named_groups)
             self.re_matches(msg, re.UNEXPECTED_KEYWORDARG_RE, results)
 
@@ -237,8 +246,10 @@ class RegexTests(unittest2.TestCase):
         """Test UNEXPECTED_KEYWORDARG3_RE."""
         # PyPy/PyPy3
         msg = "invalid keyword arguments to print()"
-        groups = ('print', )
-        results = (groups, dict())
+        func = 'print'
+        groups = (func, )
+        named_groups = {'func': func}
+        results = (groups, named_groups)
         self.re_matches(msg, re.UNEXPECTED_KEYWORDARG3_RE, results)
 
     def test_func_takes_no_kwarg(self):
@@ -249,8 +260,10 @@ class RegexTests(unittest2.TestCase):
             # Cython nightly (as of 21 January 2017) - Python 3.7
             "get does not take keyword arguments",
         ]
-        groups = ('get', )
-        results = (groups, dict())
+        func = 'get'
+        groups = (func, )
+        named_groups = {'func': func}
+        results = (groups, named_groups)
         for msg in msgs:
             self.re_matches(msg, re.FUNC_TAKES_NO_KEYWORDARG_RE, results)
 
@@ -365,8 +378,10 @@ class RegexTests(unittest2.TestCase):
                 'no', '1'),
         ]
         for msg, exp, nb in msgs:
-            groups = ('some_func', exp, nb)
-            results = (groups, dict())
+            func = 'some_func'
+            groups = (func, exp, nb)
+            named_groups = {'func': func}
+            results = (groups, named_groups)
             self.re_matches(msg, re.NB_ARG_RE, results)
 
     def test_missing_positional_arg(self):
@@ -378,8 +393,10 @@ class RegexTests(unittest2.TestCase):
             "some_func() missing 1 required positional argument: "
             "'much'",
         ]
-        groups = ('some_func',)
-        results = (groups, dict())
+        func = 'some_func'
+        groups = (func,)
+        named_groups = {'func': func}
+        results = (groups, named_groups)
         for msg in msgs:
             self.re_matches(msg, re.MISSING_POS_ARG_RE, results)
 
@@ -398,8 +415,10 @@ class RegexTests(unittest2.TestCase):
         """Test MISSING_PARENT_RE."""
         # Python 3.4/3.5
         msg = "Missing parentheses in call to 'exec'"
-        groups = ('exec',)
-        results = (groups, dict())
+        func = 'exec'
+        groups = (func,)
+        named_groups = {'func': func}
+        results = (groups, named_groups)
         self.re_matches(msg, re.MISSING_PARENT_RE, results)
 
     def test_invalid_literal(self):
@@ -453,8 +472,10 @@ class RegexTests(unittest2.TestCase):
         """Test RESULT_TOO_MANY_ITEMS_RE."""
         # Python 2.6
         msg = "range() result has too many items"
-        groups = ('range',)
-        results = (groups, dict())
+        func = 'range'
+        groups = (func, )
+        named_groups = {'func': func}
+        results = (groups, named_groups)
         self.re_matches(msg, re.RESULT_TOO_MANY_ITEMS_RE, results)
 
     def test_unqualified_exec(self):
