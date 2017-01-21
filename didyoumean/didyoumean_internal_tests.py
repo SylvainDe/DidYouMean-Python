@@ -356,7 +356,6 @@ class GetFuncByNameTests(unittest2.TestCase):
 
     def check_get_func_by_name(self, function, exact_match=True):
         """Wrapper around the get_func_by_name to check its result."""
-        self.assertTrue(hasattr(function, '__call__'), function)
         self.assertTrue(hasattr(function, '__name__'), function)
         res = self.get_func_by_name(function.__name__)
         self.assertTrue(function in res)
