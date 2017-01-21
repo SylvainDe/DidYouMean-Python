@@ -1,7 +1,7 @@
 # -*- coding: utf-8
 """Unit tests for code in didyoumean_internal.py."""
 from didyoumean_internal import get_suggestion_string,\
-    add_string_to_exception,\
+    add_string_to_exception, get_func_by_name,\
     get_objects_in_frame, get_subclasses, get_types_for_str,\
     get_types_for_str_using_inheritance,\
     get_types_for_str_using_names
@@ -18,6 +18,18 @@ IS_PYPY = hasattr(sys, "pypy_translation_info")
 U_PREFIX_SUPPORT = not ((3, 0) <= sys.version_info < (3, 3))
 U_PREFIX = "u" if U_PREFIX_SUPPORT else ""
 global_var = 42  # Please don't change the value
+
+
+class QuoteTests(unittest2.TestCase):
+    """Class for tests related to quote."""
+
+    def quote_empty_str(self):
+        """Test quote on empty string."""
+        self.assertEqual(quote(''), "''")
+
+    def quote_str(self):
+        """Test quote on non-empty string."""
+        self.assertEqual(quote('abc'), "'abc'")
 
 
 class GetObjectInFrameTests(unittest2.TestCase):
@@ -333,6 +345,60 @@ class GetTypesForStrTests(unittest2.TestCase):
         self.assertEqual(types1, expect_with_inherit)
         self.assertEqual(types2, set())
         self.assertEqual(types3, expect_with_inherit)
+
+
+class GetFuncByNameTests(unittest2.TestCase):
+    """Test get_func_by_name."""
+
+    def get_func_by_name(self, func_name):
+        """Wrapper around the get_func_by_name function."""
+        return get_func_by_name(func_name, sys._getframe(1))
+
+    def check_get_func_by_name(self, function, exact_match=True):
+        """Wrapper around the get_func_by_name to check its result."""
+        self.assertTrue(hasattr(function, '__call__'), function)
+        self.assertTrue(hasattr(function, '__name__'), function)
+        res = self.get_func_by_name(function.__name__)
+        self.assertTrue(function in res)
+        self.assertTrue(len(res) >= 1, res)
+        if exact_match:
+            # Equality above does not hold
+            # Using set is complicated because everything can't be hashed
+            # But using id, something seems to be possible
+            self.assertEqual(len(set(res)), 1, res)
+            res_ids = [id(e) for e in res]
+            set_ids = set(res_ids)
+            self.assertEqual(len(set_ids), 1, set_ids)
+
+    def test_get_builtin_by_name(self):
+        """Test get_func_by_name on builtin functions."""
+        for f in [bool, int, float, str, tuple, list, set, dict, all]:
+            self.check_get_func_by_name(f)
+        for f in [object]:
+            self.check_get_func_by_name(f, False)
+
+    def test_get_builtin_attr_by_name(self):
+        """Test get_func_by_name on builtin attributes."""
+        for f in [dict.get]:
+            self.check_get_func_by_name(f, False)
+
+    def test_get_lambda_by_name(self):
+        """Test get_func_by_name on lambda functions."""
+        self.check_get_func_by_name(lambda x: x)
+
+    def test_get_custom_func_by_name(self):
+        """Test get_func_by_name on custom functions."""
+        for f in [a_function, a_generator]:
+            self.check_get_func_by_name(f)
+
+    def test_get_class_func_by_name(self):
+        """Test get_func_by_name on custom functions."""
+        for f, new in CLASSES:
+            self.check_get_func_by_name(f, False)
+
+    def test_inexisting_func(self):
+        """Test get_func_by_name on an inexisting function name."""
+        self.assertEqual(self.get_func_by_name('dkalskjdas'), [])
 
 
 class GetSuggStringTests(unittest2.TestCase):
