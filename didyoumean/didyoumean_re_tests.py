@@ -178,6 +178,8 @@ class RegexTests(unittest2.TestCase):
             "cannot import name pie",
             # Python 3.4/3.5/PyPy/PyPy3
             "cannot import name 'pie'",
+            # Python 3.6
+            "cannot import name 'pie' from 'math'",
         ]
         groups = ('pie',)
         results = (groups, dict())

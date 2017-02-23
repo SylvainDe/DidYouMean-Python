@@ -38,7 +38,8 @@ UNEXPECTED_KEYWORDARG3_RE = r"^invalid keyword arguments to " \
 FUNC_TAKES_NO_KEYWORDARG_RE = r"^(?P<func>{0})" \
     r"(?:\(\) takes no| does not take) keyword arguments$".format(FUNC_NAME)
 NOMODULE_RE = r"^No module named '?({0})'?$".format(MODULE_NAME)
-CANNOTIMPORT_RE = r"^cannot import name '?(\w+)'?$"
+CANNOTIMPORT_RE = r"^cannot import name '?(\w+)'?" \
+    r"(?: from '{1}')?$".format(IDENTIFIER, MODULE_NAME)
 INDEXOUTOFRANGE_RE = r"^list index out of range$"
 ZERO_LEN_FIELD_RE = r"^zero length field name in format$"
 MATH_DOMAIN_ERROR_RE = r"^math domain error$"
