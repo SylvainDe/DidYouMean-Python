@@ -5,6 +5,11 @@ import re
 # https://docs.python.org/3/reference/grammar.html
 IDENTIFIER = r"[^\d\W]\w*"
 VAR_NAME = IDENTIFIER
+# This ATTR_NAME may be misleading because using getattr, any string may be
+# appear in an AttributeError message. The same limitation is probably true
+# for any property that can be set to pretty much any string.
+# In any case, the whole point of having these pieces of regexp defined here
+# is to make things easier to change if we ever have to.
 ATTR_NAME = IDENTIFIER
 ARG_NAME = IDENTIFIER
 TYPE_NAME = r"[\w\.-]+"
