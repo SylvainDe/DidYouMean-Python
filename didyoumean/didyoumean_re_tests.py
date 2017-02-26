@@ -182,8 +182,10 @@ class RegexTests(unittest2.TestCase):
             "cannot import name 'pie' from 'math' (/some/path)",
             "cannot import name 'pie' from 'math' (unknown location)"
         ]
-        groups = ('pie',)
-        results = (groups, dict())
+        name = 'pie'
+        groups = (name, )
+        named_groups = {'name': name}
+        results = (groups, named_groups)
         for msg in msgs:
             self.re_matches(msg, re.CANNOTIMPORT_RE, results)
 
