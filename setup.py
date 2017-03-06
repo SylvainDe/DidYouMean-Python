@@ -7,7 +7,7 @@ except ImportError:
 # with the help from http://peterdowns.com/posts/first-time-with-pypi.html
 # http://www.scotttorborg.com/python-packaging/minimal.html
 setup(
-    name='didyoumean-suggestions',
+    name='BetterErrorMessages',
     packages=['didyoumean'],
     version='0.4',
     description=('Logic to have suggestions in case of errors '
