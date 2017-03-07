@@ -1459,9 +1459,13 @@ class TypeErrorTests(GetSuggestionsTests):
         # NICE_TO_HAVE
         # 'max', 'input', 'len', 'abs', 'all', etc have a specific error
         # message and are not relevant here
+        before, after = before_and_after((3, 7))
         for builtin in ['int', 'float', 'bool', 'complex']:
             code = builtin + '(this_doesnt_exist=2)'
-            self.throws(code, UNEXPECTEDKWARG2, interpreters='cpython')
+            old_exc = UNEXPECTEDKWARG2
+            new_exc = UNEXPECTEDKWARG2 if builtin == 'int' else NOKWARGS
+            self.throws(code, old_exc, [], before, interpreters='cpython')
+            self.throws(code, new_exc, [], after, interpreters='cpython')
             self.throws(code, UNEXPECTEDKWARG, interpreters='pypy')
 
     def test_keyword_builtin_print(self):
