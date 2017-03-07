@@ -1,6 +1,8 @@
 DidYouMean-Python
 =================
 
+[![BetterErrorMessages on PyPI](https://badge.fury.io/py/BetterErrorMessages.svg)](https://badge.fury.io/py/BetterErrorMessages)
+
 [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/SylvainDe/DidYouMean-Python?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/SylvainDe/DidYouMean-Python.svg)](https://travis-ci.org/SylvainDe/DidYouMean-Python)
 
@@ -270,15 +272,28 @@ rec(0)
 #>>> After: RuntimeError('maximum recursion depth exceeded. Did you mean to avoid recursion (cf http://neopythonic.blogspot.fr/2009/04/tail-recursion-elimination.html), increase the limit with `sys.setrecursionlimit(limit)` (current value is 1000)?',)
 ```
 
+Installation
+------------
+
+The package is available on [Pypi](https://pypi.python.org/pypi) as [BetterErrorMessages](https://pypi.python.org/pypi/BetterErrorMessages/).
+
+Installation can be done from the package index with `pip install BetterErrorMessages`.
+
+Installation from sources can be done just as easily:
+
+```
+git clone https://github.com/SylvainDe/DidYouMean-Python.git
+cd DidYouMean-Python
+git install .
+```
+
 
 Usage
 -----
 
-I haven't done anything fancy for the installation (yet). You'll have to clone this.
+Once the package is installed, it can be used in different ways :
 
-Once you have the code, it can be used in different ways :
-
- * hook on `sys.excepthook` : just call `didyoumean_enablehook` and you'll have the suggestions for any uncaught exception.
+ * hook on `sys.excepthook` : just call `didyoumean_enablehook()` and you'll have the suggestions for any uncaught exception.
 
  * decorator : just add the `@didyoumean` decorator before any function (the `main()` could be a good choice) and you'll have the suggestions for any exception happening through a call to that method.
 
@@ -288,6 +303,20 @@ Once you have the code, it can be used in different ways :
 
 Please refer to the examples to be added in the introduction.
 
+Making things automatic in your interactive sessions
+----------------------------------------------------
+
+You can have the suggestions automatically in your interactive sessions by adding the following code in your [${PYTHONSTARTUP} file](https://docs.python.org/3.6/using/cmdline.html#envvar-PYTHONSTARTUP):
+
+```
+try:
+    import didyoumean
+except ImportError:
+    didyoumean = None
+    print("Did you mean to install BetterErrorMessages first (`pip install BetterErrorMessages`)")
+if didyoumean is not None:
+    didyoumean.didyoumean_api.didyoumean_enablehook()
+```
 
 Implementation
 --------------
