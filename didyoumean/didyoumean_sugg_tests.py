@@ -1462,9 +1462,9 @@ class TypeErrorTests(GetSuggestionsTests):
         before, after = before_and_after((3, 7))
         for builtin in ['int', 'float', 'bool', 'complex']:
             code = builtin + '(this_doesnt_exist=2)'
-            sugg = NO_KEYWORD_ARG_MSG
             old_exc = UNEXPECTEDKWARG2
             new_exc = UNEXPECTEDKWARG2 if builtin == 'int' else NOKWARGS
+            sugg = NO_KEYWORD_ARG_MSG if new_exc == NOKWARGS else []
             self.throws(code, old_exc, [], before, interpreters='cpython')
             self.throws(code, new_exc, sugg, after, interpreters='cpython')
             self.throws(code, UNEXPECTEDKWARG, interpreters='pypy')
