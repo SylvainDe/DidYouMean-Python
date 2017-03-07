@@ -264,6 +264,8 @@ class RegexTests(unittest2.TestCase):
             "get() takes no keyword arguments",
             # CPython nightly (as of 21 January 2017) - Python 3.7
             "get does not take keyword arguments",
+            # CPython nightly (as of 7 March 2017) - Python 3.7
+            "get() does not take keyword arguments",
         ]
         func = 'get'
         groups = (func, )
