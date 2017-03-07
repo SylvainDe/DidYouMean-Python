@@ -168,7 +168,7 @@ class LenClass():
 FIRST_VERSION = (0, 0)
 LAST_VERSION = (10, 0)
 ALL_VERSIONS = (FIRST_VERSION, LAST_VERSION)
-INTERPRETERS = ['cython', 'pypy']
+INTERPRETERS = ['cpython', 'pypy']
 
 
 def from_version(version):
@@ -201,7 +201,7 @@ def version_in_range(version_range):
 def interpreter_in(interpreters):
     """Test if current interpreter is in a list of interpreters."""
     is_pypy = hasattr(sys, "pypy_translation_info")
-    interpreter = 'pypy' if is_pypy else 'cython'
+    interpreter = 'pypy' if is_pypy else 'cpython'
     return interpreter in interpreters
 
 
@@ -1005,7 +1005,7 @@ class AttributeErrorTests(GetSuggestionsTests):
             if att_name == 'exc_type':
                 self.runs(code, before)  # others may be undef
             self.runs(code, mid, 'pypy')
-            self.throws(code, ATTRIBUTEERROR, sugg, mid, 'cython')
+            self.throws(code, ATTRIBUTEERROR, sugg, mid, 'cpython')
             self.throws(code, MODATTRIBUTEERROR, sugg, after)
         self.runs('import sys\nsys.exc_info()')
 
@@ -1155,9 +1155,9 @@ class TypeErrorTests(GetSuggestionsTests):
         # (leading to more suggestions based on fuzzy matches)
         before, mid, after = before_mid_and_after((2, 7), (3, 0))
         self.throws(bad_code, UNSUBSCRIPTABLE, suggestion, interpreters='pypy')
-        self.throws(bad_code, UNSUBSCRIPTABLE, suggestion, before, 'cython')
-        self.throws(bad_code, NOATTRIBUTE_TYPEERROR, suggs, mid, 'cython')
-        self.throws(bad_code, UNSUBSCRIPTABLE, suggestion, after, 'cython')
+        self.throws(bad_code, UNSUBSCRIPTABLE, suggestion, before, 'cpython')
+        self.throws(bad_code, NOATTRIBUTE_TYPEERROR, suggs, mid, 'cpython')
+        self.throws(bad_code, UNSUBSCRIPTABLE, suggestion, after, 'cpython')
         self.runs(good_code)
 
     def test_method_called_on_class(self):
@@ -1176,7 +1176,7 @@ class TypeErrorTests(GetSuggestionsTests):
                 ('0 in list{0}', not_iterable)]:
             bad_code, good_code = format_str(code, '', '()')
             self.runs(good_code)
-            self.throws(bad_code, err_cy, interpreters='cython')
+            self.throws(bad_code, err_cy, interpreters='cpython')
             self.throws(bad_code, err_pyp, [], before, 'pypy')
             self.throws(bad_code, err_pyp3, [], after, 'pypy')
 
@@ -1461,7 +1461,7 @@ class TypeErrorTests(GetSuggestionsTests):
         # message and are not relevant here
         for builtin in ['int', 'float', 'bool', 'complex']:
             code = builtin + '(this_doesnt_exist=2)'
-            self.throws(code, UNEXPECTEDKWARG2, interpreters='cython')
+            self.throws(code, UNEXPECTEDKWARG2, interpreters='cpython')
             self.throws(code, UNEXPECTEDKWARG, interpreters='pypy')
 
     def test_keyword_builtin_print(self):
@@ -1470,7 +1470,7 @@ class TypeErrorTests(GetSuggestionsTests):
         before, after = before_and_after((3, 0))
         code = "c = 'string'\nb = print(c, end_='toto')"
         self.throws(code, INVALIDSYNTAX, [], before)
-        self.throws(code, UNEXPECTEDKWARG2, [], after, 'cython')
+        self.throws(code, UNEXPECTEDKWARG2, [], after, 'cpython')
         self.throws(code, UNEXPECTEDKWARG3, [], after, 'pypy')
 
     def test_keyword_sort_cmpkey(self):
@@ -1482,7 +1482,7 @@ class TypeErrorTests(GetSuggestionsTests):
         cmp_arg, key_arg, cmp_to_key = format_str(
                 code, 'cmp=comp', 'key=id', 'key=f.cmp_to_key(comp)')
         self.runs(cmp_arg, before)
-        self.throws(cmp_arg, UNEXPECTEDKWARG2, sugg, after, 'cython')
+        self.throws(cmp_arg, UNEXPECTEDKWARG2, sugg, after, 'cpython')
         self.throws(cmp_arg, UNEXPECTEDKWARG, sugg, after, 'pypy')
         self.runs(key_arg)
         self.runs(cmp_to_key, from_version((2, 7)))
@@ -1496,7 +1496,7 @@ class TypeErrorTests(GetSuggestionsTests):
         code = 'dict().get(0, {0}None)'
         good_code, bad_code = format_str(code, '', 'default=')
         self.runs(good_code)
-        self.throws(bad_code, NOKWARGS, sugg, interpreters='cython')
+        self.throws(bad_code, NOKWARGS, sugg, interpreters='cpython')
         self.runs(bad_code, interpreters='pypy')
         # It would be better to have the suggestion only when the function
         # doesn't accept keyword arguments but does accept positional
@@ -1506,7 +1506,7 @@ class TypeErrorTests(GetSuggestionsTests):
         self.runs(good_code)
         self.throws(bad_code1, NBARGERROR)
         self.throws(bad_code2, NBARGERROR, interpreters='pypy')
-        self.throws(bad_code2, NOKWARGS, sugg, interpreters='cython')
+        self.throws(bad_code2, NOKWARGS, sugg, interpreters='cpython')
         # The explanation is only relevant for C functions
         code3 = 'def func_no_arg(n):\n\tpass\nfunc_no_arg({0}2)'
         good_code, good_code2, bad_code = format_str(code3, '', 'n=', 'foo=')
@@ -1604,7 +1604,7 @@ class TypeErrorTests(GetSuggestionsTests):
         for code in self.INDEX_CODE_TEMPLATES:
             bad, good = format_str(code, 'CustomClass()', 'IndexClass()')
             self.throws(bad, INDICESMUSTBEINT, suggs, before, 'pypy')
-            self.throws(bad, CANNOTBEINTERPRETEDINDEX, [], before, 'cython')
+            self.throws(bad, CANNOTBEINTERPRETEDINDEX, [], before, 'cpython')
             self.throws(bad, INDICESMUSTBEINT, sugg, after)
             self.runs(good)
 
@@ -1627,19 +1627,19 @@ class TypeErrorTests(GetSuggestionsTests):
                        'range(10)', 'dict().keys()', 'dict().iterkeys()')
         self.runs(good)
         self.runs(sugg)
-        self.throws(bad, ONLYCONCAT, interpreters='cython')
+        self.throws(bad, ONLYCONCAT, interpreters='cpython')
         self.throws(bad, UNSUPPORTEDOPERAND, interpreters='pypy')
         # Other examples are more interesting but depend on the version used:
         #  - range returns a list or a range object
         self.runs(bad2, before)
-        self.throws(bad2, ONLYCONCAT, [], after, 'cython')
+        self.throws(bad2, ONLYCONCAT, [], after, 'cpython')
         self.throws(bad2, UNSUPPORTEDOPERAND, [], after, 'pypy')
         #  - keys return a list or a view object
         self.runs(bad3, before)
-        self.throws(bad3, ONLYCONCAT, [], after, 'cython')
+        self.throws(bad3, ONLYCONCAT, [], after, 'cpython')
         self.throws(bad3, UNSUPPORTEDOPERAND, [], after, 'pypy')
         #  - iterkeys returns an iterator or doesn't exist
-        self.throws(bad4, ONLYCONCAT, [], before, 'cython')
+        self.throws(bad4, ONLYCONCAT, [], before, 'cpython')
         self.throws(bad4, UNSUPPORTEDOPERAND, [], before, 'pypy')
         self.throws(bad4, ATTRIBUTEERROR, [], after)
 
@@ -1650,9 +1650,9 @@ class TypeErrorTests(GetSuggestionsTests):
         typo, good = '12', 'str(12)'
         bad_code, good_code = format_str(code, typo, good)
         before, mid, after = before_mid_and_after((3, 0), (3, 6))
-        self.throws(bad_code, CANNOTCONCAT, [], before, 'cython')
-        self.throws(bad_code, CANTCONVERT, [], mid, 'cython')
-        self.throws(bad_code, MUSTBETYPENOTTYPE, [], after, 'cython')
+        self.throws(bad_code, CANNOTCONCAT, [], before, 'cpython')
+        self.throws(bad_code, CANTCONVERT, [], mid, 'cpython')
+        self.throws(bad_code, MUSTBETYPENOTTYPE, [], after, 'cpython')
         self.throws(bad_code, UNSUPPORTEDOPERAND, interpreters='pypy')
         self.runs(good_code)
 
@@ -1716,17 +1716,17 @@ class TypeErrorTests(GetSuggestionsTests):
         sugg_imp = 'implement "__getitem__" on CustomClass'
         self.throws(set_code,
                     OBJECTDOESNOTSUPPORT,
-                    sugg_for_iterable, interpreters='cython')
+                    sugg_for_iterable, interpreters='cpython')
         self.throws(set_code,
                     UNSUBSCRIPTABLE,
                     sugg_for_iterable, interpreters='pypy')
         self.throws(custom_bad, ATTRIBUTEERROR, [], before, 'pypy')
         self.throws(custom_bad, UNSUBSCRIPTABLE, sugg_imp, after, 'pypy')
-        self.throws(custom_bad, ATTRIBUTEERROR, [], before, 'cython')
+        self.throws(custom_bad, ATTRIBUTEERROR, [], before, 'cpython')
         self.throws(custom_bad,
                     OBJECTDOESNOTSUPPORT,
                     sugg_imp,
-                    after, 'cython')
+                    after, 'cpython')
         self.runs(custom_good)
 
     def test_not_callable(self):
@@ -1748,7 +1748,7 @@ class TypeErrorTests(GetSuggestionsTests):
         code = 'o = {0}()\no()'
         bad, good = format_str(code, 'CustomClass', 'CallClass')
         sugg = 'implement "__call__" on CustomClass'
-        self.throws(bad, INSTHASNOMETH, [], before, 'cython')
+        self.throws(bad, INSTHASNOMETH, [], before, 'cpython')
         self.throws(bad, ATTRIBUTEERROR, [], before, 'pypy')
         self.throws(bad, NOTCALLABLE, sugg, after)
         self.runs(good)
@@ -1975,7 +1975,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         old_code, new_code = format_str(code, old, new)
         self.runs(old_code, before)
         self.throws(old_code, INVALIDCOMP, sugg, after, 'pypy')
-        self.throws(old_code, INVALIDSYNTAX, sugg, after, 'cython')
+        self.throws(old_code, INVALIDSYNTAX, sugg, after, 'cpython')
         self.runs(new_code)
 
     def test_backticks(self):
@@ -2159,7 +2159,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         bad, good = '0720', '0o720'
         self.runs(good)
         self.runs(bad, before)
-        self.throws(bad, INVALIDTOKEN, [], after, 'cython')
+        self.throws(bad, INVALIDTOKEN, [], after, 'cpython')
         self.throws(bad, INVALIDSYNTAX, [], after, 'pypy')
 
     def test_extended_unpacking(self):
@@ -2201,11 +2201,11 @@ class MemoryErrorTests(GetSuggestionsTests):
         bad_code, good_code = format_str(code, typo, good)
         before, mid, after = before_mid_and_after((2, 7), (3, 0))
         self.runs(bad_code, interpreters='pypy')
-        self.throws(bad_code, OVERFLOWERR, sugg, before, 'cython')
-        self.throws(bad_code, MEMORYERROR, sugg, mid, 'cython')
-        self.runs(bad_code, after, 'cython')
-        self.runs(good_code, before, 'cython')
-        self.runs(good_code, mid, 'cython')
+        self.throws(bad_code, OVERFLOWERR, sugg, before, 'cpython')
+        self.throws(bad_code, MEMORYERROR, sugg, mid, 'cpython')
+        self.runs(bad_code, after, 'cpython')
+        self.runs(good_code, before, 'cpython')
+        self.runs(good_code, mid, 'cpython')
 
 
 class ValueErrorTests(GetSuggestionsTests):
@@ -2217,7 +2217,7 @@ class ValueErrorTests(GetSuggestionsTests):
         before, after = before_and_after((3, 0))
         self.throws(code, EXPECTEDLENGTH, [], before, 'pypy')
         self.throws(code, TOOMANYVALUES, [], after, 'pypy')
-        self.throws(code, TOOMANYVALUES, interpreters='cython')
+        self.throws(code, TOOMANYVALUES, interpreters='cpython')
 
     def test_not_enough_values(self):
         """Unpack 2 values in 3 variables."""
@@ -2225,7 +2225,7 @@ class ValueErrorTests(GetSuggestionsTests):
         before, after = before_and_after((3, 0))
         self.throws(code, EXPECTEDLENGTH, [], before, 'pypy')
         self.throws(code, NEEDMOREVALUES, [], after, 'pypy')
-        self.throws(code, NEEDMOREVALUES, interpreters='cython')
+        self.throws(code, NEEDMOREVALUES, interpreters='cpython')
 
     def test_conversion_fails(self):
         """Conversion fails."""

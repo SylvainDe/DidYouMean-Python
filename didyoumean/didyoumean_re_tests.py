@@ -260,9 +260,9 @@ class RegexTests(unittest2.TestCase):
     def test_func_takes_no_kwarg(self):
         """Test FUNC_TAKES_NO_KEYWORDARG_RE."""
         msgs = [
-            # Cython : most versions
+            # CPython : most versions
             "get() takes no keyword arguments",
-            # Cython nightly (as of 21 January 2017) - Python 3.7
+            # CPython nightly (as of 21 January 2017) - Python 3.7
             "get does not take keyword arguments",
         ]
         func = 'get'
