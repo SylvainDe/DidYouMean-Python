@@ -243,9 +243,10 @@ def listify(value, default, expected_types):
     if not isinstance(value, list):
         value = [value]
     if default:
-        assert all(v in default for v in value)
+        assert all(v in default for v in value), "%s %s" % (value, default)
     if expected_types is not None:
-        assert all(isinstance(v, expected_types) for v in value)
+        assert all(isinstance(v, expected_types) for v in value), \
+            "%s %s" % (value, expected_types)
     return value
 
 
