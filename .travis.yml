@@ -1,4 +1,5 @@
 language: python
+# https://docs.travis-ci.com/user/languages/python/
 python:
   - "2.6"
   - "2.7"
@@ -52,6 +53,7 @@ before_script:
 script:
  - coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py
  - python didyoumean/readme_examples.py
+ - pip install .
 
 after_success:
  - coveralls

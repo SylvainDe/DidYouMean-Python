@@ -1,5 +1,5 @@
-DidYouMean-Python
-=================
+DidYouMean-Python (aka BetterErrorMessages)
+===========================================
 
 [![BetterErrorMessages on PyPI](https://badge.fury.io/py/BetterErrorMessages.svg)](https://badge.fury.io/py/BetterErrorMessages)
 
