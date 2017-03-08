@@ -1460,13 +1460,13 @@ class TypeErrorTests(GetSuggestionsTests):
         # 'max', 'input', 'len', 'abs', 'all', etc have a specific error
         # message and are not relevant here
         before, after = before_and_after((3, 7))
-        for builtin, special in [
-                ('float', True), ('bool', True),
-                ('int', False), ('complex', False)]:
+        for builtin, kwarg in [
+                ('float', False), ('bool', False),
+                ('int', True), ('complex', True)]:
             code = builtin + '(this_doesnt_exist=2)'
             old_exc = UNEXPECTEDKWARG2
-            new_exc = NOKWARGS if special else UNEXPECTEDKWARG2
-            sugg = NO_KEYWORD_ARG_MSG if special else []
+            new_exc = UNEXPECTEDKWARG2 if kwarg else NOKWARGS
+            sugg = [] if kwarg else NO_KEYWORD_ARG_MSG
             self.throws(code, old_exc, [], before, interpreters='cpython')
             self.throws(code, new_exc, sugg, after, interpreters='cpython')
             self.throws(code, UNEXPECTEDKWARG, interpreters='pypy')
