@@ -314,7 +314,7 @@ try:
 except ImportError:
     didyoumean = None
     print("Did you mean to install BetterErrorMessages first (`pip install BetterErrorMessages`)")
-if didyoumean is not None:
+else:
     didyoumean.didyoumean_api.didyoumean_enablehook()
 ```
 
