@@ -312,7 +312,6 @@ You can have the suggestions automatically in your interactive sessions by addin
 try:
     import didyoumean
 except ImportError:
-    didyoumean = None
     print("Did you mean to install BetterErrorMessages first (`pip install BetterErrorMessages`)")
 else:
     didyoumean.didyoumean_api.didyoumean_enablehook()
