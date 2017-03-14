@@ -20,18 +20,64 @@ Logic to have various kind of suggestions in case of errors (NameError, Attribut
 
 Inspired by "Did you mean" for Ruby ([Explanation](http://www.yukinishijima.net/2014/10/21/did-you-mean-experience-in-ruby.html), [Github Page](https://github.com/yuki24/did_you_mean)), this is a simple implementation for/in Python. I wanted to see if I could mess around and create something similar in Python and it seems to be possible.
 
-The logic adding suggestions can be invoked in different ways :
 
- - a call to `didyoumean_enablehook()`/`didyoumean_disablehook()` ensuring that the magic happens automatically (by changing `sys.excepthook` and the relevant iPython function).
+Usage
+-----
 
- - a context manager `didyoumean_contextmanager`.
+Once the package is installed (see below), the logic adding suggestions can be invoked in different ways:
 
- - a post-mortem function for interactive session `didyoumean_postmortem()`.
+ * hook on `sys.excepthook` : just call `didyoumean_enablehook()` and you'll have the suggestions for any uncaught exception:
 
- - a function decorator `@didyoumean_decorator`.
+```
+>>> abc = 3
+>>> abcd
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+NameError: name 'abcd' is not defined
+>>> didyoumean.didyoumean_api.didyoumean_enablehook()
+>>> abcd
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+NameError: name 'abcd' is not defined. Did you mean 'abc' (local)?
+```
 
-Examples to be added (once the whole project is easily pip-installable).
+ * post-mortem function `didyoumean_postmortem()` on the last uncaught exception during interactive sessions:
 
+```
+>>> abc = 3
+>>> abcd
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+NameError: name 'abcd' is not defined
+>>> didyoumean.didyoumean_api.didyoumean_postmortem()
+NameError("name 'abcd' is not defined. Did you mean 'abc' (local)?",)
+```
+
+ * context manager `didyoumean_contextmanager()`:
+
+```
+>>> with didyoumean.didyoumean_api.didyoumean_contextmanager():
+...     abcd
+...
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+NameError: name 'abcd' is not defined. Did you mean 'abc' (local)
+```
+
+ * decorator : just add the `@didyoumean` decorator before any function (the `main()` could be a good choice) and you'll have the suggestions for any exception happening through a call to that method.
+
+
+```
+>>> @didyoumean.didyoumean_api.didyoumean_decorator
+... def foo(): return abcd
+...
+>>> foo()
+Traceback (most recent call last):
+  File "<stdin>", line 2, in foo
+NameError: global name 'abcd' is not defined. Did you mean 'abc' (global)?
+```
+
+_The API does not look great and may be updated in the near future._
 
 
 Example
@@ -288,20 +334,6 @@ git install .
 ```
 
 
-Usage
------
-
-Once the package is installed, it can be used in different ways :
-
- * hook on `sys.excepthook` : just call `didyoumean_enablehook()` and you'll have the suggestions for any uncaught exception.
-
- * decorator : just add the `@didyoumean` decorator before any function (the `main()` could be a good choice) and you'll have the suggestions for any exception happening through a call to that method.
-
- * context manager.
-
- * post mortem.
-
-Please refer to the examples to be added in the introduction.
 
 Making things automatic in your interactive sessions
 ----------------------------------------------------
