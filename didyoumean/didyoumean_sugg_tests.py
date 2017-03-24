@@ -182,14 +182,31 @@ def up_to_version(version):
 
 
 def before_and_after(version):
-    """Return a tuple with the version ranges before/after a given version."""
+    """Return a tuple with the version ranges before/after a given version.
+
+    See also: before_mid_and_after, ranges_between.
+    """
     return up_to_version(version), from_version(version)
 
 
 def before_mid_and_after(vers1, vers2):
-    """Return a tuple with the versions before/in/after given versions."""
+    """Return a tuple with the versions before/in/after given versions.
+
+    See also: before_and_after, ranges_between.
+    """
     assert vers1 < vers2
     return up_to_version(vers1), (vers1, vers2), from_version(vers2)
+
+
+def ranges_between(*versions):
+    """Return a list of versions ranges defined by the various version.
+
+    See also: before_and_after, before_mid_and_after.
+    """
+    first = up_to_version(versions[0])
+    mid = list(zip(versions, versions[1:]))
+    last = from_version(versions[-1])
+    return [first] + mid + [last]
 
 
 def version_in_range(version_range):
@@ -1657,10 +1674,11 @@ class TypeErrorTests(GetSuggestionsTests):
         code = '"things " + {0}'
         typo, good = '12', 'str(12)'
         bad_code, good_code = format_str(code, typo, good)
-        before, mid, after = before_mid_and_after((3, 0), (3, 6))
+        before, range1, range2, after = ranges_between((3, 0), (3, 6), (3, 7))
         self.throws(bad_code, CANNOTCONCAT, [], before, 'cpython')
-        self.throws(bad_code, CANTCONVERT, [], mid, 'cpython')
-        self.throws(bad_code, MUSTBETYPENOTTYPE, [], after, 'cpython')
+        self.throws(bad_code, CANTCONVERT, [], range1, 'cpython')
+        self.throws(bad_code, MUSTBETYPENOTTYPE, [], range2, 'cpython')
+        self.throws(bad_code, ONLYCONCAT, [], after, 'cpython')
         self.throws(bad_code, UNSUPPORTEDOPERAND, interpreters='pypy')
         self.runs(good_code)
 
