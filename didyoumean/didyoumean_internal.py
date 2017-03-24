@@ -919,7 +919,7 @@ def add_string_to_exception(value, string):
 
 def get_last_frame(traceback):
     """Extract last frame from a traceback."""
-    # In some rare case, the give traceback might be None
+    # In some rare case, the given traceback might be None
     if traceback is None:
         return None
     while traceback.tb_next:
