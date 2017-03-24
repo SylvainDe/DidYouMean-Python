@@ -373,6 +373,8 @@ See also (similar projects/ideas)
 
  - [PyDidYouMean](https://github.com/asweigart/pydidyoumean) : Improve "file/command not found" errors with suggestions.
 
+ - [Qix-/better-exceptions](https://github.com/Qix-/better-exceptions) : Pretty and useful exceptions in Python
+
  - [danrobinson/tracestack](https://github.com/danrobinson/tracestack) : Search your Python error messages on the web.
 
  - In [Raymond Hettinger's PyconCA keynote](https://www.youtube.com/watch?v=-TdrFjDJn5E), the part about the `hint` builtin (at 14 minutes) looks a lot like `didyoumean_postmortem`.
