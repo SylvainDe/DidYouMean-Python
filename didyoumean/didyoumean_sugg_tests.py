@@ -1952,6 +1952,19 @@ class KeyErrorTests(LookupErrorTests):
         """No suggestion."""
         self.throws('dict()["ffdsqmjklfqsd"]', KEYERROR)
 
+    def test_set_remove(self):
+        """Set.remove throws when key is not found."""
+        # NICE_TO_HAVE
+        code = 's = set()\ns.{0}(42)'
+        bad_code, good_code = format_str(code, "remove", "discard")
+        self.runs(good_code)
+        self.throws(bad_code, KEYERROR)
+
+    def test_dict_pop(self):
+        """Test dict."""
+        code = 'd = dict()\nd.pop(42)'
+        self.throws(code, KEYERROR)
+
 
 class IndexErrorTests(LookupErrorTests):
     """Class for tests related to IndexError."""
