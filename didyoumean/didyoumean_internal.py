@@ -657,7 +657,8 @@ def suggest_unexpected_keywordarg_for_func(kw_arg, func_name, frame):
     args = set([var for func in func_codes for var in func.co_varnames])
     for arg_name in get_close_matches(kw_arg, args):
         yield quote(arg_name)
-    if kw_arg == 'cmp' and 'key' in args:
+    if kw_arg == 'cmp' and \
+            (('key' in args) or (len(functions) > len(func_codes))):
         yield CMP_ARG_REMOVED_MSG
 
 
