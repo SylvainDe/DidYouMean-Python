@@ -257,6 +257,23 @@ class RegexTests(unittest2.TestCase):
         results = (groups, named_groups)
         self.re_matches(msg, re.UNEXPECTED_KEYWORDARG3_RE, results)
 
+    def test_unexpected_kw_arg4(self):
+        """Test UNEXPECTED_KEYWORDARG4_RE."""
+        # Python 3.7
+        msgs = [
+            ("'this_doesnt_exist' is an invalid keyword argument for int()",
+                ('this_doesnt_exist', 'int')),
+            ("'end_' is an invalid keyword argument for print()",
+                ('end_', 'print')),
+            ("'cmp' is an invalid keyword argument for sort()",
+                ('cmp', 'sort')),
+        ]
+        for msg, groups in msgs:
+            kw_arg, func = groups
+            named_groups = {'arg': kw_arg, 'func': func}
+            results = (groups, named_groups)
+            self.re_matches(msg, re.UNEXPECTED_KEYWORDARG4_RE, results)
+
     def test_func_takes_no_kwarg(self):
         """Test FUNC_TAKES_NO_KEYWORDARG_RE."""
         msgs = [

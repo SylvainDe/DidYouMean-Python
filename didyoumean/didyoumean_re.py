@@ -40,6 +40,9 @@ UNEXPECTED_KEYWORDARG2_RE = r"^'(?P<arg>{0})' is an " \
     r"invalid keyword argument for this function$".format(ARG_NAME)
 UNEXPECTED_KEYWORDARG3_RE = r"^invalid keyword arguments to " \
     r"(?P<func>{0})\(\)$".format(FUNC_NAME)
+UNEXPECTED_KEYWORDARG4_RE = r"^'(?P<arg>{0})' is an " \
+    r"invalid keyword argument for " \
+    r"(?P<func>{0})\(\)$".format(ARG_NAME, FUNC_NAME)
 FUNC_TAKES_NO_KEYWORDARG_RE = r"^(?P<func>{0})(?:\(\))? " \
     r"(?:takes no|does not take) keyword arguments$".format(FUNC_NAME)
 NOMODULE_RE = r"^No module named '?({0})'?$".format(MODULE_NAME)

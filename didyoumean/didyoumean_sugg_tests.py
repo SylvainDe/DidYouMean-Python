@@ -298,6 +298,7 @@ NOATTRIBUTE_TYPEERROR = (TypeError, re.ATTRIBUTEERROR_RE)
 UNEXPECTEDKWARG = (TypeError, re.UNEXPECTED_KEYWORDARG_RE)
 UNEXPECTEDKWARG2 = (TypeError, re.UNEXPECTED_KEYWORDARG2_RE)
 UNEXPECTEDKWARG3 = (TypeError, re.UNEXPECTED_KEYWORDARG3_RE)
+UNEXPECTEDKWARG4 = (TypeError, re.UNEXPECTED_KEYWORDARG4_RE)
 NOKWARGS = (TypeError, re.FUNC_TAKES_NO_KEYWORDARG_RE)
 UNSUPPORTEDOPERAND = (TypeError, re.UNSUPPORTED_OP_RE)
 BADOPERANDUNARY = (TypeError, re.BAD_OPERAND_UNARY_RE)
@@ -1483,7 +1484,7 @@ class TypeErrorTests(GetSuggestionsTests):
                 ('int', True), ('complex', True)]:
             code = builtin + '(this_doesnt_exist=2)'
             old_exc = UNEXPECTEDKWARG2
-            new_exc = UNEXPECTEDKWARG2 if kwarg else NOKWARGS
+            new_exc = UNEXPECTEDKWARG4 if kwarg else NOKWARGS
             sugg = [] if kwarg else NO_KEYWORD_ARG_MSG
             self.throws(code, old_exc, [], before, interpreters='cpython')
             self.throws(code, new_exc, sugg, after, interpreters='cpython')
@@ -1492,22 +1493,26 @@ class TypeErrorTests(GetSuggestionsTests):
     def test_keyword_builtin_print(self):
         """Builtin "print" has a different error message."""
         # It would be NICE_TO_HAVE suggestions on keyword arguments
-        before, after = before_and_after((3, 0))
+        before, mid, after = before_mid_and_after((3, 0), (3, 7))
         code = "c = 'string'\nb = print(c, end_='toto')"
         self.throws(code, INVALIDSYNTAX, [], before)
-        self.throws(code, UNEXPECTEDKWARG2, [], after, 'cpython')
+        self.throws(code, UNEXPECTEDKWARG2, [], mid, 'cpython')
+        self.throws(code, UNEXPECTEDKWARG4, [], after, 'cpython')
+        self.throws(code, UNEXPECTEDKWARG3, [], mid, 'pypy')
         self.throws(code, UNEXPECTEDKWARG3, [], after, 'pypy')
 
     def test_keyword_sort_cmpkey(self):
         """Sort and sorted functions have a cmp/key param dep. on the vers."""
-        before, after = before_and_after((3, 0))
+        before, mid, after = before_mid_and_after((3, 0), (3, 7))
         code = "import functools as f\nl = [1, 8, 3]\n" \
                "def comp(a, b): return (a > b) - (a < b)\nl.sort({0})"
         sugg = CMP_ARG_REMOVED_MSG
         cmp_arg, key_arg, cmp_to_key = format_str(
                 code, 'cmp=comp', 'key=id', 'key=f.cmp_to_key(comp)')
         self.runs(cmp_arg, before)
-        self.throws(cmp_arg, UNEXPECTEDKWARG2, sugg, after, 'cpython')
+        self.throws(cmp_arg, UNEXPECTEDKWARG2, sugg, mid, 'cpython')
+        self.throws(cmp_arg, UNEXPECTEDKWARG4, sugg, after, 'cpython')
+        self.throws(cmp_arg, UNEXPECTEDKWARG, sugg, mid, 'pypy')
         self.throws(cmp_arg, UNEXPECTEDKWARG, sugg, after, 'pypy')
         self.runs(key_arg)
         self.runs(cmp_to_key, from_version((2, 7)))

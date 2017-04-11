@@ -650,11 +650,8 @@ def get_func_by_name(func_name, frame):
             if getattr(func, '__name__', None) == func_name]
 
 
-@register_suggestion_for(TypeError, re.UNEXPECTED_KEYWORDARG_RE)
-def suggest_unexpected_keywordarg(value, frame, groups):
-    """Get suggestions in case of UNEXPECTED_KEYWORDARG error."""
-    del value  # unused param
-    func_name, kw_arg = groups
+def suggest_unexpected_keywordarg_for_func(kw_arg, func_name, frame):
+    """Get suggestions in case of unexpected keyword argument."""
     functions = get_func_by_name(func_name, frame)
     func_codes = [f.__code__ for f in functions if hasattr(f, '__code__')]
     args = set([var for func in func_codes for var in func.co_varnames])
@@ -662,6 +659,22 @@ def suggest_unexpected_keywordarg(value, frame, groups):
         yield quote(arg_name)
     if kw_arg == 'cmp' and 'key' in args:
         yield CMP_ARG_REMOVED_MSG
+
+
+@register_suggestion_for(TypeError, re.UNEXPECTED_KEYWORDARG_RE)
+def suggest_unexpected_keywordarg(value, frame, groups):
+    """Get suggestions in case of UNEXPECTED_KEYWORDARG error."""
+    del value  # unused param
+    func_name, kw_arg = groups
+    return suggest_unexpected_keywordarg_for_func(kw_arg, func_name, frame)
+
+
+@register_suggestion_for(TypeError, re.UNEXPECTED_KEYWORDARG4_RE)
+def suggest_unexpected_keywordarg(value, frame, groups):
+    """Get suggestions in case of UNEXPECTED_KEYWORDARG4 error."""
+    del value  # unused param
+    kw_arg, func_name = groups
+    return suggest_unexpected_keywordarg_for_func(kw_arg, func_name, frame)
 
 
 @register_suggestion_for(TypeError, re.UNEXPECTED_KEYWORDARG2_RE)
