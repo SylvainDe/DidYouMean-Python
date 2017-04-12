@@ -671,7 +671,7 @@ def suggest_unexpected_keywordarg(value, frame, groups):
 
 
 @register_suggestion_for(TypeError, re.UNEXPECTED_KEYWORDARG4_RE)
-def suggest_unexpected_keywordarg(value, frame, groups):
+def suggest_unexpected_keywordarg4(value, frame, groups):
     """Get suggestions in case of UNEXPECTED_KEYWORDARG4 error."""
     del value  # unused param
     kw_arg, func_name = groups
@@ -726,6 +726,7 @@ def suggest_func_no_kw_arg(value, frame, groups):
     # Unfortunately, introspection of builtin function is not possible as per
     # http://bugs.python.org/issue1748064 . Thus, the only thing we can look
     # for is if a function has no __code__ attribute.
+    del value  # unused param
     func_name, = groups
     functions = get_func_by_name(func_name, frame)
     if any([not hasattr(f, '__code__') for f in functions]):
