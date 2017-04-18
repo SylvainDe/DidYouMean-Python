@@ -1,6 +1,6 @@
 # -*- coding: utf-8
 """Unit tests for code in didyoumean_internal.py."""
-from didyoumean_internal import get_suggestion_string,\
+from didyoumean_internal import quote, get_suggestion_string,\
     add_string_to_exception, get_func_by_name,\
     get_objects_in_frame, get_subclasses, get_types_for_str,\
     get_types_for_str_using_inheritance,\
@@ -23,11 +23,11 @@ global_var = 42  # Please don't change the value
 class QuoteTests(unittest2.TestCase):
     """Class for tests related to quote."""
 
-    def quote_empty_str(self):
+    def test_quote_empty_str(self):
         """Test quote on empty string."""
         self.assertEqual(quote(''), "''")
 
-    def quote_str(self):
+    def test_quote_str(self):
         """Test quote on non-empty string."""
         self.assertEqual(quote('abc'), "'abc'")
 
