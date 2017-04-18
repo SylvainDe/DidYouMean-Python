@@ -13,6 +13,7 @@ DidYouMean-Python (aka BetterErrorMessages)
 [![Code Issues](http://www.quantifiedcode.com/api/v1/project/34c9b3f27db24a1ba944fcf3d69a9d2a/badge.svg)](http://www.quantifiedcode.com/app/project/34c9b3f27db24a1ba944fcf3d69a9d2a)
 [![Scrutinizer](https://scrutinizer-ci.com/g/SylvainDe/DidYouMean-Python/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/SylvainDe/DidYouMean-Python/?branch=master)
 [![Codacy Badge](https://www.codacy.com/project/badge/54bed0a6466b48ea973325cff2594376)](https://www.codacy.com/app/sylvain-desodt-github/DidYouMean-Python)
+[![Lintly](https://lintly.com/gh/SylvainDe/DidYouMean-Python/badge.svg)](https://lintly.com/gh/SylvainDe/DidYouMean-Python/)
 
 
 Logic to have various kind of suggestions in case of errors (NameError, AttributeError, ImportError, TypeError, ValueError, SyntaxError, MemoryError, OverflowError, IOError, OSError).
