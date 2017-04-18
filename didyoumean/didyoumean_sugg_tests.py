@@ -64,16 +64,16 @@ class FoobarClass():
 
     def nameerror_self(self):
         """Should be self.babar."""
-        return babar
+        return babar  # noqa
 
     def nameerror_self2(self):
         """Should be self.this_is_cls_mthd (or FoobarClass)."""
-        return this_is_cls_mthd
+        return this_is_cls_mthd  # noqa
 
     @classmethod
     def nameerror_cls(cls):
         """Should be cls.this_is_cls_mthd (or FoobarClass)."""
-        return this_is_cls_mthd
+        return this_is_cls_mthd  # noqa
 
     def some_method(self):
         """Method for testing purposes."""
@@ -91,7 +91,7 @@ class FoobarClass():
         """Method for testing purposes."""
         pass
 
-    def some_method_missing_self_arg():
+    def some_method_missing_self_arg():  # noqa
         """Method for testing purposes."""
         pass
 
@@ -105,7 +105,7 @@ class FoobarClass():
         pass
 
     @classmethod
-    def some_cls_method_missing_cls2(x):
+    def some_cls_method_missing_cls2(x):  # noqa
         """Class method for testing purposes."""
         pass
 
@@ -467,7 +467,7 @@ class NameErrorTests(GetSuggestionsTests):
         """Should be this_is_a_global_list."""
         typo, good = 'this_is_a_global_lis', 'this_is_a_global_list'
         # just a way to say that this_is_a_global_list is needed in globals
-        this_is_a_global_list
+        this_is_a_global_list  # noqa
         self.assertFalse(good in locals())
         self.assertTrue(good in globals())
         sugg = "'{0}' (global)".format(good)
@@ -744,7 +744,7 @@ class NameErrorTests(GetSuggestionsTests):
 
     def test_attribute_hidden(self):
         """Should be math.pi but module math is hidden."""
-        math  # just a way to say that math module is needed in globals
+        math  # just a way to say that math module is needed in globals - noqa
         self.assertFalse('math' in locals())
         self.assertTrue('math' in globals())
         code = 'math = ""\npi'

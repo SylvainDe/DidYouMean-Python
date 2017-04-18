@@ -81,14 +81,14 @@ class GetObjectInFrameTests(unittest2.TestCase):
         """Test with local."""
         name = 'toto'
         self.name_corresponds_to(name, [])
-        toto = 0
+        toto = 0  # noqa
         self.name_corresponds_to(name, [(0, 'local')])
 
     def test_local_and_global(self):
         """Test with local hiding a global."""
         name = 'global_var'
         self.name_corresponds_to(name, [(42, 'global')])
-        global_var = 1
+        global_var = 1  # noqa
         self.name_corresponds_to(name, [(1, 'local'), (42, 'global')])
 
     def test_global_keword(self):
@@ -123,11 +123,11 @@ class GetObjectInFrameTests(unittest2.TestCase):
 
     def test_enclosing(self):
         """Test with nested functions."""
-        foo = 1
-        bar = 2
+        foo = 1  # noqa
+        bar = 2  # noqa
 
         def nested_func(foo, baz):
-            qux = 5
+            qux = 5  # noqa
             self.name_corresponds_to('qux', [(5, 'local')])
             self.name_corresponds_to('baz', [(4, 'local')])
             self.name_corresponds_to('foo', [(3, 'local')])
@@ -141,11 +141,11 @@ class GetObjectInFrameTests(unittest2.TestCase):
 
     def test_enclosing2(self):
         """Test with nested functions."""
-        bar = 2
+        bar = 2  # noqa
 
         def nested_func():
             self.name_corresponds_to('bar', [])
-            bar = 3
+            bar = 3  # noqa
             self.name_corresponds_to('bar', [(3, 'local')])
 
         nested_func()
@@ -157,7 +157,7 @@ class GetObjectInFrameTests(unittest2.TestCase):
 
         def nested_func():
             self.name_corresponds_to('bar', [(2, 'local')])
-            tmp = bar
+            tmp = bar  # noqa
             self.name_corresponds_to('bar', [(2, 'local')])
 
         nested_func()
@@ -165,7 +165,7 @@ class GetObjectInFrameTests(unittest2.TestCase):
 
     def test_enclosing4(self):
         """Test with nested functions."""
-        global_var = 1
+        global_var = 1  # noqa
 
         def nested_func():
             self.name_corresponds_to('global_var', [(42, 'global')])
@@ -175,12 +175,12 @@ class GetObjectInFrameTests(unittest2.TestCase):
 
     def test_enclosing5(self):
         """Test with nested functions."""
-        bar = 2
-        foo = 3
+        bar = 2  # noqa
+        foo = 3  # noqa
 
         def nested_func():
-            bar = 4
-            baz = 5
+            bar = 4  # noqa
+            baz = 5  # noqa
             self.name_corresponds_to('foo', [])
             self.name_corresponds_to('bar', [(4, 'local')])
 
