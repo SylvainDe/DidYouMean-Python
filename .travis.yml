@@ -3,7 +3,7 @@ language: python
 python:
   - "2.6"
   - "2.7"
-  - "3.2"
+#  - "3.2" - see https://github.com/SylvainDe/DidYouMean-Python/issues/30
   - "3.3"
   - "3.4"
   - "3.5"
@@ -16,7 +16,7 @@ python:
   - "nightly"
   - "pypy-5.3.1"
   - "pypy-5.4.1"
-  - "pypy3"
+#  - "pypy3" - see https://github.com/SylvainDe/DidYouMean-Python/issues/30
 
 install:
   # From https://github.com/frol/flask-restplus-server-example/blob/master/.travis.yml
@@ -38,7 +38,6 @@ install:
         virtualenv --python="$PYENV_ROOT/versions/pypy-$PYPY_VERSION/bin/python" "$HOME/virtualenvs/pypy-$PYPY_VERSION"
         source "$HOME/virtualenvs/pypy-$PYPY_VERSION/bin/activate"
       fi
-  - pip install --upgrade pip
   - pip install --upgrade pep8
   - pip install pep257
   - pip install --upgrade pyflakes
