@@ -18,6 +18,7 @@ from shutil import rmtree
 
 
 this_is_a_global_list = []  # Value does not really matter but the type does
+initial_recursion_limit = sys.getrecursionlimit()
 
 
 def func_gen(name='some_func', param='', body='pass', args=None):
@@ -818,11 +819,10 @@ class UnboundLocalErrorTests(GetSuggestionsTests):
         code = 'nb = 0\ndef func():\n\t{0}\n\tnb +=1\nfunc()'
         sugg = 'global nb'
         bad_code, good_code = format_str(code, "", sugg)
-        original_limit = sys.getrecursionlimit()
         sys.setrecursionlimit(1000)  # needed for weird PyPy versions
         self.throws(bad_code, UNBOUNDLOCAL)
         self.runs(good_code)  # this is to be run afterward :-/
-        sys.setrecursionlimit(original_limit)
+        sys.setrecursionlimit(initial_recursion_limit)
 
     def test_unbound_nonlocal(self):
         """Shoud be nonlocal nb."""
@@ -1712,9 +1712,11 @@ class TypeErrorTests(GetSuggestionsTests):
         code = "o = {0}()\no[1] = 'd'"
         bad, good = format_str(code, 'CustomClass', 'SetItemClass')
         sugg = 'implement "__setitem__" on CustomClass'
+        sys.setrecursionlimit(1000)  # needed for weird PyPy versions
         self.throws(bad, ATTRIBUTEERROR, [], before)
         self.throws(bad, OBJECTDOESNOTSUPPORT, sugg, after)
         self.runs(good)
+        sys.setrecursionlimit(initial_recursion_limit)
 
     def test_deletion_from_string(self):
         """Delete from string does not work."""
@@ -2110,9 +2112,11 @@ class SyntaxErrorTests(GetSuggestionsTests):
             "def func1():\n\texec('1')\n\tdef func2():"
             "\n\t\tTrue",
         ]
+        sys.setrecursionlimit(1000)  # needed for weird PyPy versions
         for code in codes:
             self.throws(code, UNQUALIFIED_EXEC, [], before)
             self.runs(code, after)
+        sys.setrecursionlimit(initial_recursion_limit)
 
     def test_import_star(self):
         """'import *' in nested functions."""
@@ -2123,10 +2127,12 @@ class SyntaxErrorTests(GetSuggestionsTests):
             "def func1():\n\tfrom math import *"
             "\n\tdef func2():\n\t\tTrue",
         ]
+        sys.setrecursionlimit(1000)  # needed for weird PyPy versions
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=SyntaxWarning)
             for code in codes:
                 self.throws(code, IMPORTSTAR)
+        sys.setrecursionlimit(initial_recursion_limit)
 
     def test_unpack(self):
         """Extended tuple unpacking does not work prior to Python 3."""
@@ -2307,13 +2313,12 @@ class RuntimeErrorTests(GetSuggestionsTests):
 
     def test_max_depth(self):
         """Reach maximum recursion depth."""
-        original_limit = sys.getrecursionlimit()
         sys.setrecursionlimit(200)
         code = 'endlessly_recursive_func(0)'
         suggs = ["increase the limit with `sys.setrecursionlimit(limit)`"
                  " (current value is 200)", AVOID_REC_MSG]
         self.throws(code, MAXRECURDEPTH, suggs)
-        sys.setrecursionlimit(original_limit)
+        sys.setrecursionlimit(initial_recursion_limit)
 
     def test_dict_size_changed_during_iter(self):
         """Test size change during iteration (dict)."""
