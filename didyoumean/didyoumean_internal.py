@@ -33,7 +33,11 @@ STAND_MODULES = set(['string', 'os', 'sys', 're', 'math', 'random',
 
 #: Almost synonyms methods that can be confused from one type to another
 # To be completed
-SYNONYMS_SETS = [set(['add', 'append']), set(['extend', 'update'])]
+SYNONYMS_SETS = [
+    set(['add', 'append']),
+    set(['extend', 'update']),
+    set(['remove', 'discard', '__delitem__'])
+]
 
 #: Maximum number of files suggested
 MAX_NB_FILES = 4
@@ -384,7 +388,6 @@ def get_attribute_suggestions(type_str, attribute, frame):
     return itertools.chain(
         suggest_attribute_as_builtin(attribute, type_str, frame),
         suggest_attribute_alternative(attribute, type_str, attributes),
-        suggest_attribute_synonyms(attribute, attributes),
         suggest_attribute_as_typo(attribute, attributes),
         suggest_attribute_as_special_case(attribute))
 
@@ -401,6 +404,8 @@ def suggest_attribute_as_builtin(attribute, type_str, frame):
 
 def suggest_attribute_alternative(attribute, type_str, attributes):
     """Suggest alternative to the non-found attribute."""
+    for s in suggest_attribute_synonyms(attribute, attributes):
+        yield s
     is_iterable = '__iter__' in attributes or \
                   ('__getitem__' in attributes and '__len__' in attributes)
     if attribute == 'has_key' and '__contains__' in attributes:
@@ -450,7 +455,7 @@ def suggest_attribute_synonyms(attribute, attributes):
     """
     for set_sub in SYNONYMS_SETS:
         if attribute in set_sub:
-            for syn in set_sub & attributes:
+            for syn in sorted(set_sub & attributes):
                 yield quote(syn)
 
 

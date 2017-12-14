@@ -910,6 +910,26 @@ class AttributeErrorTests(GetSuggestionsTests):
         self.throws(bad_code, ATTRIBUTEERROR, sugg)
         self.runs(good_code)
 
+    def test_wrongmethod3(self):
+        """Should be 's.remove(42)' or 's.discard(42)'."""
+        code = 's = set([42, 43])\n{0}'
+        typo, good1, good2 = 'del s[42]', 's.remove(42)', 's.discard(42)'
+        bad_code, good_code1, good_code2 = format_str(code, typo, good1, good2)
+        suggs = ["'discard'", "'remove'", 'convert to list to edit the list']
+        self.throws(bad_code, OBJECTDOESNOTSUPPORT, suggs)
+        self.runs(good_code1)
+        self.runs(good_code2)
+
+    def test_wrongmethod4(self):
+        """Should be 'del d[42]'."""
+        code = 'd = dict()\nd[42] = False\n{0}'
+        good, typo1, typo2 = 'del d[42]', 'd.remove(42)', 'd.discard(42)'
+        good_code, bad_code1, bad_code2 = format_str(code, good, typo1, typo2)
+        self.runs(good_code)
+        sugg = "'__delitem__'"
+        self.throws(bad_code1, ATTRIBUTEERROR, sugg)
+        self.throws(bad_code2, ATTRIBUTEERROR, sugg)
+
     def test_hidden(self):
         """Accessing wrong string object."""
         # NICE_TO_HAVE
@@ -1130,15 +1150,20 @@ class AttributeErrorTests(GetSuggestionsTests):
         """{} creates a dict and not an empty set leading to errors."""
         # NICE_TO_HAVE
         before, after = before_and_after((2, 7))
+        suggs = {
+            'discard': "'__delitem__'",
+            'remove': "'__delitem__'",
+        }
         for method in set(dir(set)) - set(dir(dict)):
             if not method.startswith('__'):  # boring suggestions
                 code = "a = {0}\na." + method
-                typo, dict1, dict2, sugg, set1 = format_str(
+                typo, dict1, dict2, good, set1 = format_str(
                     code, "{}", "dict()", "{0: 0}", "set()", "{0}")
-                self.throws(typo, ATTRIBUTEERROR)
-                self.throws(dict1, ATTRIBUTEERROR)
-                self.throws(dict2, ATTRIBUTEERROR)
-                self.runs(sugg)
+                sugg = suggs.get(method, None)
+                self.throws(typo, ATTRIBUTEERROR, sugg)
+                self.throws(dict1, ATTRIBUTEERROR, sugg)
+                self.throws(dict2, ATTRIBUTEERROR, sugg)
+                self.runs(good)
                 self.throws(set1, INVALIDSYNTAX, [], before)
                 self.runs(set1, after)
 
