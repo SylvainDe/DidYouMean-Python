@@ -895,10 +895,11 @@ class AttributeErrorTests(GetSuggestionsTests):
     def test_wrongmethod(self):
         """Should be 'lst.append(1)'."""
         code = '[0].{0}(1)'
-        typo, good = 'add', 'append'
+        typo, typo2, good = 'add', 'push', 'append'
         sugg = quote(good)
-        bad_code, good_code = format_str(code, typo, good)
+        bad_code, bad_code2, good_code = format_str(code, typo, typo2, good)
         self.throws(bad_code, ATTRIBUTEERROR, sugg)
+        self.throws(bad_code2, ATTRIBUTEERROR, sugg)
         self.runs(good_code)
 
     def test_wrongmethod2(self):
@@ -929,6 +930,16 @@ class AttributeErrorTests(GetSuggestionsTests):
         sugg = "'__delitem__'"
         self.throws(bad_code1, ATTRIBUTEERROR, sugg)
         self.throws(bad_code2, ATTRIBUTEERROR, sugg)
+
+    def test_wrongmethod5(self):
+        """Should be 's.add()'."""
+        code = 'set().{0}(1)'
+        typo, typo2, good = 'append', 'push', 'add'
+        sugg = quote(good)
+        bad_code, bad_code2, good_code = format_str(code, typo, typo2, good)
+        self.throws(bad_code, ATTRIBUTEERROR, sugg)
+        self.throws(bad_code2, ATTRIBUTEERROR, sugg)
+        self.runs(good_code)
 
     def test_hidden(self):
         """Accessing wrong string object."""

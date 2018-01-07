@@ -34,7 +34,7 @@ STAND_MODULES = set(['string', 'os', 'sys', 're', 'math', 'random',
 #: Almost synonyms methods that can be confused from one type to another
 # To be completed
 SYNONYMS_SETS = [
-    set(['add', 'append']),
+    set(['add', 'append', 'push']),
     set(['extend', 'update']),
     set(['remove', 'discard', '__delitem__'])
 ]
