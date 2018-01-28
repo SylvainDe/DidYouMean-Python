@@ -62,6 +62,22 @@ class CommonTestNewStyleClass2(object):
 class TestWithStringFunction(object):
     """Unit test class with an helper method."""
 
+    def assertIn(self, first, second):
+        """Check that `first` argument is in `second`.
+
+        Just like self.assertTrue(a in b), but with a nicer default message.
+        This is part of standard library but only from Python 2.7."""
+        msg = '"%s" not found in "%s"' % (first, second)
+        self.assertTrue(first in second, msg)
+
+    def assertNotIn(self, first, second):
+        """Check that `first` argument is NOT in `second`.
+
+        Just like self.assertFalse(a in b), but with a nicer default message.
+        This is part of standard library but only from Python 2.7."""
+        msg = '"%s" unexpectedly found in "%s"' % (first, second)
+        self.assertFalse(first in second, msg)
+
     def assertStringAdded(self, string, before, after, check_str_sum):
         """Check that `string` has been added to `before` to get `after`.
 
@@ -72,8 +88,8 @@ class TestWithStringFunction(object):
         """
         if string:
             self.assertNotEqual(before, after)
-            self.assertFalse(string in before, before)
-            self.assertTrue(string in after, after)
+            self.assertNotIn(string, before)
+            self.assertIn(string, after)
             # Removing string and checking that we get the original string
             begin, mid, end = after.partition(string)
             self.assertEqual(mid, string)
