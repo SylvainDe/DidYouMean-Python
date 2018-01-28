@@ -66,7 +66,8 @@ class TestWithStringFunction(object):
         """Check that `first` argument is in `second`.
 
         Just like self.assertTrue(a in b), but with a nicer default message.
-        This is part of standard library but only from Python 2.7."""
+        This is part of standard library but only from Python 2.7.
+        """
         msg = '"%s" not found in "%s"' % (first, second)
         self.assertTrue(first in second, msg)
 
@@ -74,7 +75,8 @@ class TestWithStringFunction(object):
         """Check that `first` argument is NOT in `second`.
 
         Just like self.assertFalse(a in b), but with a nicer default message.
-        This is part of standard library but only from Python 2.7."""
+        This is part of standard library but only from Python 2.7.
+        """
         msg = '"%s" unexpectedly found in "%s"' % (first, second)
         self.assertFalse(first in second, msg)
 
