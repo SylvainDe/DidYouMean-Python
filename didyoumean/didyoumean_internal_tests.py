@@ -541,7 +541,8 @@ class AddStringToMemoryErrorTest(
     code = '[0] * 999999999999999'
     error_type = MemoryError
     prefix_repr = "'"
-    suffix_repr = "',"
+    suffix_repr = "'"
+    check_str_sum = False
 
 
 class AddStringToIOErrorTest(
