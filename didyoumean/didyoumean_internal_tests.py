@@ -541,8 +541,9 @@ class AddStringToMemoryErrorTest(
     code = '[0] * 999999999999999'
     error_type = MemoryError
     prefix_repr = "'"
-    suffix_repr = "'"
-    check_str_sum = False
+    # Trailing comma removed from Python 3.7
+    # See https://bugs.python.org/issue30399
+    suffix_repr = "'" if sys.version_info >= (3, 7) else "',"
 
 
 class AddStringToIOErrorTest(
