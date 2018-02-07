@@ -47,6 +47,8 @@ install:
   - pip install codecov
 
 before_script:
+ - python -VV
+ - python -c "import sys; print(sys._git)" || true
  - pep8 *.py */*.py
  - pep257 *.py */*.py
 
