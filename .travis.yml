@@ -62,4 +62,4 @@ after_success:
  - coveralls
  - codecov
  # Information about Python builtins
- - python -c "print(__builtins__)" || true
+ - python -c "print(dir(__builtins__))" || true
