@@ -727,6 +727,24 @@ class NameErrorTests(GetSuggestionsTests):
             self.throws(name, NAMEERROR, suggs, before)
             self.runs(name, after)
 
+    def test_added_3_6(self):
+        """Test for names added in 3.6."""
+        before, after = before_and_after((3, 6))
+        for name, suggs in {
+                'ModuleNotFoundError': ["'FileNotFoundError' (builtin)"],
+                }.items():
+            self.throws(name, NAMEERROR, suggs, before)
+            self.runs(name, after)
+
+    def test_added_3_7(self):
+        """Test for names added in 3.7."""
+        before, after = before_and_after((3, 7))
+        for name, suggs in {
+                'breakpoint': [],
+                }.items():
+            self.throws(name, NAMEERROR, suggs, before)
+            self.runs(name, after)
+
     def test_import_sugg(self):
         """Should import module first."""
         module = 'collections'
