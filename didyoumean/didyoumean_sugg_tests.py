@@ -721,12 +721,13 @@ class NameErrorTests(GetSuggestionsTests):
     def test_added_3_5(self):
         """Test for names added in 3.5."""
         before, after = before_and_after((3, 5))
+        recur_err_sugg = (["'PermissionError' (builtin)"]
+                          if version_in_range(from_version((3, 3))) else
+                          []) + ["'ZeroDivisionError' (builtin)"]
+
         for name, suggs in {
                 'StopAsyncIteration': ["'StopIteration' (builtin)"],
-                'RecursionError': [
-                    "'PermissionError' (builtin)",
-                    "'ZeroDivisionError' (builtin)"
-                ],
+                'RecursionError': recur_err_sugg,
                 }.items():
             self.throws(name, NAMEERROR, suggs, before)
             self.runs(name, after)
