@@ -730,8 +730,11 @@ class NameErrorTests(GetSuggestionsTests):
     def test_added_3_6(self):
         """Test for names added in 3.6."""
         before, after = before_and_after((3, 6))
+        file_not_found_sugg = (["'FileNotFoundError' (builtin)"]
+                               if version_in_range(from_version((3, 3))) else
+                               [])
         for name, suggs in {
-                'ModuleNotFoundError': ["'FileNotFoundError' (builtin)"],
+                'ModuleNotFoundError': file_not_found_sugg,
                 }.items():
             self.throws(name, NAMEERROR, suggs, before)
             self.runs(name, after)
