@@ -68,6 +68,8 @@ RELOAD_REMOVED_MSG = '"importlib.reload" or "imp.reload" (`reload` is " \
     "removed since Python 3)'
 STDERR_REMOVED_MSG = '"Exception" (`StandardError` has been removed since " \
     "Python 3)'
+BREAKPOINT_ADDED_MSG = 'to use "import pdb; pdb.set_trace()" (`breakpoint` " \
+    "is added in Python 3.7)'
 NO_KEYWORD_ARG_MSG = "use positional arguments (functions written in C \
     do not accept keyword arguments, only positional arguments)"
 
@@ -342,6 +344,7 @@ def suggest_name_as_special_case(name):
         'memoryview': MEMVIEW_ADDED_MSG,
         'reload': RELOAD_REMOVED_MSG,
         'StandardError': STDERR_REMOVED_MSG,
+        'breakpoint': BREAKPOINT_ADDED_MSG,
     }
     result = special_cases.get(name)
     if result is not None:
