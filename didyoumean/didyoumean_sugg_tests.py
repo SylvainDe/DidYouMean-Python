@@ -723,6 +723,7 @@ class NameErrorTests(GetSuggestionsTests):
         before, after = before_and_after((3, 5))
         for name, suggs in {
                 'StopAsyncIteration': ["'StopIteration' (builtin)"],
+                'RecursionError': [],
                 }.items():
             self.throws(name, NAMEERROR, suggs, before)
             self.runs(name, after)
