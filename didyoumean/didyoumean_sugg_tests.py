@@ -682,6 +682,7 @@ class NameErrorTests(GetSuggestionsTests):
                 'ascii': [],
                 'ResourceWarning': ["'FutureWarning' (builtin)"],
                 '__build_class__': [],
+                # 'exec' is a keyword in Python 2
                 }.items():
             self.throws(name, NAMEERROR, suggs, before)
             self.runs(name, after)
@@ -690,6 +691,7 @@ class NameErrorTests(GetSuggestionsTests):
         """Test for names added in 3.3."""
         before, after = before_and_after((3, 3))
         for name, suggs in {
+                'BlockingIOError': [],
                 'BrokenPipeError': [],
                 'ChildProcessError': [],
                 'ConnectionAbortedError': [],
