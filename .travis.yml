@@ -61,5 +61,6 @@ script:
 after_success:
  - coveralls
  - codecov
- # Information about Python builtins
+ # Information about Python builtins/keywords
  - python -c "print(dir(__builtins__))" || true
+ - python -c "import keyword; print(keyword.kwlist)" || true
