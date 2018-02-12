@@ -3,7 +3,7 @@ language: python
 python:
   - "2.6"
   - "2.7"
-  - "3.2" #- see https://github.com/SylvainDe/DidYouMean-Python/issues/30
+  - "3.2"
   - "3.3"
   - "3.4"
   - "3.5"
@@ -23,7 +23,6 @@ python:
 
 matrix:
   allow_failures:
-  - python: "3.2"
   - python: "3.7"
   - python: "3.8"
   - python: "3.8-dev"
