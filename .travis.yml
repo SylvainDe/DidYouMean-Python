@@ -19,6 +19,10 @@ python:
   - "pypy-5.4.1"
 #  - "pypy3" - see https://github.com/SylvainDe/DidYouMean-Python/issues/30
 
+matrix:
+  allow_failures:
+  - python: "3.8-dev"
+
 install:
   # From https://github.com/frol/flask-restplus-server-example/blob/master/.travis.yml
   # Travis has pypy 2.5.0, which is way too old, so we upgrade it on the fly:
