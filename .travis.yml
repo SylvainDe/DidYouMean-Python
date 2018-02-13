@@ -71,5 +71,4 @@ after_success:
  - coveralls
  - codecov
  # Information about Python builtins/keywords
- - python -c "print(dir(__builtins__))" || true
- - python -c "import keyword; print(keyword.kwlist)" || true
+ - python -c "import sys; import keyword; print({sys.version_info: {'kword': set(keyword.kwlist), 'builtins': set(dir(__builtins__))}})"
