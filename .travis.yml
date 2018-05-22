@@ -64,6 +64,7 @@ before_script:
  - python -c "import sys; print(sys._git)" || true
  - pep8 *.py */*.py
  - pep257 *.py */*.py
+ - pyflakes . || true
 
 script:
  - coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py
