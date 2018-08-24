@@ -168,6 +168,7 @@ class HookTest(ApiTest):
 
 @contextlib.contextmanager
 def suppress_stderr():
+    """Decorator to ignore content sent to stderr."""
     with open(os.devnull, "w") as devnull:
         old_stderr = sys.stderr
         sys.stderr = devnull
