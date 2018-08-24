@@ -5,12 +5,28 @@ from didyoumean_api import didyoumean_decorator, didyoumean_contextmanager,\
 from didyoumean_common_tests import TestWithStringFunction,\
     get_exception, no_exception, NoFileIoError
 import unittest2
+import contextlib
 import sys
 import os
 
 
 class ApiTest(TestWithStringFunction):
-    """Tests about the didyoumean APIs."""
+    """Tests about the didyoumean APIs.
+
+    The aim is to test the different APIs in various situations:
+        - when no exception is raised
+        - when a NameError leading to no suggestion is raised
+        - when a NameError leading to a suggestion is raised
+        - when a SyntaxError leading to a suggestion is raised
+        - when a NoFileIoError leading to a suggestion is raised
+    In all these situations, the exception with and without using
+    the API are retrieved and the test checks that the suggestion
+    is added (when relevant) to the exceptions in both the __str__
+    form and the __repr__ form.
+
+    In order to do so, one just needs to inherit from ApiTest and
+    override `run_with_api`.
+    """
 
     def run_with_api(self, code):
         """Abstract method to run code with tested API."""
@@ -150,22 +166,18 @@ class HookTest(ApiTest):
     pass  # Can't write tests as the hook seems to be ignored.
 
 
-class NotATest(object):
-    """Dummy subclass to inherit from instead of unittest2.TestCase.
-
-    The tests from ExceptHookTest are not very relevant most of the
-    time and they flood the output because of the dodgy things we do
-    with sys.excepthook. Most of the time, it is better not to run them
-    but I still want to keep them for the time being. The solution is
-    to be able to make this easily configurable by having the dependency
-    over unittest2.TestCase optional with a simple test:
-        class MyTest(unittest2.TestCase if <cond> else NotRunTest, ...)
-    """
-
-    pass
+@contextlib.contextmanager
+def suppress_stderr():
+    with open(os.devnull, "w") as devnull:
+        old_stderr = sys.stderr
+        sys.stderr = devnull
+        try:
+            yield
+        finally:
+            sys.stderr = old_stderr
 
 
-class ExceptHookTest(unittest2.TestCase if True else NotATest, HookTest):
+class ExceptHookTest(unittest2.TestCase, HookTest):
     """Tests about the didyoumean excepthook."""
 
     def run_with_api(self, code):
@@ -178,7 +190,8 @@ class ExceptHookTest(unittest2.TestCase if True else NotATest, HookTest):
             no_exception(code)
         except:
             last_type, last_value, last_traceback = sys.exc_info()
-            sys.excepthook(last_type, last_value, last_traceback)
+            with suppress_stderr():
+                sys.excepthook(last_type, last_value, last_traceback)
             raise
         finally:
             self.assertNotEqual(prev_hook, sys.excepthook)
