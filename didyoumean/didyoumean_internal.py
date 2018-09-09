@@ -27,10 +27,11 @@ from collections import namedtuple
 # https://docs.python.org/2/library/sys.html#sys.modules
 #  - pkgutil.iter_modules
 # https://docs.python.org/2/library/pkgutil.html#pkgutil.iter_modules
-STAND_MODULES = set(sys.builtin_module_names)
-STAND_MODULES += set(['string', 'os', 'sys', 're', 'math', 'random',
+STAND_MODULES = set(['string', 'os', 'sys', 're', 'math', 'random',
                       'datetime', 'timeit', 'unittest', 'itertools',
                       'functools', 'collections', '__future__'])
+                      
+STAND_MODULES = STAND_MODULES + set(sys.builtin_module_names)
 
 #: Almost synonyms methods that can be confused from one type to another
 # To be completed
