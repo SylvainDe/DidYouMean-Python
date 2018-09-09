@@ -1,8 +1,8 @@
 # -*- coding: utf-8
 """Unit tests for didyoumean APIs."""
-from didyoumean_api import didyoumean_decorator, didyoumean_contextmanager,\
+from .didyoumean_api import didyoumean_decorator, didyoumean_contextmanager,\
     didyoumean_postmortem, didyoumean_enablehook, didyoumean_disablehook
-from didyoumean_common_tests import TestWithStringFunction,\
+from .didyoumean_common_tests import TestWithStringFunction,\
     get_exception, no_exception, NoFileIoError
 import unittest2
 import contextlib

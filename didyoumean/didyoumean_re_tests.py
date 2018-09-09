@@ -1,9 +1,9 @@
 # -*- coding: utf-8
 """Unit tests for regexps from didyoumean_re.py."""
 import unittest2
-import didyoumean_re as re
+from . import didyoumean_re as re
 import sys
-from didyoumean_internal import get_subclasses
+from .didyoumean_internal import get_subclasses
 
 NO_GROUP = ((), dict())
 # Various technical flags to check more that meet the eyes in tests

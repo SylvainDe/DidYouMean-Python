@@ -1,12 +1,12 @@
 # -*- coding: utf-8
 """Unit tests for code in didyoumean_internal.py."""
-from didyoumean_internal import quote, get_suggestion_string,\
+from .didyoumean_internal import quote, get_suggestion_string,\
     add_string_to_exception, get_func_by_name,\
     get_objects_in_frame, get_subclasses, get_types_for_str,\
     get_types_for_str_using_inheritance,\
     get_types_for_str_using_names
-import didyoumean_common_tests as common
-from didyoumean_common_tests import CommonTestOldStyleClass2,\
+from . import didyoumean_common_tests as common
+from .didyoumean_common_tests import CommonTestOldStyleClass2,\
     CommonTestNewStyleClass2  # to have these 2 in defined names
 import unittest2
 import itertools

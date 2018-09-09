@@ -2,7 +2,7 @@
 """Logic to add suggestions to exceptions."""
 import keyword
 import difflib
-import didyoumean_re as re
+from . import didyoumean_re as re
 import itertools
 import inspect
 import errno
@@ -27,7 +27,7 @@ from collections import namedtuple
 # https://docs.python.org/2/library/sys.html#sys.modules
 #  - pkgutil.iter_modules
 # https://docs.python.org/2/library/pkgutil.html#pkgutil.iter_modules
-STAND_MODULES = set(['string', 'os', 'sys', 're', 'math', 'random',
+STAND_MODULES = set(sys.builtin_module_names) + set(['string', 'os', 'sys', 're', 'math', 'random',
                      'datetime', 'timeit', 'unittest', 'itertools',
                      'functools', 'collections', '__future__'])
 

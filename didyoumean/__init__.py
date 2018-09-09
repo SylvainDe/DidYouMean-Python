@@ -1,2 +1,2 @@
 """Empty file. Might grow in the future."""
-import didyoumean_api
+from . import didyoumean_api
