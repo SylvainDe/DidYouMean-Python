@@ -55,7 +55,10 @@ install:
       fi
   - pip install unittest2
   - pip install coverage==3.7.1 # https://bitbucket.org/ned/coveragepy/issues/407/coverage-failing-on-python-325-using
-  - pip install coveralls
+  - |
+      if ([ "$TRAVIS_PYTHON_VERSION" != "2.6" ]); then
+        pip install coveralls
+      fi
   - pip install codecov
 
 before_script:
