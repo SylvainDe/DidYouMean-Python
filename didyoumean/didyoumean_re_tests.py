@@ -614,10 +614,16 @@ class RegexTests(unittest2.TestCase):
 
     def test_descriptor_requires(self):
         """Test DESCRIPT_REQUIRES_TYPE_RE."""
-        msg = "descriptor 'add' requires a 'set' object but received a 'int'"
-        groups = ('add', 'set', 'int')
-        results = (groups, dict())
-        self.re_matches(msg, re.DESCRIPT_REQUIRES_TYPE_RE, results)
+        msgs = [
+            # Python 2.6/2.7/3.2/3.3/3.4/3.5/3.6/3.7
+            "descriptor 'add' requires a 'set' object but received a 'int'",
+            # Python 3.7
+            "descriptor 'add' for 'set' objects doesn't apply to 'int' object",
+        ]
+        for msg in msgs:
+            groups = ('add', 'set', 'int')
+            results = (groups, dict())
+            self.re_matches(msg, re.DESCRIPT_REQUIRES_TYPE_RE, results)
 
     def test_argument_not_iterable(self):
         """Test ARG_NOT_ITERABLE_RE."""
