@@ -7,7 +7,7 @@ from didyoumean_internal import get_subclasses
 
 NO_GROUP = ((), dict())
 # Various technical flags to check more that meet the eyes in tests
-# Flag used to check that a text only match the expected regexp and not
+# Flag used to check that a text only matches the expected regexp and not
 # the other to ensure we do not have ambiguous/double regexp matching.
 CHECK_OTHERS_DONT_MATCH = True
 # Flag to check that the regexp provided does correspond to a regexp
@@ -17,7 +17,7 @@ CHECK_RE_LISTED = True
 # does match the naming convention
 CHECK_RE_NAME = True
 # Flag to check that the regex does match a few conventions such as:
-# stars with ^, ends with $.
+# starts with ^, ends with $.
 CHECK_RE_VALUE = True
 
 
