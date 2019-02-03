@@ -704,6 +704,12 @@ class RegexTests(unittest2.TestCase):
         msg = 'invalid token'
         self.re_matches(msg, re.INVALID_TOKEN_RE, NO_GROUP)
 
+    def test_leading_zeros(self):
+        """Test LEADING_ZEROS_RE."""
+        msg = "leading zeros in decimal integer literals are not permitted; " \
+                "use an 0o prefix for octal integers"
+        self.re_matches(msg, re.LEADING_ZEROS_RE, NO_GROUP)
+
     def test_exc_must_derive_from(self):
         """Test EXC_MUST_DERIVE_FROM_RE."""
         msgs = [

@@ -341,6 +341,7 @@ UNKNOWN_ATTRIBUTEERROR = (AttributeError, None)
 # SyntaxError for SyntaxErrorTests
 INVALIDSYNTAX = (SyntaxError, re.INVALID_SYNTAX_RE)
 INVALIDTOKEN = (SyntaxError, re.INVALID_TOKEN_RE)
+LEADINGZEROS = (SyntaxError, re.LEADING_ZEROS_RE)
 NOBINDING = (SyntaxError, re.NO_BINDING_NONLOCAL_RE)
 NONLOCALMODULE = (SyntaxError, re.NONLOCAL_AT_MODULE_RE)
 UNEXPECTED_OEF = (SyntaxError, re.UNEXPECTED_EOF_RE)
@@ -2269,11 +2270,13 @@ class SyntaxErrorTests(GetSuggestionsTests):
     def test_octal_literal(self):
         """Syntax for octal liberals has changed."""
         # NICE_TO_HAVE
-        before, after = before_and_after((3, 0))
+        before, mid, after = before_mid_and_after((3, 0), (3, 8))
         bad, good = '0720', '0o720'
         self.runs(good)
         self.runs(bad, before)
-        self.throws(bad, INVALIDTOKEN, [], after, 'cpython')
+        self.throws(bad, INVALIDTOKEN, [], mid, 'cpython')
+        self.throws(bad, LEADINGZEROS, [], after, 'cpython')
+        self.throws(bad, INVALIDSYNTAX, [], mid, 'pypy')
         self.throws(bad, INVALIDSYNTAX, [], after, 'pypy')
 
     def test_extended_unpacking(self):
