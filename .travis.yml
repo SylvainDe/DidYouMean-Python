@@ -1,5 +1,13 @@
 language: python
 # https://docs.travis-ci.com/user/languages/python/
+# Because the code depends a lot on the Python interpreter
+# used (Python version and Python implementation), we want
+# to test all the possible configurations, including
+# deprecated versions.
+# Also, on Travis, all versions do not exist on all distros
+# (and when they do, they might actually correspond to
+# different minor versions of the interpreter). Thus, we end
+# end with a matrix to perform tests on different distros.
 matrix:
   include:
   - os: linux
@@ -58,9 +66,6 @@ matrix:
     python: 3.7-dev
   - os: linux
     dist: xenial
-    python: 3.8
-  - os: linux
-    dist: xenial
     python: 3.8-dev
   - os: linux
     dist: trusty
@@ -78,11 +83,7 @@ matrix:
 #  - "3.5.0b3"
 #  - "pypy3" - see https://github.com/SylvainDe/DidYouMean-Python/issues/30
   allow_failures:
-# See https://github.com/SylvainDe/DidYouMean-Python/issues/36
 # See https://github.com/SylvainDe/DidYouMean-Python/issues/37
-  - python: 3.7
-  - python: 3.7-dev
-  - python: 3.8
   - python: 3.8-dev
   - python: nightly
 
