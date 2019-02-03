@@ -9,6 +9,9 @@ matrix:
     dist: trusty
     python: 2.7
   - os: linux
+    dist: xenial
+    python: 2.7
+  - os: linux
     dist: trusty
     python: 3.2
   - os: linux
@@ -18,31 +21,61 @@ matrix:
     dist: trusty
     python: 3.4
   - os: linux
+    dist: xenial
+    python: 3.4
+  - os: linux
     dist: trusty
+    python: 3.5
+  - os: linux
+    dist: xenial
     python: 3.5
   - os: linux
     dist: trusty
     python: 3.5-dev
   - os: linux
+    dist: xenial
+    python: 3.5-dev
+  - os: linux
     dist: trusty
+    python: 3.6
+  - os: linux
+    dist: xenial
     python: 3.6
   - os: linux
     dist: trusty
     python: 3.6-dev
   - os: linux
+    dist: xenial
+    python: 3.6-dev
+  - os: linux
     dist: trusty
+    python: 3.7
+  - os: linux
+    dist: xenial
     python: 3.7
   - os: linux
     dist: trusty
     python: 3.7-dev
   - os: linux
+    dist: xenial
+    python: 3.7-dev
+  - os: linux
     dist: trusty
+    python: 3.8
+  - os: linux
+    dist: xenial
     python: 3.8
   - os: linux
     dist: trusty
     python: 3.8-dev
   - os: linux
+    dist: xenial
+    python: 3.8-dev
+  - os: linux
     dist: trusty
+    python: nightly
+  - os: linux
+    dist: xenial
     python: nightly
   - os: linux
     dist: trusty
@@ -54,9 +87,9 @@ matrix:
 #  - "3.5.0b3"
 #  - "pypy3" - see https://github.com/SylvainDe/DidYouMean-Python/issues/30
   allow_failures:
-  - python: "3.7"
-  - python: "3.8"
-  - python: "3.8-dev"
+  - python: 3.7
+  - python: 3.8
+  - python: 3.8-dev
 
 install:
   # From https://github.com/frol/flask-restplus-server-example/blob/master/.travis.yml
