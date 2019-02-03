@@ -79,13 +79,7 @@ matrix:
   - os: linux
     dist: trusty
     python: pypy-5.4.1
-#  - "3.5.0b2"
-#  - "3.5.0b3"
-#  - "pypy3" - see https://github.com/SylvainDe/DidYouMean-Python/issues/30
-  allow_failures:
-# See https://github.com/SylvainDe/DidYouMean-Python/issues/37
-  - python: 3.8-dev
-  - python: nightly
+
 
 install:
   # From https://github.com/frol/flask-restplus-server-example/blob/master/.travis.yml
