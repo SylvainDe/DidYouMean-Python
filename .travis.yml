@@ -8,10 +8,15 @@ language: python
 # (and when they do, they might actually correspond to
 # different minor versions of the interpreter). Thus, we end
 # end with a matrix to perform tests on different distros.
+# Failure is allowed on versions that are known to be missing
+# (these configs are tested anyway in case they come back).
 matrix:
   include:
   - os: linux
     dist: trusty
+    python: 2.6
+  - os: linux
+    dist: xenial
     python: 2.6
   - os: linux
     dist: trusty
@@ -23,7 +28,13 @@ matrix:
     dist: trusty
     python: 3.2
   - os: linux
+    dist: xenial
+    python: 3.2
+  - os: linux
     dist: trusty
+    python: 3.3
+  - os: linux
+    dist: xenial
     python: 3.3
   - os: linux
     dist: trusty
@@ -56,6 +67,9 @@ matrix:
     dist: xenial
     python: 3.6-dev
   - os: linux
+    dist: trusty
+    python: 3.7
+  - os: linux
     dist: xenial
     python: 3.7
   - os: linux
@@ -64,6 +78,15 @@ matrix:
   - os: linux
     dist: xenial
     python: 3.7-dev
+  - os: linux
+    dist: trusty
+    python: 3.8
+  - os: linux
+    dist: xenial
+    python: 3.8
+  - os: linux
+    dist: trusty
+    python: 3.8-dev
   - os: linux
     dist: xenial
     python: 3.8-dev
@@ -77,7 +100,44 @@ matrix:
     dist: trusty
     python: pypy-5.3.1
   - os: linux
+    dist: xenial
+    python: pypy-5.3.1
+  - os: linux
     dist: trusty
+    python: pypy-5.4.1
+  - os: linux
+    dist: xenial
+    python: pypy-5.4.1
+  allow_failures:
+  - os: linux
+    dist: xenial
+    python: 2.6
+  - os: linux
+    dist: xenial
+    python: 3.2
+  - os: linux
+    dist: xenial
+    python: 3.3
+  - os: linux
+    dist: xenial
+    python: 3.6-dev
+  - os: linux
+    dist: trusty
+    python: 3.7
+  - os: linux
+    dist: trusty
+    python: 3.8
+  - os: linux
+    dist: xenial
+    python: 3.8
+  - os: linux
+    dist: trusty
+    python: 3.8-dev
+  - os: linux
+    dist: xenial
+    python: pypy-5.3.1
+  - os: linux
+    dist: xenial
     python: pypy-5.4.1
 
 
