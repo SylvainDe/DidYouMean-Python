@@ -152,9 +152,6 @@ matrix:
     dist: xenial
     python: pypy
   - os: linux
-    dist: trusty
-    python: pypy3
-  - os: linux
     dist: xenial
     python: pypy3
 
