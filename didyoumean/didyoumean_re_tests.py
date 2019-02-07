@@ -396,6 +396,9 @@ class RegexTests(unittest2.TestCase):
                 'some_func', '1', '2'),
             ("some_func() takes 0 positional arguments but 1 was given",
                 'some_func', '0', '1'),
+            # Pypy 3
+            ("get() takes from 2 to 3 positional arguments but 4 were given",
+                'get', 'from 2 to 3', '4'),
             # PyPy adds suggestions sometimes:
             ("some_func() takes no arguments (1 given)"
              ". Did you forget 'self' in the function definition?",
