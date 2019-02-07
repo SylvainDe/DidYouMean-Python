@@ -2303,7 +2303,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         code = 'f"toto"'
         self.throws(code, INVALIDSYNTAX, [], before)
         self.throws(code, INVALIDSYNTAX, [], mid, "cpython")
-        self.runs(code, mid, "pypy") # Feature backported
+        self.runs(code, mid, "pypy")  # Feature backported
         self.runs(code, after)
 
 
