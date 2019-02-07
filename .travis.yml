@@ -207,7 +207,7 @@ before_script:
  - pyflakes . || true
 
 script:
- - coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py
+ - coverage run -m unittest2 discover --pattern=*.py
  - python didyoumean/readme_examples.py
  - pip install .
 

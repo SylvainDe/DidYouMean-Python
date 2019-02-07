@@ -2,7 +2,7 @@
 """Logic to add suggestions to exceptions."""
 import keyword
 import difflib
-import didyoumean_re as re
+from . import didyoumean_re as re
 import itertools
 import inspect
 import errno
@@ -30,6 +30,8 @@ from collections import namedtuple
 STAND_MODULES = set(['string', 'os', 'sys', 're', 'math', 'random',
                      'datetime', 'timeit', 'unittest', 'itertools',
                      'functools', 'collections', '__future__'])
+
+STAND_MODULES = STAND_MODULES + set(sys.builtin_module_names)
 
 #: Almost synonyms methods that can be confused from one type to another
 # To be completed
