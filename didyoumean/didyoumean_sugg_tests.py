@@ -1084,8 +1084,9 @@ class AttributeErrorTests(GetSuggestionsTests):
             if att_name == 'exc_type':
                 self.runs(code, before)  # others may be undef
             self.runs(code, mid, 'pypy')
+            self.runs(code, after, 'pypy')
             self.throws(code, ATTRIBUTEERROR, sugg, mid, 'cpython')
-            self.throws(code, MODATTRIBUTEERROR, sugg, after)
+            self.throws(code, MODATTRIBUTEERROR, sugg, after, 'cpython')
         self.runs('import sys\nsys.exc_info()')
 
     def test_removed_xreadlines(self):
