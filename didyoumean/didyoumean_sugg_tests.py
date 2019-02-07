@@ -2298,9 +2298,11 @@ class SyntaxErrorTests(GetSuggestionsTests):
     def test_fstring(self):
         """Fstring (see PEP 498) appeared in Python 3.6."""
         # NICE_TO_HAVE
-        before, after = before_and_after((3, 6))
+        before, mid, after = before_mid_and_after((3, 5), (3, 6))
         code = 'f"toto"'
         self.throws(code, INVALIDSYNTAX, [], before)
+        self.throws(code, INVALIDSYNTAX, [], mid, "cpython")
+        self.runs(code, mid, "pypy") # Feature backported
         self.runs(code, after)
 
 
