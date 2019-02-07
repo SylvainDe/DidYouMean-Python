@@ -30,6 +30,7 @@ from collections import namedtuple
 STAND_MODULES = set(['string', 'os', 'sys', 're', 'math', 'random',
                      'datetime', 'timeit', 'unittest', 'itertools',
                      'functools', 'collections', '__future__'])
+STAND_MODULES = sys.builtin_module_names
 
 #: Almost synonyms methods that can be confused from one type to another
 # To be completed
