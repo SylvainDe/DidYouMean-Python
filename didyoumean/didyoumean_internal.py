@@ -709,11 +709,26 @@ def suggest_nb_arg(value, frame, groups):
     """Get suggestions in case of NB ARGUMENT error."""
     del value  # unused param
     func_name, expected, given = groups
-    expect_nb = 0 if expected == 'no' else int(expected)
     given_nb = int(given)
+    beg, to, end = expected.partition(' to ')
+    if to:
+        # Find closest value
+        beg, end = int(beg), int(end)
+        if given_nb < beg < end:
+            expect_nb = beg
+        elif beg < end < given_nb:
+            expect_nb = end
+        else:
+            # Should not happen
+            return
+    elif expected == 'no':
+        expect_nb = 0
+    else:
+        expect_nb = int(expected)
     objs = get_objects_in_frame(frame)
     del expect_nb, given_nb, objs, func_name  # for later
-    return []
+    return
+    yield
 
 
 @register_suggestion_for(TypeError, re.FUNC_TAKES_NO_KEYWORDARG_RE)

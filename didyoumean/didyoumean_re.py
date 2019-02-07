@@ -62,7 +62,7 @@ MISSING_PARENT_RE = r"^Missing parentheses in call to " \
     r"'(?P<func>{0})'$".format(FUNC_NAME)
 INVALID_LITERAL_RE = r"^invalid literal for (\w+)\(\) with base \d+: '(.*)'$"
 NB_ARG_RE = r"^(?P<func>{0})(?:\(\) takes| expected) " \
-    r"(?:exactly |at least |at most )?(?P<expected>no|\d+|from \d+ to \d+) " \
+    r"(?:exactly |at least |at most |from )?(?P<expected>no|\d+|\d+ to \d+) " \
     r"(?:positional |non-keyword )?arguments?,? " \
     r"\(?(?:but |got )?(?P<actual>\d+)" \
     r"(?: were given| was given| given)?\)?" \
