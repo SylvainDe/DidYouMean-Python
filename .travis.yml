@@ -108,6 +108,18 @@ matrix:
   - os: linux
     dist: xenial
     python: pypy-5.4.1
+  - os: linux
+    dist: trusty
+    python: pypy
+  - os: linux
+    dist: xenial
+    python: pypy
+  - os: linux
+    dist: trusty
+    python: pypy3
+  - os: linux
+    dist: xenial
+    python: pypy3
   allow_failures:
   - os: linux
     dist: xenial
@@ -139,6 +151,18 @@ matrix:
   - os: linux
     dist: xenial
     python: pypy-5.4.1
+  - os: linux
+    dist: trusty
+    python: pypy
+  - os: linux
+    dist: xenial
+    python: pypy
+  - os: linux
+    dist: trusty
+    python: pypy3
+  - os: linux
+    dist: xenial
+    python: pypy3
 
 
 install:
