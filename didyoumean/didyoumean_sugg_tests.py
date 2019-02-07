@@ -2065,7 +2065,8 @@ class SyntaxErrorTests(GetSuggestionsTests):
         code, new_code = 'print ""', 'print("")'
         before, after = before_and_after((3, 0))
         self.runs(code, before)
-        self.throws(code, INVALIDSYNTAX, [], after)
+        self.throws(code, INVALIDSYNTAX, [], after, 'cpython')
+        self.throws(code, MISSINGPARENT, [], after, 'pypy')
         self.runs(new_code)
 
     def test_exec(self):
@@ -2074,7 +2075,8 @@ class SyntaxErrorTests(GetSuggestionsTests):
         code, new_code = 'exec "1"', 'exec("1")'
         before, after = before_and_after((3, 0))
         self.runs(code, before)
-        self.throws(code, INVALIDSYNTAX, [], after)
+        self.throws(code, INVALIDSYNTAX, [], after, 'cpython')
+        self.throws(code, MISSINGPARENT, [], after, 'pypy')
         self.runs(new_code)
 
     def test_old_comparison(self):
