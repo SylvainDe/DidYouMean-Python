@@ -1252,7 +1252,7 @@ class TypeErrorTests(GetSuggestionsTests):
         instance and using a type.
         """
         # NICE_TO_HAVE
-        wrong_type = (DESCREXPECT, MUSTCALLWITHINST, NBARGERROR)
+        wrong_type = (DESCREXPECT, MUSTCALLWITHINST, MISSINGPOSERROR)
         not_iterable = (ARGNOTITERABLE, ARGNOTITERABLE, ARGNOTITERABLE)
         before, after = before_and_after((3, 0))
         for code, (err_cy, err_pyp, err_pyp3) in [
@@ -1424,8 +1424,11 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_nb_arg8(self):
         """More tests."""
+        before, after = before_and_after((3, 0))
         code = 'dict().get()'
-        self.throws(code, NBARGERROR)
+        self.throws(code, NBARGERROR, interpreters='cpython')
+        self.throws(code, NBARGERROR, [], before, interpreters='pypy')
+        self.throws(code, MISSINGPOSERROR, [], after, interpreters='pypy')
 
     def test_nb_arg_missing_self(self):
         """Arg 'self' is missing."""
@@ -1597,11 +1600,13 @@ class TypeErrorTests(GetSuggestionsTests):
         # It would be better to have the suggestion only when the function
         # doesn't accept keyword arguments but does accept positional
         # arguments but we cannot use introspection on builtin function.
+        before, after = before_and_after((3, 0))
         code2 = 'globals({0})'
         good_code, bad_code1, bad_code2 = format_str(code2, '', '2', 'foo=2')
         self.runs(good_code)
         self.throws(bad_code1, NBARGERROR)
-        self.throws(bad_code2, NBARGERROR, interpreters='pypy')
+        self.throws(bad_code2, NBARGERROR, [], before, interpreters='pypy')
+        self.throws(bad_code2, UNEXPECTEDKWARG, [], after, interpreters='pypy')
         self.throws(bad_code2, NOKWARGS, sugg, interpreters='cpython')
         # The explanation is only relevant for C functions
         code3 = 'def func_no_arg(n):\n\tpass\nfunc_no_arg({0}2)'
