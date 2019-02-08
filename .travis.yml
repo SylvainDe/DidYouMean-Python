@@ -202,6 +202,7 @@ before_script:
  # Information about Python version
  - python -VV
  - python -c "import sys; print(sys._git)" || true
+ - python -c "set.add(0)" || true
  - pep8 *.py */*.py
  - pep257 *.py */*.py
  - pyflakes . || true
