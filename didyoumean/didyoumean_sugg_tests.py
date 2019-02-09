@@ -1265,6 +1265,51 @@ class TypeErrorTests(GetSuggestionsTests):
             self.throws(bad_code, err_pyp, [], before, 'pypy')
             self.throws(bad_code, err_pyp3, [], after, 'pypy')
 
+    def test_method_called_on_class2(self):
+        """Test where a method is called on a class and not an instance.
+
+        Forgetting parenthesis makes the difference between using an
+        instance and using a type.
+        """
+        # NICE_TO_HAVE
+        for code, err_cy in [
+                ('set{0}.add(0)', DESCREXPECT),
+                ('list{0}.append(0)', DESCREXPECT),
+                ('0 in list{0}', ARGNOTITERABLE)]:
+            bad_code, good_code = format_str(code, '', '()')
+            self.runs(good_code)
+            self.throws(bad_code, err_cy, interpreters='cpython')
+
+    def test_method_called_on_class3(self):
+        """Test where a method is called on a class and not an instance.
+
+        Forgetting parenthesis makes the difference between using an
+        instance and using a type.
+        """
+        # NICE_TO_HAVE
+        bad_code, good_code = format_str('set{0}.add(0)', '', '()')
+        self.runs(good_code)
+        self.throws(bad_code, DESCREXPECT, interpreters='cpython')
+
+    def test_method_called_on_class4(self):
+        """Test where a method is called on a class and not an instance.
+
+        Forgetting parenthesis makes the difference between using an
+        instance and using a type.
+        """
+        # NICE_TO_HAVE
+        bad_code = 'set.add(0)'
+        self.throws(bad_code, DESCREXPECT, interpreters='cpython')
+
+    def test_method_called_on_class5(self):
+        """Test where a method is called on a class and not an instance.
+
+        Forgetting parenthesis makes the difference between using an
+        instance and using a type.
+        """
+        # NICE_TO_HAVE
+        set.add(0)
+
     def test_set_operations(self):
         """+, +=, etc doesn't work on sets. A suggestion would be nice."""
         # NICE_TO_HAVE
