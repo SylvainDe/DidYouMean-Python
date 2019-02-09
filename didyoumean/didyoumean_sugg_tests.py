@@ -3,43 +3,49 @@
 import unittest2
 import sys
 
+DESCRIPT_REQUIRES_TYPE_RE = r"descriptor '\w+' requires a 'set' object but received a 'int'"
 
-def get_exception(code):
-    """Helper function to run code and get what it throws (or None)."""
-    try:
-        exec(code)
-    except:
-        return sys.exc_info()
-    return None
-
-
-TYPE_NAME = r"[\w\.-]+"
-DESCRIPT_REQUIRES_TYPE_RE = r"^descriptor '(\w+)' requires a '({0})' " \
-        r"object but received a '({0})'$".format(TYPE_NAME)
-
-
-class GetSuggestionsTests(unittest2.TestCase):
+class SetAddIntRegexpTests(unittest2.TestCase):
 
     def throws(self, code, error_type, error_msg):
         details = "Running following code :\n---\n{0}\n---".format(code)
-        exc = get_exception(code)
-        self.assertFalse(exc is None, "No exc thrown." + details)
-        type_caught, value, traceback = exc
-        self.assertTrue(isinstance(value, type_caught))
-        self.assertTrue(
-            issubclass(type_caught, error_type),
-            "{0} ({1}) not a subclass of {2}"
-            .format(type_caught, value, error_type) + details)
-        msg = next((a for a in value.args if isinstance(a, str)), '')
-        if error_msg is not None:
-            self.assertRegexpMatches(msg, error_msg, details)
+        try:
+            exec(code)
+        except:
+            type_caught, e, traceback = sys.exc_info()
+        else:
+            self.assertFalse(True, "No exc thrown." + details)
+        self.assertTrue(isinstance(e, type_caught))
+        self.assertTrue(issubclass(type_caught, error_type),
+            "{0} ({1}) not a subclass of {2}".format(type_caught, e, error_type) + details)
+        msg = next((a for a in e.args if isinstance(a, str)), '')
+        self.assertRegexpMatches(msg, error_msg, details)
+        self.assertRegexpMatches(str(e), error_msg, details)
+        self.assertRegexpMatches(repr(e), error_msg, details)
 
     def test_toto(self):
-        bad_code = 'set.add(0)'
-        self.throws(bad_code, TypeError, DESCRIPT_REQUIRES_TYPE_RE)
+        self.throws('set.add(0)', TypeError, DESCRIPT_REQUIRES_TYPE_RE)
 
     def test_tutu(self):
-        pass  # set.add(0)
+        try:
+            set.add(0)
+        except TypeError as e:
+            msg = next((a for a in e.args if isinstance(a, str)), '')
+            self.assertRegexpMatches(msg, DESCRIPT_REQUIRES_TYPE_RE)
+            self.assertRegexpMatches(str(e), DESCRIPT_REQUIRES_TYPE_RE)
+            self.assertRegexpMatches(repr(e), DESCRIPT_REQUIRES_TYPE_RE)
+
+    def test_tete(self):
+        try:
+            set.add(0)
+        except:
+            type_caught, e, traceback = sys.exc_info()
+            msg = next((a for a in e.args if isinstance(a, str)), '')
+            self.assertRegexpMatches(msg, DESCRIPT_REQUIRES_TYPE_RE)
+            self.assertRegexpMatches(str(e), DESCRIPT_REQUIRES_TYPE_RE)
+            self.assertRegexpMatches(repr(e), DESCRIPT_REQUIRES_TYPE_RE)
+        else:
+            self.assertFalse(True)
 
     def test_titi(self):
         self.assertRaisesRegex(TypeError, DESCRIPT_REQUIRES_TYPE_RE, set.add, 0)
@@ -47,6 +53,12 @@ class GetSuggestionsTests(unittest2.TestCase):
     def test_tata(self):
         with self.assertRaisesRegex(TypeError, DESCRIPT_REQUIRES_TYPE_RE):
             set.add(0)
+
+    def test_tyty(self):
+        f = set.add
+        with self.assertRaisesRegex(TypeError, DESCRIPT_REQUIRES_TYPE_RE):
+            f(0)
+
 
 if __name__ == '__main__':
     print(sys.version_info)
