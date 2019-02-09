@@ -68,15 +68,8 @@ matrix:
     dist: trusty
     python: 3.8-dev
 
-
 install:
-  - pip install --upgrade pep8
-  - pip install pep257
-  - pip install --upgrade pyflakes
-  - pip install unittest2
   - pip install coverage
-  - pip install coveralls
-  - pip install codecov
 
 before_script:
  # Information about Python version
@@ -85,11 +78,5 @@ before_script:
  - python -c "set.add(0)" || true
 
 script:
- - coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py
+ - coverage run -m unittest discover --start-directory=didyoumean --pattern=*.py
  - pip install .
-
-after_success:
- - coveralls
- - codecov
- # Information about Python builtins/keywords
- # - python -c "import sys; import keyword; print({sys.version_info: {'kword': set(keyword.kwlist), 'builtins': set(dir(__builtins__))}})" || true
