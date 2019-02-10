@@ -6,15 +6,6 @@ DESCRIPT_REQUIRES_TYPE_RE = r"descriptor '\w+' requires a 'set' object but recei
 
 class SetAddIntRegexpTests(unittest.TestCase):
 
-    def test_try_except_as_e(self):
-        try:
-            set.add(0)
-        except TypeError as e:
-            msg = next((a for a in e.args if isinstance(a, str)), '')
-            self.assertRegexpMatches(msg, DESCRIPT_REQUIRES_TYPE_RE)
-            self.assertRegexpMatches(str(e), DESCRIPT_REQUIRES_TYPE_RE)
-            self.assertRegexpMatches(repr(e), DESCRIPT_REQUIRES_TYPE_RE)
-
     def test_assertRaisesRegex(self):
         self.assertRaisesRegex(TypeError, DESCRIPT_REQUIRES_TYPE_RE, set.add, 0)
 
