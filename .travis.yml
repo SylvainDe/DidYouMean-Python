@@ -78,5 +78,5 @@ before_script:
  - python -c "set.add(0)" || true
 
 script:
- - coverage run -m unittest discover --start-directory=didyoumean --pattern=*.py
+ - python run -m unittest discover --start-directory=didyoumean --pattern=*.py
  - pip install .
