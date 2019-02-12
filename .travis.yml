@@ -80,5 +80,5 @@ before_script:
  - coverage debug config
 
 script:
+ - python -m unittest discover --start-directory=didyoumean --pattern=*.py
  - coverage run -m unittest discover --start-directory=didyoumean --pattern=*.py
- - pip install .
