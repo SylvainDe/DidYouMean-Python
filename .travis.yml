@@ -81,53 +81,53 @@ script:
  - coverage debug sys
  - coverage debug config
  - coverage run -m unittest discover --start-directory=didyoumean --pattern=*.py || true
- - pip uninstall coverage
+ - pip uninstall -y coverage
 
  - pip install coverage==4.0
  - coverage debug sys
  - coverage debug config
  - coverage run -m unittest discover --start-directory=didyoumean --pattern=*.py || true
- - pip uninstall coverage
+ - pip uninstall -y coverage
 
  - pip install coverage==4.2
  - coverage debug sys
  - coverage debug config
  - coverage run -m unittest discover --start-directory=didyoumean --pattern=*.py || true
- - pip uninstall coverage
+ - pip uninstall -y coverage
 
  - pip install coverage==4.5.1
  - coverage debug sys
  - coverage debug config
  - coverage run -m unittest discover --start-directory=didyoumean --pattern=*.py || true
- - pip uninstall coverage
+ - pip uninstall -y coverage
 
  - pip install coverage==4.5.2
  - coverage debug sys
  - coverage debug config
  - coverage run -m unittest discover --start-directory=didyoumean --pattern=*.py || true
- - pip uninstall coverage
+ - pip uninstall -y coverage
 
  - pip install coverage==5.0a1
  - coverage debug sys
  - coverage debug config
  - coverage run -m unittest discover --start-directory=didyoumean --pattern=*.py || true
- - pip uninstall coverage
+ - pip uninstall -y coverage
 
  - pip install coverage==5.0a2
  - coverage debug sys
  - coverage debug config
  - coverage run -m unittest discover --start-directory=didyoumean --pattern=*.py || true
- - pip uninstall coverage
+ - pip uninstall -y coverage
 
  - pip install coverage==5.0a3
  - coverage debug sys
  - coverage debug config
  - coverage run -m unittest discover --start-directory=didyoumean --pattern=*.py || true
- - pip uninstall coverage
+ - pip uninstall -y coverage
 
  - pip install coverage==5.0a4
  - coverage debug sys
  - coverage debug config
  - coverage run -m unittest discover --start-directory=didyoumean --pattern=*.py || true
- - pip uninstall coverage
+ - pip uninstall -y coverage
 
