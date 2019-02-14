@@ -207,9 +207,19 @@ before_script:
  - pyflakes . || true
 
 script:
- - python -m unittest2 discover --start-directory=didyoumean --pattern=*.py
-# Coverage leads to a different behavior sometimes - failures are allowed - #36
- - coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py || true
+# Coverage leads to a different behavior sometimes - so we run the tests
+# without and with coverage and failures are allowed on the second- #36
+# (Except for Python 2.6 because the direct run fails)
+ - |
+      if ([ "$TRAVIS_PYTHON_VERSION" != "2.6" ]); then
+        python -m unittest2 discover --start-directory=didyoumean --pattern=*.py
+      fi
+ - |
+      if ([ "$TRAVIS_PYTHON_VERSION" != "2.6" ]); then
+        coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py || true
+      else
+        coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py
+      fi
  - python didyoumean/readme_examples.py
  - pip install .
 
