@@ -288,7 +288,9 @@ UNKNOWN_UNBOUNDLOCAL = (UnboundLocalError, None)
 NBARGERROR = (TypeError, re.NB_ARG_RE)
 MISSINGPOSERROR = (TypeError, re.MISSING_POS_ARG_RE)
 UNHASHABLE = (TypeError, re.UNHASHABLE_RE)
-UNSUBSCRIPTABLE = (TypeError, re.UNSUBSCRIPTABLE_RE)
+UNSUBSCRIPTABLE = (
+    TypeError,
+    re.UNSUBSCRIPTABLE_RE + r"|" + re.OBJ_DOES_NOT_SUPPORT_RE)
 CANNOTBEINTERPRETED = (TypeError, re.CANNOT_BE_INTERPRETED_INT_RE)
 INTEXPECTED = (TypeError, re.INTEGER_EXPECTED_GOT_RE)
 INDICESMUSTBEINT = (TypeError, re.INDICES_MUST_BE_INT_RE)
@@ -1818,19 +1820,9 @@ class TypeErrorTests(GetSuggestionsTests):
         sugg_for_iterable = 'convert to list first or use the iterator ' \
             'protocol to get the different elements'
         sugg_imp = 'implement "__getitem__" on CustomClass'
-        self.throws(set_code,
-                    OBJECTDOESNOTSUPPORT,
-                    sugg_for_iterable, interpreters='cpython')
-        self.throws(set_code,
-                    UNSUBSCRIPTABLE,
-                    sugg_for_iterable, interpreters='pypy')
-        self.throws(custom_bad, ATTRIBUTEERROR, [], before, 'pypy')
-        self.throws(custom_bad, UNSUBSCRIPTABLE, sugg_imp, after, 'pypy')
-        self.throws(custom_bad, ATTRIBUTEERROR, [], before, 'cpython')
-        self.throws(custom_bad,
-                    OBJECTDOESNOTSUPPORT,
-                    sugg_imp,
-                    after, 'cpython')
+        self.throws(set_code, UNSUBSCRIPTABLE, sugg_for_iterable)
+        self.throws(custom_bad, ATTRIBUTEERROR, [], before)
+        self.throws(custom_bad, UNSUBSCRIPTABLE, sugg_imp, after)
         self.runs(custom_good)
 
     def test_not_callable(self):
