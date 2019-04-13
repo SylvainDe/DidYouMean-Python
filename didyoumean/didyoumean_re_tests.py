@@ -620,7 +620,8 @@ class RegexTests(unittest2.TestCase):
         msgs = [
             "descriptor 'add' requires a 'set' object but received a 'int'",
             # Python 3.8
-            "descriptor 'add' for 'set' objects doesn't apply to a 'int' object",
+            "descriptor 'add' for 'set' objects "
+            "doesn't apply to a 'int' object",
         ]
         for msg in msgs:
             groups = ('add', 'set', 'int')
