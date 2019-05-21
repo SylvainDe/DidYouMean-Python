@@ -2118,10 +2118,20 @@ class SyntaxErrorTests(GetSuggestionsTests):
     def test_simple_equal(self):
         """'=' for comparison is a classic mistake."""
         # NICE_TO_HAVE
-        code = "if 2 {0} 3:\n\tpass"
-        bad_code, good_code = format_str(code, "=", "==")
+        after = from_version((3, 8))
+        code = "a = 4\nif a {0} 3:\n\tpass"
+        bad_code, good_code, walrus = format_str(code, "=", "==", ":=")
         self.throws(bad_code, INVALIDSYNTAX)
         self.runs(good_code)
+        self.runs(walrus, after)
+
+    def test_walrus_operator(self):
+        """Operator := introduced in Python 3.8."""
+        # NICE_TO_HAVE
+        before, after = before_and_after((3, 8))
+        code = "if a := 42\n\tpass"
+        self.throws(code, INVALIDSYNTAX, [], before)
+        self.runs(code, after)
 
     def test_keyword_as_identifier(self):
         """Using a keyword as a variable name."""
