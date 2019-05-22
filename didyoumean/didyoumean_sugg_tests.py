@@ -2129,7 +2129,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         """Operator := introduced in Python 3.8."""
         # NICE_TO_HAVE
         before, after = before_and_after((3, 8))
-        code = "if a := 42\n\tpass"
+        code = "if a := 42:\n\tpass"
         self.throws(code, INVALIDSYNTAX, [], before)
         self.runs(code, after)
 
