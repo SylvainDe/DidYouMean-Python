@@ -2018,9 +2018,18 @@ class LookupErrorTests(GetSuggestionsTests):
 class KeyErrorTests(LookupErrorTests):
     """Class for tests related to KeyError."""
 
-    def test_no_sugg(self):
-        """No suggestion."""
-        self.throws('dict()["ffdsqmjklfqsd"]', KEYERROR)
+    def test_dict_get(self):
+        """Dict.get takes a default argument."""
+        # NICE_TO_HAVE
+        code = 'd = dict()\n{0}'
+        bad_code, good_code1, good_code2 = format_str(
+            code,
+            "d[42]",
+            "d.get(42)",
+            "d.get(42, -1)")
+        self.runs(good_code1)
+        self.runs(good_code2)
+        self.throws(bad_code, KEYERROR)
 
     def test_set_remove(self):
         """Set.remove throws when key is not found."""
@@ -2031,9 +2040,20 @@ class KeyErrorTests(LookupErrorTests):
         self.throws(bad_code, KEYERROR)
 
     def test_dict_pop(self):
-        """Test dict."""
-        code = 'd = dict()\nd.pop(42)'
-        self.throws(code, KEYERROR)
+        """Dict.pop takes a default argument."""
+        # NICE_TO_HAVE
+        code = 'd = dict()\nd.pop(42{0})'
+        bad_code, good_code = format_str(code, "", ", None")
+        self.runs(good_code)
+        self.throws(bad_code, KEYERROR)
+
+    def test_dict_del(self):
+        """Del can be replaces by dict.pop with a default argument."""
+        # NICE_TO_HAVE
+        code = 'd = dict()\n{0}'
+        bad_code, good_code = format_str(code, "del d[42]", "d.pop(42, None)")
+        self.runs(good_code)
+        self.throws(bad_code, KEYERROR)
 
 
 class IndexErrorTests(LookupErrorTests):
