@@ -91,7 +91,9 @@ IMPORTSTAR_RE = r"^import \* (?:only allowed at module level|" \
     r"(?:)contains a nested function with free variables))" \
     r"$".format(FUNC_NAME)
 UNSUPPORTED_OP_RE = r"^unsupported operand type\(s\) for (.*): " \
-    r"'({0})' and '({0})'$".format(TYPE_NAME)
+    r"'({0})' and '({0})'" \
+    r"(?:\. Did you mean.*)?" \
+    r"$".format(TYPE_NAME)
 BAD_OPERAND_UNARY_RE = r"^(?:bad|unsupported) operand type for " \
     r"(?:unary )?(.*): '(.*)'$"
 OBJ_DOES_NOT_SUPPORT_RE = r"^\'({0})\' object (?:does not|doesn't) support " \

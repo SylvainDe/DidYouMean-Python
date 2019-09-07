@@ -1760,6 +1760,15 @@ class TypeErrorTests(GetSuggestionsTests):
         self.throws(bad_code, UNSUPPORTEDOPERAND, interpreters='pypy')
         self.runs(good_code)
 
+    def test_old_print_syntax(self):
+        """Trying old print syntax (before Python 3)."""
+        # Inspired from PyPy commit:
+        # https://bitbucket.org/pypy/pypy/commits/c0b2526268ab96a0b3caa7bdafa2cf0309a73a20
+        before, after = before_and_after((3, 0))
+        for code in ["print >> 1, 5", "print -1"]:
+            self.runs(code, before)
+            self.throws(code, UNSUPPORTEDOPERAND, [], after)
+
     def test_assignment_to_range(self):
         """Trying to assign to range works on list, not on range."""
         code = '{0}[2] = 1'

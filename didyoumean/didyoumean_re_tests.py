@@ -591,10 +591,18 @@ class RegexTests(unittest2.TestCase):
 
     def test_unsupported_operand(self):
         """Test UNSUPPORTED_OP_RE."""
-        msg = "unsupported operand type(s) for +: 'int' and 'str'"
-        groups = ('+', 'int', 'str')
-        results = (groups, dict())
-        self.re_matches(msg, re.UNSUPPORTED_OP_RE, results)
+        msgs = [
+            ("unsupported operand type(s) for +: "
+                "'int' and 'str'",
+                ('+', 'int', 'str')),
+            ("unsupported operand type(s) for >>: "
+                "'builtin_function_or_method' and 'int'. "
+                "Did you mean \"print(<message>, file=<output_stream>)\"?",
+                ('>>', 'builtin_function_or_method', 'int')),
+        ]
+        for msg, groups in msgs:
+            results = (groups, dict())
+            self.re_matches(msg, re.UNSUPPORTED_OP_RE, results)
 
     def test_bad_operand_unary(self):
         """Test BAD_OPERAND_UNARY_RE."""
