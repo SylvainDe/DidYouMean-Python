@@ -1786,12 +1786,23 @@ class TypeErrorTests(GetSuggestionsTests):
         # Inspired from PyPy commit:
         # https://bitbucket.org/pypy/pypy/commits/c0b2526268ab96a0b3caa7bdafa2cf0309a73a20
         before, after = before_and_after((3, 0))
-        for code in [
-            "f = open('/tmp/foo', 'w')\nprint >> f, 5",
-            "print -1",
-        ]:
+        for op in ['-', '+']:
+            code = "print {0}1".format(op)
+            good_code = "print({0}1)".format(op)
+            sugg = '"print({0}<int>)"'.format(op)
             self.runs(code, before)
-            self.throws(code, UNSUPPORTEDOPERAND, [], after)
+            self.throws(code, UNSUPPORTEDOPERAND, sugg, after)
+            # self.runs(good_code, after)
+
+    def test_old_print_chevron_syntax(self):
+        """Trying old print chevron syntax (before Python 3)."""
+        before, after = before_and_after((3, 0))
+        code = "f = open('/dev/null', 'w')\nprint >> f, 5"
+        sugg = '"print(<message>, file=<output_stream>)"'
+        good_code = "f = open('/dev/null', 'w')\nprint('5', file=f)"
+        self.runs(code, before)
+        self.throws(code, UNSUPPORTEDOPERAND, sugg, after)
+        self.runs(good_code, after)
 
     def test_assignment_to_range(self):
         """Trying to assign to range works on list, not on range."""

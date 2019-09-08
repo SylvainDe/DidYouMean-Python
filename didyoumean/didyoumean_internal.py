@@ -616,15 +616,23 @@ def suggest_unsupported_op(value, frame, groups):
     """Get suggestions for UNSUPPORTED_OP_RE."""
     del value  # unused param
     binary, type1, type2, sugg = groups
+    del sugg  # unused value - to handle in the future
+    # Special case for print being used without parenthesis (Python 2 style)
+    if type1 == 'builtin_function_or_method' and \
+       'print' in frame.f_code.co_names:
+        if binary == '>>':
+            yield '"print(<message>, file=<output_stream>)"'\
+                  .format(binary, type2)
+        else:
+            yield '"print({0}<{1}>)"'.format(binary, type2)
     BINARY_OPS = {
         '^': '__or__',
     }
     attr = BINARY_OPS.get(binary)
-    if attr is None:
-        return []
     # Suggestion is based on first type which may not be the best
-    del type2, sugg  # unused values
-    return suggest_feature_not_supported(attr, type1, frame)
+    if attr is not None:
+        for s in suggest_feature_not_supported(attr, type1, frame):
+            yield s
 
 
 @register_suggestion_for(TypeError, re.CANNOT_BE_INTERPRETED_INT_RE)
