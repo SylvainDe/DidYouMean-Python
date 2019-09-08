@@ -134,19 +134,36 @@ class ContextManagerTest(unittest2.TestCase, ApiTest):
 
 class PostMortemTest(unittest2.TestCase, ApiTest):
     """Tests about the didyoumean post mortem."""
+    # A bit of an ugly way to proceed with "exc.last_<xxx>" attributes:
+    # in real life scenario, these would not be set except in case of
+    # uncaught exception in interactive interpreter where they would be
+    # set automatically.
 
-    def run_with_api(self, code):
-        """Run code with didyoumean post mortem."""
-        # A bit of an ugly way to proceed, in real life scenario
-        # the sys.last_<something> members are set automatically.
+    def check_sys_last_attr_not_set(self):
+        """Check that attributes 'last_<xxx>' do not exist."""
         for a in ('last_type', 'last_value', 'last_traceback'):
-            if hasattr(sys, a):
-                delattr(sys, a)
+            self.assertFalse(hasattr(sys, a))
+
+    def set_sys_last_attr_from_exc(self, code):
+        """Set attributes 'last_<xxx>' from exception thrown by code if any."""
         try:
             no_exception(code)
         except:
             sys.last_type, sys.last_value, sys.last_traceback = sys.exc_info()
+
+    def cleanup_sys_last_attr(self):
+        """Delete attributes 'last_<xxx>' artificially added."""
+        for a in ('last_type', 'last_value', 'last_traceback'):
+            if hasattr(sys, a):
+                delattr(sys, a)
+
+    def run_with_api(self, code):
+        """Run code with didyoumean post mortem."""
+        self.check_sys_last_attr_not_set()
+        self.set_sys_last_attr_from_exc(code)
         ret = didyoumean_postmortem()
+        self.cleanup_sys_last_attr()
+        self.check_sys_last_attr_not_set()
         if ret is not None:
             raise ret
 

@@ -1080,7 +1080,7 @@ class AttributeErrorTests(GetSuggestionsTests):
         for att_name, sugg in {
             'exc_type': [EXC_ATTR_REMOVED_MSG],
             'exc_value': [EXC_ATTR_REMOVED_MSG],
-            'exc_traceback': ["'last_traceback'", EXC_ATTR_REMOVED_MSG],
+            'exc_traceback': [EXC_ATTR_REMOVED_MSG],
         }.items():
             code = 'import sys\nsys.' + att_name
             if att_name == 'exc_type':
