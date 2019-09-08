@@ -432,7 +432,10 @@ class GetSuggestionsTests(unittest2.TestCase):
         """Log exception for debug purposes."""
         if exc_history is not None:
             type_caught, value, traceback = exc
+            is_pypy = hasattr(sys, "pypy_translation_info")
             exc_history.append((
+                sys.version_info,
+                'pypy' if is_pypy else 'cpython',
                 code,
                 type_caught,
                 value,
