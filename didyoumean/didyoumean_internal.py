@@ -615,7 +615,7 @@ def suggest_bad_operand_for_unary(value, frame, groups):
 def suggest_unsupported_op(value, frame, groups):
     """Get suggestions for UNSUPPORTED_OP_RE."""
     del value  # unused param
-    binary, type1, type2 = groups
+    binary, type1, type2, sugg = groups
     BINARY_OPS = {
         '^': '__or__',
     }
@@ -623,7 +623,7 @@ def suggest_unsupported_op(value, frame, groups):
     if attr is None:
         return []
     # Suggestion is based on first type which may not be the best
-    del type2  # unused value
+    del type2, sugg  # unused values
     return suggest_feature_not_supported(attr, type1, frame)
 
 
