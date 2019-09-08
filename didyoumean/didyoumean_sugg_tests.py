@@ -17,6 +17,12 @@ import tempfile
 from shutil import rmtree
 
 
+# Variable to hold info about the exceptions caught
+# (to print them for instance).
+# It is not used when set to None. It can be set to
+# something else when the file is run on its own.
+exc_history = None
+
 this_is_a_global_list = []  # Value does not really matter but the type does
 initial_recursion_limit = sys.getrecursionlimit()
 
@@ -420,6 +426,18 @@ class GetSuggestionsTests(unittest2.TestCase):
             suggestions = sorted(
                 get_suggestions_for_exception(value, traceback))
             self.assertEqual(suggestions, sugg, details)
+            self.log_exception(code, exc, suggestions)
+
+    def log_exception(self, code, exc, suggestions):
+        """Log exception for debug purposes."""
+        if exc_history is not None:
+            type_caught, value, traceback = exc
+            exc_history.append((
+                code,
+                type_caught,
+                value,
+                suggestions,
+            ))
 
 
 class NameErrorTests(GetSuggestionsTests):
@@ -2582,4 +2600,7 @@ class AnyErrorTests(GetSuggestionsTests):
 
 if __name__ == '__main__':
     print(sys.version_info)
-    unittest2.main()
+    exc_history = []
+    loader = unittest2.TestLoader().loadTestsFromModule(sys.modules[__name__])
+    unittest2.TextTestRunner().run(loader)
+    print(exc_history)

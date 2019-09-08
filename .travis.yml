@@ -220,6 +220,7 @@ script:
       else
         coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py
       fi
+ - python didyoumean/didyoumean_sugg_tests.py
  - python didyoumean/readme_examples.py
  - pip install .
 
