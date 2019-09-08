@@ -134,6 +134,7 @@ class ContextManagerTest(unittest2.TestCase, ApiTest):
 
 class PostMortemTest(unittest2.TestCase, ApiTest):
     """Tests about the didyoumean post mortem."""
+
     # A bit of an ugly way to proceed with "exc.last_<xxx>" attributes:
     # in real life scenario, these would not be set except in case of
     # uncaught exception in interactive interpreter where they would be
