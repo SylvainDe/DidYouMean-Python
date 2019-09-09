@@ -415,6 +415,10 @@ class GetSuggestionsTests(unittest2.TestCase):
             exc = get_exception(code)
             self.assertFalse(exc is None, "No exc thrown." + details)
             type_caught, value, traceback = exc
+            suggestions = sorted(
+                get_suggestions_for_exception(value, traceback))
+            self.log_exception(code, exc, suggestions)
+
             self.assertTrue(isinstance(value, type_caught))
             self.assertTrue(
                 issubclass(type_caught, error_type),
@@ -423,10 +427,7 @@ class GetSuggestionsTests(unittest2.TestCase):
             msg = next((a for a in value.args if isinstance(a, str)), '')
             if error_msg is not None:
                 self.assertRegexpMatches(msg, error_msg, details)
-            suggestions = sorted(
-                get_suggestions_for_exception(value, traceback))
             self.assertEqual(suggestions, sugg, details)
-            self.log_exception(code, exc, suggestions)
 
     def log_exception(self, code, exc, suggestions):
         """Log exception for debug purposes."""
@@ -1791,7 +1792,8 @@ class TypeErrorTests(GetSuggestionsTests):
             good_code = "print({0}1)".format(op)
             sugg = '"print({0}<int>)"'.format(op)
             self.runs(code, before)
-            self.throws(code, UNSUPPORTEDOPERAND, sugg, after)
+            self.throws(code, UNSUPPORTEDOPERAND, sugg, after, 'cpython')
+            self.throws(code, UNSUPPORTEDOPERAND, [], after, 'pypy')  # To fix
             # self.runs(good_code, after)
 
     def test_old_print_chevron_syntax(self):
@@ -1801,7 +1803,8 @@ class TypeErrorTests(GetSuggestionsTests):
         sugg = '"print(<message>, file=<output_stream>)"'
         good_code = "f = open('/dev/null', 'w')\nprint('5', file=f)"
         self.runs(code, before)
-        self.throws(code, UNSUPPORTEDOPERAND, sugg, after)
+        self.throws(code, UNSUPPORTEDOPERAND, sugg, after, 'cpython')
+        self.throws(code, UNSUPPORTEDOPERAND, [], after, 'pypy')  # To fix
         self.runs(good_code, after)
 
     def test_assignment_to_range(self):
