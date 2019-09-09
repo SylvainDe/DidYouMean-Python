@@ -618,7 +618,7 @@ def suggest_unsupported_op(value, frame, groups):
     binary, type1, type2, sugg = groups
     del sugg  # unused value - to handle in the future
     # Special case for print being used without parenthesis (Python 2 style)
-    if type1 == 'builtin_function_or_method' and \
+    if type1 in ('builtin_function_or_method', 'builtin_function') and \
        'print' in frame.f_code.co_names:
         if binary == '>>':
             yield '"print(<message>, file=<output_stream>)"'\

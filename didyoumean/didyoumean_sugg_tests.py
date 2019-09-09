@@ -1792,8 +1792,7 @@ class TypeErrorTests(GetSuggestionsTests):
             good_code = "print({0}1)".format(op)
             sugg = '"print({0}<int>)"'.format(op)
             self.runs(code, before)
-            self.throws(code, UNSUPPORTEDOPERAND, sugg, after, 'cpython')
-            self.throws(code, UNSUPPORTEDOPERAND, [], after, 'pypy')  # To fix
+            self.throws(code, UNSUPPORTEDOPERAND, sugg, after)
             # self.runs(good_code, after)
 
     def test_old_print_chevron_syntax(self):
@@ -1803,8 +1802,7 @@ class TypeErrorTests(GetSuggestionsTests):
         sugg = '"print(<message>, file=<output_stream>)"'
         good_code = "f = open('/dev/null', 'w')\nprint('5', file=f)"
         self.runs(code, before)
-        self.throws(code, UNSUPPORTEDOPERAND, sugg, after, 'cpython')
-        self.throws(code, UNSUPPORTEDOPERAND, [], after, 'pypy')  # To fix
+        self.throws(code, UNSUPPORTEDOPERAND, sugg, after)
         self.runs(good_code, after)
 
     def test_assignment_to_range(self):

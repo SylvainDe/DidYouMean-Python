@@ -89,7 +89,13 @@ class RegexTests(unittest2.TestCase):
         """Test TYPE_NAME."""
         regex = r"^" + re.TYPE_NAME + r"$"
         real_types = set(c.__name__ for c in get_subclasses(object))
-        types = ['str', 'int', 'method-wrapper'] + list(real_types)
+        types = [
+            'str',
+            'int',
+            'method-wrapper',
+            'builtin_function',
+            'builtin_function_or_method'
+        ] + list(real_types)
         for type_ in types:
             self.assertRegexpMatches(type_, regex)
 
@@ -604,6 +610,11 @@ class RegexTests(unittest2.TestCase):
              'builtin_function_or_method',
              'int',
              'print(<message>, file=<output_stream>)'),
+            ("unsupported operand type(s) for -: 'builtin_function' and 'int'",
+             '-',
+             'builtin_function',
+             'int',
+             None),
         ]
         for msg, op, t1, t2, sugg in msgs:
             groups = op, t1, t2, sugg
