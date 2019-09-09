@@ -310,6 +310,7 @@ UNEXPECTEDKWARG3 = (TypeError, re.UNEXPECTED_KEYWORDARG3_RE)
 UNEXPECTEDKWARG4 = (TypeError, re.UNEXPECTED_KEYWORDARG4_RE)
 NOKWARGS = (TypeError, re.FUNC_TAKES_NO_KEYWORDARG_RE)
 UNSUPPORTEDOPERAND = (TypeError, re.UNSUPPORTED_OP_RE)
+UNSUPPORTEDOPERANDSUGG = (TypeError, re.UNSUPPORTED_OP_SUGG_RE)
 BADOPERANDUNARY = (TypeError, re.BAD_OPERAND_UNARY_RE)
 OBJECTDOESNOTSUPPORT = (TypeError, re.OBJ_DOES_NOT_SUPPORT_RE)
 CANNOTCONCAT = (TypeError, re.CANNOT_CONCAT_RE)
@@ -1797,12 +1798,14 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_old_print_chevron_syntax(self):
         """Trying old print chevron syntax (before Python 3)."""
-        before, after = before_and_after((3, 0))
+        before, mid, after = before_mid_and_after((3, 0), (3, 5))
         code = "f = open('/dev/null', 'w')\nprint >> f, 5"
         sugg = '"print(<message>, file=<output_stream>)"'
         good_code = "f = open('/dev/null', 'w')\nprint('5', file=f)"
         self.runs(code, before)
-        self.throws(code, UNSUPPORTEDOPERAND, sugg, after)
+        self.throws(code, UNSUPPORTEDOPERAND, sugg, mid)
+        self.throws(code, UNSUPPORTEDOPERANDSUGG, [], after)
+        self.runs(good_code, mid)
         self.runs(good_code, after)
 
     def test_assignment_to_range(self):

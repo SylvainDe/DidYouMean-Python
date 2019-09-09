@@ -612,14 +612,16 @@ def suggest_bad_operand_for_unary(value, frame, groups):
 
 
 @register_suggestion_for(TypeError, re.UNSUPPORTED_OP_RE)
+@register_suggestion_for(TypeError, re.UNSUPPORTED_OP_SUGG_RE)
 def suggest_unsupported_op(value, frame, groups):
-    """Get suggestions for UNSUPPORTED_OP_RE."""
+    """Get suggestions for UNSUPPORTED_OP_RE/UNSUPPORTED_OP_SUGG_RE."""
     del value  # unused param
-    binary, type1, type2, sugg = groups
-    del sugg  # unused value - to handle in the future
+    binary, type1, type2 = groups[:3]
+    sugg = "" if len(groups) < 3 + 1 else groups[3]
     # Special case for print being used without parenthesis (Python 2 style)
     if type1 in ('builtin_function_or_method', 'builtin_function') and \
-       'print' in frame.f_code.co_names:
+       'print' in frame.f_code.co_names and \
+       not sugg.startswith('print('):
         if binary == '>>':
             yield '"print(<message>, file=<output_stream>)"'\
                   .format(binary, type2)

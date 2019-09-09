@@ -92,7 +92,9 @@ IMPORTSTAR_RE = r"^import \* (?:only allowed at module level|" \
     r"$".format(FUNC_NAME)
 UNSUPPORTED_OP_RE = r"^unsupported operand type\(s\) for (?P<op>.*): " \
     r"'(?P<t1>{0})' and '(?P<t2>{0})'" \
-    r"(?:\. Did you mean \"(?P<sugg>.*)\"\?)?" \
+    r"$".format(TYPE_NAME)
+UNSUPPORTED_OP_SUGG_RE = r"^unsupported operand type\(s\) for (?P<op>.*): " \
+    r"'(?P<t1>{0})' and '(?P<t2>{0})'\. Did you mean \"(?P<sugg>.*)\"\?" \
     r"$".format(TYPE_NAME)
 BAD_OPERAND_UNARY_RE = r"^(?:bad|unsupported) operand type for " \
     r"(?:unary )?(.*): '(.*)'$"

@@ -601,8 +601,21 @@ class RegexTests(unittest2.TestCase):
             ("unsupported operand type(s) for +: 'int' and 'str'",
              '+',
              'int',
-             'str',
-             None),
+             'str'),
+            ("unsupported operand type(s) for -: 'builtin_function' and 'int'",
+             '-',
+             'builtin_function',
+             'int'),
+        ]
+        for msg, op, t1, t2 in msgs:
+            groups = op, t1, t2
+            named_groups = {'op': op, 't1': t1, 't2': t2}
+            results = (groups, named_groups)
+            self.re_matches(msg, re.UNSUPPORTED_OP_RE, results)
+
+    def test_unsupported_operand_sugg(self):
+        """Test UNSUPPORTED_OP_SUGG_RE."""
+        msgs = [
             ("unsupported operand type(s) for >>: "
              "'builtin_function_or_method' and 'int'. "
              "Did you mean \"print(<message>, file=<output_stream>)\"?",
@@ -610,17 +623,12 @@ class RegexTests(unittest2.TestCase):
              'builtin_function_or_method',
              'int',
              'print(<message>, file=<output_stream>)'),
-            ("unsupported operand type(s) for -: 'builtin_function' and 'int'",
-             '-',
-             'builtin_function',
-             'int',
-             None),
         ]
         for msg, op, t1, t2, sugg in msgs:
             groups = op, t1, t2, sugg
             named_groups = {'op': op, 't1': t1, 't2': t2, 'sugg': sugg}
             results = (groups, named_groups)
-            self.re_matches(msg, re.UNSUPPORTED_OP_RE, results)
+            self.re_matches(msg, re.UNSUPPORTED_OP_SUGG_RE, results)
 
     def test_bad_operand_unary(self):
         """Test BAD_OPERAND_UNARY_RE."""
