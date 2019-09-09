@@ -1798,7 +1798,7 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_old_print_chevron_syntax(self):
         """Trying old print chevron syntax (before Python 3)."""
-        before, mid, after = before_mid_and_after((3, 0), (3, 5))
+        before, mid, after = before_mid_and_after((3, 0), (3, 6))
         code = "f = open('/dev/null', 'w')\nprint >> f, 5"
         sugg = '"print(<message>, file=<output_stream>)"'
         good_code = "f = open('/dev/null', 'w')\nprint('5', file=f)"
