@@ -13,7 +13,7 @@ VAR_NAME = IDENTIFIER
 ATTR_NAME = IDENTIFIER
 ARG_NAME = IDENTIFIER
 TYPE_NAME = r"[\w\.-]+"
-MODULE_NAME = r"[\w\.]+"
+MODULE_NAME = r"[\w\.-]+"
 FUNC_NAME = r"<?\w+>?"
 VARREFBEFOREASSIGN_RE = r"^(?:local|free) variable '(?P<name>{0})' " \
     r"referenced before assignment(?: in enclosing scope)?$".format(VAR_NAME)
