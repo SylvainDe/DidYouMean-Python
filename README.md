@@ -374,6 +374,8 @@ See also (similar projects/ideas)
 
  - [danrobinson/tracestack](https://github.com/danrobinson/tracestack) : Search your Python error messages on the web.
 
+ - [cfbolz/syntaxerrors](https://github.com/cfbolz/syntaxerrors) : Python parser that can recover from errors (also, cfbolz added many suggestions for errors to PyPy).
+
  - In [Raymond Hettinger's PyconCA keynote](https://www.youtube.com/watch?v=-TdrFjDJn5E), the part about the `hint` builtin (at 14 minutes) looks a lot like `didyoumean_postmortem`.
 
 Contributing
