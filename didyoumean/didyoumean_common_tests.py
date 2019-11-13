@@ -2,6 +2,11 @@
 """Common logic for unit tests."""
 import sys
 
+# Tests based on MemoryError may required some tweaking to run depending
+# on both the hardware and the software used. This flag can be used to
+# disable the corresponding tests easily.
+SKIP_MEMORY_ERROR_TESTS = False
+
 old_errors = (IOError, OSError)
 
 try:

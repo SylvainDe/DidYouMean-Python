@@ -534,6 +534,7 @@ class AddStringToSyntaxErrorTest(
     error_type = SyntaxError
 
 
+@unittest2.skipIf(common.SKIP_MEMORY_ERROR_TESTS, "Memory test skipped")
 class AddStringToMemoryErrorTest(
         unittest2.TestCase, AddStringToExcFromCodeTest):
     """Class for tests of add_string_to_exception on MemoryError."""

@@ -2385,6 +2385,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
 class MemoryErrorTests(GetSuggestionsTests):
     """Class for tests related to MemoryError."""
 
+    @unittest2.skipIf(common.SKIP_MEMORY_ERROR_TESTS, "Memory test skipped")
     def test_out_of_memory(self):
         """Test what happens in case of MemoryError."""
         code = '[0] * 999999999999999'
