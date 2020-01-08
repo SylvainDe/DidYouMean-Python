@@ -427,11 +427,8 @@ class GetSuggestionsTests(unittest_module.TestCase):
                 "{0} ({1}) not a subclass of {2}"
                 .format(type_caught, value, error_type) + details)
             msg = next((a for a in value.args if isinstance(a, str)), '')
-            if error_msg is not None:
-                if error_msg:
-                    self.assertRegexpMatches(msg, error_msg, details)
-                else:
-                    self.assertEqual(msg, error_msg, details)  # empty string
+            if error_msg:
+                self.assertRegexpMatches(msg, error_msg, details)
             self.assertEqual(suggestions, sugg, details)
 
     def log_exception(self, code, exc, suggestions):
