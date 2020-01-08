@@ -2389,7 +2389,8 @@ class SyntaxErrorTests(GetSuggestionsTests):
 class MemoryErrorTests(GetSuggestionsTests):
     """Class for tests related to MemoryError."""
 
-    @unittest_module.skipIf(common.SKIP_MEMORY_ERROR_TESTS, "Memory test skipped")
+    @unittest_module.skipIf(common.SKIP_MEMORY_ERROR_TESTS,
+                            "Memory test skipped")
     def test_out_of_memory(self):
         """Test what happens in case of MemoryError."""
         code = '[0] * 999999999999999'
@@ -2624,6 +2625,7 @@ class AnyErrorTests(GetSuggestionsTests):
 if __name__ == '__main__':
     print(sys.version_info)
     exc_history = []
-    loader = unittest_module.TestLoader().loadTestsFromModule(sys.modules[__name__])
+    main_module = sys.modules[__name__]
+    loader = unittest_module.TestLoader().loadTestsFromModule(main_module)
     unittest_module.TextTestRunner().run(loader)
     print(exc_history)

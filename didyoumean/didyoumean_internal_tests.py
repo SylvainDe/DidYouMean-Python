@@ -488,14 +488,16 @@ class AddStringToExcFromCodeTest(AddStringToExcTest):
         return value
 
 
-class AddStringToNameErrorTest(unittest_module.TestCase, AddStringToExcFromCodeTest):
+class AddStringToNameErrorTest(
+        unittest_module.TestCase, AddStringToExcFromCodeTest):
     """Class for tests of add_string_to_exception on NameError."""
 
     code = 'babar = 0\nbaba'
     error_type = NameError
 
 
-class AddStringToTypeErrorTest(unittest_module.TestCase, AddStringToExcFromCodeTest):
+class AddStringToTypeErrorTest(
+        unittest_module.TestCase, AddStringToExcFromCodeTest):
     """Class for tests of add_string_to_exception on TypeError."""
 
     code = '[0](0)'
