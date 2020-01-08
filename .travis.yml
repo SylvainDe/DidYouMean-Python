@@ -174,7 +174,8 @@ install:
         source "$HOME/virtualenvs/pypy-$PYPY_VERSION/bin/activate"
       fi
   - pip install --upgrade pep8
-  - pip install pep257
+  - pip install pep257 || true
+  - pip install pydocstyle || true
   - |
       if ([ "$TRAVIS_PYTHON_VERSION" != "2.6" ]); then
         pip install --upgrade pyflakes
@@ -200,7 +201,8 @@ before_script:
  - python -VV
  - python -c "import sys; print(sys._git)" || true
  - pep8 *.py */*.py
- - pep257 *.py */*.py
+ - pep257 *.py */*.py || true
+ - pydocstyle *.py */*.py || true
  - pyflakes . || true
 
 script:
