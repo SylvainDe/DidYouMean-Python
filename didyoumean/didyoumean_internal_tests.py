@@ -6,9 +6,9 @@ from didyoumean_internal import quote, get_suggestion_string,\
     get_types_for_str_using_inheritance,\
     get_types_for_str_using_names
 import didyoumean_common_tests as common
-from didyoumean_common_tests import CommonTestOldStyleClass2,\
+from didyoumean_common_tests import unittest_module,\
+    CommonTestOldStyleClass2,\
     CommonTestNewStyleClass2  # to have these 2 in defined names
-import unittest2
 import itertools
 import sys
 
@@ -20,7 +20,7 @@ U_PREFIX = "u" if U_PREFIX_SUPPORT else ""
 global_var = 42  # Please don't change the value
 
 
-class QuoteTests(unittest2.TestCase):
+class QuoteTests(unittest_module.TestCase):
     """Class for tests related to quote."""
 
     def test_quote_empty_str(self):
@@ -32,7 +32,7 @@ class QuoteTests(unittest2.TestCase):
         self.assertEqual(quote('abc'), "'abc'")
 
 
-class GetObjectInFrameTests(unittest2.TestCase):
+class GetObjectInFrameTests(unittest_module.TestCase):
     """Class for tests related to frame/backtrace/etc inspection.
 
     Tested functions are : get_objects_in_frame.
@@ -243,7 +243,7 @@ CLASSES = [(c, True) for c in NEW_STYLE_CLASSES] + \
     [(c, False) for c in OLD_STYLE_CLASSES]
 
 
-class GetTypesForStrTests(unittest2.TestCase):
+class GetTypesForStrTests(unittest_module.TestCase):
     """Test get_types_for_str."""
 
     def test_get_subclasses(self):
@@ -347,7 +347,7 @@ class GetTypesForStrTests(unittest2.TestCase):
         self.assertEqual(types3, expect_with_inherit)
 
 
-class GetFuncByNameTests(unittest2.TestCase):
+class GetFuncByNameTests(unittest_module.TestCase):
     """Test get_func_by_name."""
 
     def get_func_by_name(self, func_name):
@@ -400,7 +400,7 @@ class GetFuncByNameTests(unittest2.TestCase):
         self.assertEqual(self.get_func_by_name('dkalskjdas'), [])
 
 
-class GetSuggStringTests(unittest2.TestCase):
+class GetSuggStringTests(unittest_module.TestCase):
     """Tests about get_suggestion_string."""
 
     def test_no_sugg(self):
@@ -488,14 +488,14 @@ class AddStringToExcFromCodeTest(AddStringToExcTest):
         return value
 
 
-class AddStringToNameErrorTest(unittest2.TestCase, AddStringToExcFromCodeTest):
+class AddStringToNameErrorTest(unittest_module.TestCase, AddStringToExcFromCodeTest):
     """Class for tests of add_string_to_exception on NameError."""
 
     code = 'babar = 0\nbaba'
     error_type = NameError
 
 
-class AddStringToTypeErrorTest(unittest2.TestCase, AddStringToExcFromCodeTest):
+class AddStringToTypeErrorTest(unittest_module.TestCase, AddStringToExcFromCodeTest):
     """Class for tests of add_string_to_exception on TypeError."""
 
     code = '[0](0)'
@@ -503,7 +503,7 @@ class AddStringToTypeErrorTest(unittest2.TestCase, AddStringToExcFromCodeTest):
 
 
 class AddStringToImportErrorTest(
-        unittest2.TestCase, AddStringToExcFromCodeTest):
+        unittest_module.TestCase, AddStringToExcFromCodeTest):
     """Class for tests of add_string_to_exception on ImportError."""
 
     code = 'import maths'
@@ -511,7 +511,7 @@ class AddStringToImportErrorTest(
 
 
 class AddStringToKeyErrorTest(
-        unittest2.TestCase, AddStringToExcFromCodeTest):
+        unittest_module.TestCase, AddStringToExcFromCodeTest):
     """Class for tests of add_string_to_exception on KeyError."""
 
     code = 'dict()["ffdsqmjklfqsd"]'
@@ -519,7 +519,7 @@ class AddStringToKeyErrorTest(
 
 
 class AddStringToAttributeErrorTest(
-        unittest2.TestCase, AddStringToExcFromCodeTest):
+        unittest_module.TestCase, AddStringToExcFromCodeTest):
     """Class for tests of add_string_to_exception on AttributeError."""
 
     code = '[].does_not_exist'
@@ -527,16 +527,16 @@ class AddStringToAttributeErrorTest(
 
 
 class AddStringToSyntaxErrorTest(
-        unittest2.TestCase, AddStringToExcFromCodeTest):
+        unittest_module.TestCase, AddStringToExcFromCodeTest):
     """Class for tests of add_string_to_exception on SyntaxError."""
 
     code = 'return'
     error_type = SyntaxError
 
 
-@unittest2.skipIf(common.SKIP_MEMORY_ERROR_TESTS, "Memory test skipped")
+@unittest_module.skipIf(common.SKIP_MEMORY_ERROR_TESTS, "Memory test skipped")
 class AddStringToMemoryErrorTest(
-        unittest2.TestCase, AddStringToExcFromCodeTest):
+        unittest_module.TestCase, AddStringToExcFromCodeTest):
     """Class for tests of add_string_to_exception on MemoryError."""
 
     code = '[0] * 999999999999999'
@@ -548,7 +548,7 @@ class AddStringToMemoryErrorTest(
 
 
 class AddStringToIOErrorTest(
-        unittest2.TestCase, AddStringToExcFromCodeTest):
+        unittest_module.TestCase, AddStringToExcFromCodeTest):
     """Class for tests of add_string_to_exception on NoFileIoError."""
 
     code = 'with open("/does_not_exist") as f:\n\tpass'
@@ -556,7 +556,7 @@ class AddStringToIOErrorTest(
 
 
 class AddStringToUnicodeDecodeTest(
-        unittest2.TestCase, AddStringToExcFromCodeTest):
+        unittest_module.TestCase, AddStringToExcFromCodeTest):
     """Class for tests of add_string_to_exception on UnicodeDecodeError."""
 
     code = "'foo'.encode('utf-16').decode('utf-8')"
@@ -564,7 +564,7 @@ class AddStringToUnicodeDecodeTest(
 
 
 class AddStringToUnicodeEncodeTest(
-        unittest2.TestCase, AddStringToExcFromCodeTest):
+        unittest_module.TestCase, AddStringToExcFromCodeTest):
     """Class for tests of add_string_to_exception on UnicodeEncodeError."""
 
     code = U_PREFIX + '"\u0411".encode("iso-8859-15")'
@@ -592,7 +592,7 @@ class AddStringToExcFromInstanceTest(AddStringToExcTest):
 
 
 class AddStringToZeroDivisionError(
-        unittest2.TestCase, AddStringToExcFromInstanceTest):
+        unittest_module.TestCase, AddStringToExcFromInstanceTest):
     """Class for tests of add_string_to_exception on ZeroDivisionError."""
 
     exc_type = ZeroDivisionError
@@ -641,10 +641,10 @@ def generate_add_string_to_exc_tests():
             assert class_name not in globals(), class_name
             globals()[class_name] = type(
                     class_name,
-                    (AddStringToExcFromInstanceTest, unittest2.TestCase),
+                    (AddStringToExcFromInstanceTest, unittest_module.TestCase),
                     {'exc_type': klass, 'args': p})
 
 
 if __name__ == '__main__':
     print(sys.version_info)
-    unittest2.main()
+    unittest_module.main()

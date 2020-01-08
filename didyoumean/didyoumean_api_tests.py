@@ -3,8 +3,7 @@
 from didyoumean_api import didyoumean_decorator, didyoumean_contextmanager,\
     didyoumean_postmortem, didyoumean_enablehook, didyoumean_disablehook
 from didyoumean_common_tests import TestWithStringFunction,\
-    get_exception, no_exception, NoFileIoError
-import unittest2
+    get_exception, no_exception, NoFileIoError, unittest_module
 import contextlib
 import sys
 import os
@@ -112,7 +111,7 @@ class ApiTest(TestWithStringFunction):
         self.check_sugg_added(code, type_, sugg, True)
 
 
-class DecoratorTest(unittest2.TestCase, ApiTest):
+class DecoratorTest(unittest_module.TestCase, ApiTest):
     """Tests about the didyoumean decorator."""
 
     def run_with_api(self, code):
@@ -123,7 +122,7 @@ class DecoratorTest(unittest2.TestCase, ApiTest):
         my_func()
 
 
-class ContextManagerTest(unittest2.TestCase, ApiTest):
+class ContextManagerTest(unittest_module.TestCase, ApiTest):
     """Tests about the didyoumean context manager."""
 
     def run_with_api(self, code):
@@ -132,7 +131,7 @@ class ContextManagerTest(unittest2.TestCase, ApiTest):
             no_exception(code)
 
 
-class PostMortemTest(unittest2.TestCase, ApiTest):
+class PostMortemTest(unittest_module.TestCase, ApiTest):
     """Tests about the didyoumean post mortem."""
 
     # A bit of an ugly way to proceed with "exc.last_<xxx>" attributes:
@@ -196,7 +195,7 @@ def suppress_stderr():
             sys.stderr = old_stderr
 
 
-class ExceptHookTest(unittest2.TestCase, HookTest):
+class ExceptHookTest(unittest_module.TestCase, HookTest):
     """Tests about the didyoumean excepthook."""
 
     def run_with_api(self, code):
@@ -256,7 +255,7 @@ class DummyShell:
         del module.get_ipython
 
 
-class IPythonHookTest(unittest2.TestCase, HookTest):
+class IPythonHookTest(unittest_module.TestCase, HookTest):
     """Tests about the didyoumean custom exception handler for iPython.
 
     These tests need a dummy shell to be create to be able to use/define
@@ -287,4 +286,4 @@ class IPythonHookTest(unittest2.TestCase, HookTest):
 
 if __name__ == '__main__':
     print(sys.version_info)
-    unittest2.main()
+    unittest_module.main()

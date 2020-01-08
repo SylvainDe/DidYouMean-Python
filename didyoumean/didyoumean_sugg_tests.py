@@ -7,7 +7,6 @@ from didyoumean_internal import get_suggestions_for_exception, quote, \
     MEMVIEW_ADDED_MSG, RELOAD_REMOVED_MSG, STDERR_REMOVED_MSG, \
     BREAKPOINT_ADDED_MSG, NO_KEYWORD_ARG_MSG
 import didyoumean_common_tests as common
-import unittest2
 import didyoumean_re as re
 import warnings
 import sys
@@ -16,6 +15,8 @@ import os
 import tempfile
 from shutil import rmtree
 
+
+unittest_module = common.unittest_module
 
 # Variable to hold info about the exceptions caught
 # (to print them for instance).
@@ -377,7 +378,7 @@ MAXRECURDEPTH = (RuntimeError, re.MAX_RECURSION_DEPTH_RE)
 SIZECHANGEDDURINGITER = (RuntimeError, re.SIZE_CHANGED_DURING_ITER_RE)
 
 
-class GetSuggestionsTests(unittest2.TestCase):
+class GetSuggestionsTests(unittest_module.TestCase):
     """Generic class to test get_suggestions_for_exception.
 
     Many tests do not correspond to any handled exceptions but are
@@ -427,7 +428,10 @@ class GetSuggestionsTests(unittest2.TestCase):
                 .format(type_caught, value, error_type) + details)
             msg = next((a for a in value.args if isinstance(a, str)), '')
             if error_msg is not None:
-                self.assertRegexpMatches(msg, error_msg, details)
+                if error_msg:
+                    self.assertRegexpMatches(msg, error_msg, details)
+                else:
+                    self.assertEqual(msg, error_msg, details)  # empty string
             self.assertEqual(suggestions, sugg, details)
 
     def log_exception(self, code, exc, suggestions):
@@ -2385,7 +2389,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
 class MemoryErrorTests(GetSuggestionsTests):
     """Class for tests related to MemoryError."""
 
-    @unittest2.skipIf(common.SKIP_MEMORY_ERROR_TESTS, "Memory test skipped")
+    @unittest_module.skipIf(common.SKIP_MEMORY_ERROR_TESTS, "Memory test skipped")
     def test_out_of_memory(self):
         """Test what happens in case of MemoryError."""
         code = '[0] * 999999999999999'
@@ -2620,6 +2624,6 @@ class AnyErrorTests(GetSuggestionsTests):
 if __name__ == '__main__':
     print(sys.version_info)
     exc_history = []
-    loader = unittest2.TestLoader().loadTestsFromModule(sys.modules[__name__])
-    unittest2.TextTestRunner().run(loader)
+    loader = unittest_module.TestLoader().loadTestsFromModule(sys.modules[__name__])
+    unittest_module.TextTestRunner().run(loader)
     print(exc_history)

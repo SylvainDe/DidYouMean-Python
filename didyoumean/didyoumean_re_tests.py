@@ -1,9 +1,9 @@
 # -*- coding: utf-8
 """Unit tests for regexps from didyoumean_re.py."""
-import unittest2
 import didyoumean_re as re
 import sys
 from didyoumean_internal import get_subclasses
+from didyoumean_common_tests import unittest_module
 
 NO_GROUP = ((), dict())
 # Various technical flags to check more that meet the eyes in tests
@@ -21,7 +21,7 @@ CHECK_RE_NAME = True
 CHECK_RE_VALUE = True
 
 
-class RegexTests(unittest2.TestCase):
+class RegexTests(unittest_module.TestCase):
     """Tests to check that error messages match the regexps."""
 
     def re_matches(self, text, regexp, results):
@@ -799,4 +799,4 @@ class RegexTests(unittest2.TestCase):
 
 if __name__ == '__main__':
     print(sys.version_info)
-    unittest2.main()
+    unittest_module.main()

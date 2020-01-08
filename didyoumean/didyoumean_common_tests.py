@@ -2,6 +2,13 @@
 """Common logic for unit tests."""
 import sys
 
+try:
+    import unittest2
+    unittest_module = unittest2
+except ImportError:
+    import unittest
+    unittest_module = unittest
+
 # Tests based on MemoryError may required some tweaking to run depending
 # on both the hardware and the software used. This flag can be used to
 # disable the corresponding tests easily.

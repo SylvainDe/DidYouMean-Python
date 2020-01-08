@@ -210,14 +210,20 @@ script:
 # without and with coverage and failures are allowed on the second- #36
 # (Except for Python 2.6 because the direct run fails)
  - |
-      if ([ "$TRAVIS_PYTHON_VERSION" != "2.6" ]); then
+      if ([ "$TRAVIS_PYTHON_VERSION" == "2.6" ]); then
+        :
+      elif ([ "$TRAVIS_PYTHON_VERSION" == "2.9" ]); then
+        python -m unittest discover --start-directory=didyoumean --pattern=*.py
+      else
         python -m unittest2 discover --start-directory=didyoumean --pattern=*.py
       fi
  - |
-      if ([ "$TRAVIS_PYTHON_VERSION" != "2.6" ]); then
-        coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py || true
-      else
+      if ([ "$TRAVIS_PYTHON_VERSION" == "2.6" ]); then
         coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py
+      elif ([ "$TRAVIS_PYTHON_VERSION" == "2.9" ]); then
+        coverage run -m unittest discover --start-directory=didyoumean --pattern=*.py || true
+      else
+        coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py || true
       fi
  - python didyoumean/didyoumean_sugg_tests.py
  - python didyoumean/readme_examples.py
