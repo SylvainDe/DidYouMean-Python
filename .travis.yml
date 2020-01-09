@@ -201,7 +201,7 @@ install:
 
 before_script:
  # Information about Python version
- - echo "TRAVIS_PYTHON_VERSION: $TRAVIS_PYTHON_VERSION"
+ - echo $TRAVIS_PYTHON_VERSION
  - python -VV
  - python -c "import sys; print(sys._git)" || true
  - pep8 *.py */*.py
