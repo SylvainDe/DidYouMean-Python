@@ -180,7 +180,10 @@ install:
       if ([ "$TRAVIS_PYTHON_VERSION" != "2.6" ]); then
         pip install --upgrade pyflakes
       fi
-  - pip install unittest2
+  - |
+      if ([ "$TRAVIS_PYTHON_VERSION" != "3.9" ]); then
+        pip install unittest2
+      fi
   - |
       # https://bitbucket.org/ned/coveragepy/issues/407/coverage-failing-on-python-325-using
       if ([ "$TRAVIS_PYTHON_VERSION" != "3.2" ]); then
