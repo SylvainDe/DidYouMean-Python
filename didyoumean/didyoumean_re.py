@@ -15,6 +15,7 @@ ARG_NAME = IDENTIFIER
 TYPE_NAME = r"[\w\.-]+"
 MODULE_NAME = r"[\w\.-]+"
 FUNC_NAME = r"<?\w+>?"
+QUAL_FUNC_NAME = r"(?:{0}\.)*{0}".format(FUNC_NAME)
 VARREFBEFOREASSIGN_RE = r"^(?:local|free) variable '(?P<name>{0})' " \
     r"referenced before assignment(?: in enclosing scope)?$".format(VAR_NAME)
 NAMENOTDEFINED_RE = r"^(?:global )?name '(?P<name>{0})' " \
@@ -44,7 +45,7 @@ UNEXPECTED_KEYWORDARG4_RE = r"^'(?P<arg>{0})' is an " \
     r"invalid keyword argument for " \
     r"(?P<func>{1})\(\)$".format(ARG_NAME, FUNC_NAME)
 FUNC_TAKES_NO_KEYWORDARG_RE = r"^(?P<func>{0})(?:\(\))? " \
-    r"(?:takes no|does not take) keyword arguments$".format(FUNC_NAME)
+    r"(?:takes no|does not take) keyword arguments$".format(QUAL_FUNC_NAME)
 NOMODULE_RE = r"^No module named '?({0})'?$".format(MODULE_NAME)
 CANNOTIMPORT_RE = r"^cannot import name '?(?P<name>{0})'?" \
     r"(?: from '{1}' \(.*\))?$".format(IDENTIFIER, MODULE_NAME)

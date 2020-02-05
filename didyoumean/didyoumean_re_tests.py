@@ -102,9 +102,18 @@ class RegexTests(unittest_module.TestCase):
     def test_func_name(self):
         """Test FUNC_NAME."""
         regex = r"^" + re.FUNC_NAME + r"$"
-        real_funcs = [lambda x:x, range, dir, dict.get, classmethod]  # TODO
+        real_funcs = [lambda x:x, range, dir, dict.get, list.index, classmethod]  # TODO
         real_func_names = [f.__name__ for f in real_funcs]
         funcs = ['get', 'range', '<lambda>', 'print'] + list(real_func_names)
+        for func in funcs:
+            self.assertRegexpMatches(func, regex)
+
+    def test_qual_func_name(self):
+        """Test QUAL_FUNC_NAME."""
+        regex = r"^" + re.QUAL_FUNC_NAME + r"$"
+        real_funcs = [lambda x:x, range, dir, dict.get, list.index, classmethod]  # TODO
+        real_func_names = [f.__qualname__ for f in real_funcs]
+        funcs = ['struct.pack', 'deque.index', 'Struct.pack'] + list(real_func_names)
         for func in funcs:
             self.assertRegexpMatches(func, regex)
 
@@ -284,17 +293,18 @@ class RegexTests(unittest_module.TestCase):
         """Test FUNC_TAKES_NO_KEYWORDARG_RE."""
         msgs = [
             # CPython : most versions
-            "get() takes no keyword arguments",
+            ("get", "get() takes no keyword arguments"),
             # CPython nightly (as of 21 January 2017) - Python 3.7
-            "get does not take keyword arguments",
+            ("get", "get does not take keyword arguments"),
             # CPython nightly (as of 7 March 2017) - Python 3.7
-            "get() does not take keyword arguments",
+            ("get", "get() does not take keyword arguments"),
+            # CPython - Python 3.9
+            ("dict.get", "dict.get() takes no keyword arguments"),
         ]
-        func = 'get'
-        groups = (func, )
-        named_groups = {'func': func}
-        results = (groups, named_groups)
-        for msg in msgs:
+        for func, msg in msgs:
+            groups = (func, )
+            named_groups = {'func': func}
+            results = (groups, named_groups)
             self.re_matches(msg, re.FUNC_TAKES_NO_KEYWORDARG_RE, results)
 
     def test_zero_length_field(self):

@@ -354,20 +354,49 @@ class GetFuncByNameTests(unittest_module.TestCase):
         """Wrapper around the get_func_by_name function."""
         return get_func_by_name(func_name, sys._getframe(1))
 
-    def check_get_func_by_name(self, function, exact_match=True):
-        """Wrapper around the get_func_by_name to check its result."""
-        self.assertTrue(hasattr(function, '__name__'), function)
-        res = self.get_func_by_name(function.__name__)
-        self.assertTrue(function in res)
-        self.assertTrue(len(res) >= 1, res)
+    def check_get_func_by_name_res(self, function, results, exact_match):
+        """Check that function is in the list of results."""
+        self.assertTrue(function in results)
+        self.assertTrue(len(results) >= 1, results)
         if exact_match:
             # Equality above does not hold
             # Using set is complicated because everything can't be hashed
             # But using id, something seems to be possible
-            self.assertEqual(len(set(res)), 1, res)
-            res_ids = [id(e) for e in res]
+            self.assertEqual(len(set(results)), 1, results)
+            res_ids = [id(e) for e in results]
             set_ids = set(res_ids)
             self.assertEqual(len(set_ids), 1, set_ids)
+
+    def check_get_func_by_name(self, function, exact_match=True):
+        """Wrapper around the get_func_by_name to get & check its results."""
+        # Using __name__
+        self.assertTrue(hasattr(function, '__name__'), function)
+        res = self.get_func_by_name(function.__name__)
+        self.check_get_func_by_name_res(function, res, exact_match)
+
+        # Using __qualname__
+        self.assertTrue(hasattr(function, '__qualname__'), function)
+        res = self.get_func_by_name(function.__qualname__)
+        self.check_get_func_by_name_res(function, res, exact_match)
+
+        # Using pyobject_function_str
+        res = self.get_func_by_name(self.pyobject_function_str(function))
+        self.check_get_func_by_name_res(function, res, exact_match)
+
+    def pyobject_function_str(self, x):
+        """Get function representation as a string."""
+        # Based on CPython _PyObject_FunctionStr
+        try:
+            qualname = x.__qualname__
+        except AttributeError:
+            return str(x)
+        try:
+            mod = x.__module__
+            if mod is not None and mod != 'builtins':
+                return f"{x.__module__}.{qualname}" # original code has ()
+        except AttributeError:
+            pass
+        return qualname
 
     def test_get_builtin_by_name(self):
         """Test get_func_by_name on builtin functions."""
@@ -378,7 +407,7 @@ class GetFuncByNameTests(unittest_module.TestCase):
 
     def test_get_builtin_attr_by_name(self):
         """Test get_func_by_name on builtin attributes."""
-        for f in [dict.get]:
+        for f in [dict.get, sys._getframe]:
             self.check_get_func_by_name(f, False)
 
     def test_get_lambda_by_name(self):

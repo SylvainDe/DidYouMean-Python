@@ -649,6 +649,9 @@ def suggest_integer_type_expected(value, frame, groups):
 
 def get_func_by_name(func_name, frame):
     """Get the function with the given name in the frame."""
+    # TODO: Handle qualified names such as dict.get
+    # Dirty workaround is to remove everything before the last '.'
+    func_name = func_name.split('.')[-1]
     objs = get_objects_in_frame(frame)
     # Trying to fetch reachable objects: getting objects and attributes
     # for objects. We would go deeper (with a fixed point algorithm) but
