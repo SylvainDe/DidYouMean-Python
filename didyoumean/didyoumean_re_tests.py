@@ -114,7 +114,8 @@ class RegexTests(unittest_module.TestCase):
         regex = r"^" + re.QUAL_FUNC_NAME + r"$"
         real_funcs = [lambda x:x, range, dir, dict.get,
                       list.index, classmethod]  # TODO
-        real_func_names = [f.__qualname__ for f in real_funcs]
+        real_func_names = [f.__qualname__ for f in real_funcs
+                           if hasattr(f, "__qualname__")]
         more_func_names = ['struct.pack', 'deque.index', 'Struct.pack']
         for func in real_func_names + more_func_names:
             self.assertRegexpMatches(func, regex)

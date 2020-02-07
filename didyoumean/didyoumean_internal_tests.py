@@ -356,13 +356,14 @@ class GetFuncByNameTests(unittest_module.TestCase):
 
     def check_get_func_by_name_res(self, function, results, exact_match):
         """Check that function is in the list of results."""
-        self.assertTrue(function in results)
-        self.assertTrue(len(results) >= 1, results)
+        details = str(function) + ", (" + str(results) + "), exact_match:" + str(exact_match)
+        self.assertTrue(function in results, details)
+        self.assertTrue(len(results) >= 1, details)
         if exact_match:
             # Equality above does not hold
             # Using set is complicated because everything can't be hashed
             # But using id, something seems to be possible
-            self.assertEqual(len(set(results)), 1, results)
+            self.assertEqual(len(set(results)), 1, details)
             res_ids = [id(e) for e in results]
             set_ids = set(res_ids)
             self.assertEqual(len(set_ids), 1, set_ids)
@@ -374,14 +375,14 @@ class GetFuncByNameTests(unittest_module.TestCase):
         res = self.get_func_by_name(function.__name__)
         self.check_get_func_by_name_res(function, res, exact_match)
 
-        # Using __qualname__
-        self.assertTrue(hasattr(function, '__qualname__'), function)
-        res = self.get_func_by_name(function.__qualname__)
-        self.check_get_func_by_name_res(function, res, exact_match)
+        if sys.version_info >= (3, 3):
+            # Using __qualname__
+            res = self.get_func_by_name(function.__qualname__)
+            self.check_get_func_by_name_res(function, res, exact_match)
 
-        # Using pyobject_function_str
-        res = self.get_func_by_name(self.pyobject_function_str(function))
-        self.check_get_func_by_name_res(function, res, exact_match)
+            # Using pyobject_function_str
+            res = self.get_func_by_name(self.pyobject_function_str(function))
+            self.check_get_func_by_name_res(function, res, exact_match)
 
     def pyobject_function_str(self, x):
         """Get function representation as a string."""
@@ -393,7 +394,7 @@ class GetFuncByNameTests(unittest_module.TestCase):
         try:
             mod = x.__module__
             if mod is not None and mod != 'builtins':
-                return f"{x.__module__}.{qualname}"  # original code has ()
+                return x.__module__ + "." + qualname  # original code has ()
         except AttributeError:
             pass
         return qualname
