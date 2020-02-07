@@ -102,19 +102,21 @@ class RegexTests(unittest_module.TestCase):
     def test_func_name(self):
         """Test FUNC_NAME."""
         regex = r"^" + re.FUNC_NAME + r"$"
-        real_funcs = [lambda x:x, range, dir, dict.get, list.index, classmethod]  # TODO
+        real_funcs = [lambda x:x, range, dir, dict.get,
+                      list.index, classmethod]  # TODO
         real_func_names = [f.__name__ for f in real_funcs]
-        funcs = ['get', 'range', '<lambda>', 'print'] + list(real_func_names)
-        for func in funcs:
+        more_func_names = ['get', 'range', '<lambda>', 'print']
+        for func in real_func_names + more_func_names:
             self.assertRegexpMatches(func, regex)
 
     def test_qual_func_name(self):
         """Test QUAL_FUNC_NAME."""
         regex = r"^" + re.QUAL_FUNC_NAME + r"$"
-        real_funcs = [lambda x:x, range, dir, dict.get, list.index, classmethod]  # TODO
+        real_funcs = [lambda x:x, range, dir, dict.get,
+                      list.index, classmethod]  # TODO
         real_func_names = [f.__qualname__ for f in real_funcs]
-        funcs = ['struct.pack', 'deque.index', 'Struct.pack'] + list(real_func_names)
-        for func in funcs:
+        more_func_names = ['struct.pack', 'deque.index', 'Struct.pack']
+        for func in real_func_names + more_func_names:
             self.assertRegexpMatches(func, regex)
 
     def test_module_name(self):

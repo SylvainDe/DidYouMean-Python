@@ -393,7 +393,7 @@ class GetFuncByNameTests(unittest_module.TestCase):
         try:
             mod = x.__module__
             if mod is not None and mod != 'builtins':
-                return f"{x.__module__}.{qualname}" # original code has ()
+                return f"{x.__module__}.{qualname}"  # original code has ()
         except AttributeError:
             pass
         return qualname
