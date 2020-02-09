@@ -356,7 +356,10 @@ class GetFuncByNameTests(unittest_module.TestCase):
 
     def check_get_func_by_name_res(self, function, results, exact_match):
         """Check that function is in the list of results."""
-        details = str(function) + ", (" + str(results) + "), exact_match:" + str(exact_match)
+        details = "{0}, ({1}), exact_match:{2}".format(
+                    str(function),
+                    str(results),
+                    str(exact_match))
         self.assertTrue(function in results, details)
         self.assertTrue(len(results) >= 1, details)
         if exact_match:
