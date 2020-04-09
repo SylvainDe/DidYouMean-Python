@@ -100,9 +100,6 @@ matrix:
     dist: trusty
     python: 3.9-dev
   - os: linux
-    dist: xenial
-    python: 3.9-dev
-  - os: linux
     dist: trusty
     python: nightly
   - os: linux
