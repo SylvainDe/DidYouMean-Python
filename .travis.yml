@@ -197,7 +197,12 @@ install:
           "pypy-5.3.1") ;; # coveralls not supported
           *) pip install coveralls;;
       esac
-  - pip install codecov
+  - |
+      if ([ "$TRAVIS_PYTHON_VERSION" != "pypy-5.4.1" ]); then
+        pip install codecov
+      else
+        pip install codecov || true # May fail but let's try anyway (see Issue #45)
+      fi
 
 before_script:
  # Information about Python version
