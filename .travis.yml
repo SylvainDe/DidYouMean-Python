@@ -236,7 +236,12 @@ script:
       fi
  - python didyoumean/didyoumean_sugg_tests.py
  - python didyoumean/readme_examples.py
- - pip install .
+ - |
+      if ([ "$TRAVIS_PYTHON_VERSION" != "pypy-5.4.1" ]); then
+        pip install .
+      else
+        pip install . || true # May fail but let's try anyway (see Issue #45)
+      fi
 
 after_success:
  - coveralls
