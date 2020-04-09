@@ -92,6 +92,18 @@ matrix:
     python: 3.8-dev
   - os: linux
     dist: trusty
+    python: 3.9
+  - os: linux
+    dist: xenial
+    python: 3.9
+  - os: linux
+    dist: trusty
+    python: 3.9-dev
+  - os: linux
+    dist: xenial
+    python: 3.9-dev
+  - os: linux
+    dist: trusty
     python: nightly
   - os: linux
     dist: xenial
@@ -139,6 +151,18 @@ matrix:
   - os: linux
     dist: trusty
     python: 3.8-dev
+  - os: linux
+    dist: trusty
+    python: 3.9
+  - os: linux
+    dist: xenial
+    python: 3.9
+  - os: linux
+    dist: trusty
+    python: 3.9-dev
+  - os: linux
+    dist: xenial
+    python: 3.9-dev
   - os: linux
     dist: xenial
     python: pypy-5.3.1
