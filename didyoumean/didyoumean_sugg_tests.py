@@ -2151,11 +2151,13 @@ class SyntaxErrorTests(GetSuggestionsTests):
         code = '1 {0} 2'
         old, new = '<>', '!='
         sugg = "'{0}'".format(new)
-        before, after = before_and_after((3, 0))
+        before, mid, after = before_mid_and_after((3, 0), (3, 9)
         old_code, new_code = format_str(code, old, new)
         self.runs(old_code, before)
+        self.throws(old_code, INVALIDCOMP, sugg, mid, 'pypy')
+        self.throws(old_code, INVALIDSYNTAX, sugg, mid, 'cpython')
         self.throws(old_code, INVALIDCOMP, sugg, after, 'pypy')
-        self.throws(old_code, INVALIDSYNTAX, sugg, after, 'cpython')
+        # self.throws(old_code, INVALIDSYNTAX, sugg, after, 'cpython') - behavior not sure yet - #46
         self.runs(new_code)
 
     def test_backticks(self):
