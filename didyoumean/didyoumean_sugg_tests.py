@@ -2157,7 +2157,8 @@ class SyntaxErrorTests(GetSuggestionsTests):
         self.throws(old_code, INVALIDCOMP, sugg, mid, 'pypy')
         self.throws(old_code, INVALIDSYNTAX, sugg, mid, 'cpython')
         self.throws(old_code, INVALIDCOMP, sugg, after, 'pypy')
-        # self.throws(old_code, INVALIDSYNTAX, sugg, after, 'cpython') - behavior not sure yet - #46
+        # Behavior for Python 3.9+ not sure yet - #46
+        # self.throws(old_code, INVALIDSYNTAX, sugg, after, 'cpython')
         self.runs(new_code)
 
     def test_backticks(self):
