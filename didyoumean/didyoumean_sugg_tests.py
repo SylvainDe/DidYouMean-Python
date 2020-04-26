@@ -2151,7 +2151,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         code = '1 {0} 2'
         old, new = '<>', '!='
         sugg = "'{0}'".format(new)
-        before, mid, after = before_mid_and_after((3, 0), (3, 9)
+        before, mid, after = before_mid_and_after((3, 0), (3, 9))
         old_code, new_code = format_str(code, old, new)
         self.runs(old_code, before)
         self.throws(old_code, INVALIDCOMP, sugg, mid, 'pypy')
