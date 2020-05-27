@@ -37,7 +37,9 @@ def func_gen(name='some_func', param='', body='pass', args=None):
     provided or provided None, function call is not included in generated
     code).
     """
-    func = "def {0}({1}):\n\t{2}\n".format(name, param, body)
+    tab = "\t"
+    indent_body = ''.join(tab + l for l in body.splitlines(True))
+    func = "def {0}({1}):\n{2}\n".format(name, param, indent_body)
     call = "" if args is None else "{0}({1})\n".format(name, args)
     return func + call
 
@@ -571,7 +573,8 @@ class NameErrorTests(GetSuggestionsTests):
         """Test that variables from enclosing scope are suggested."""
         # NICE_TO_HAVE
         typo, good = 'foob', 'foo'
-        code = 'def f():\n\tfoo = 0\n\tdef g():\n\t\t{0}\n\tg()\nf()'
+        inner = func_gen('g', body='{0}', args='')
+        code = func_gen('f', body = 'foo = 0\n' + inner, args = '')
         bad_code, good_code = format_str(code, typo, good)
         self.throws(bad_code, NAMEERROR)
         self.runs(good_code)
@@ -582,8 +585,8 @@ class NameErrorTests(GetSuggestionsTests):
 
     def test_free_var_before_assignment(self):
         """No suggestion but different error message."""
-        code = 'def f():\n\tdef g():\n\t\treturn free_var' \
-               '\n\tg()\n\tfree_var = 0\nf()'
+        inner = func_gen('g', body='return free_var', args='')
+        code = func_gen('f', body = inner + "free_var = 0", args = "")
         self.throws(code, NAMEERRORBEFOREREF)
 
     # For added/removed names, following functions with one name
@@ -861,7 +864,7 @@ class UnboundLocalErrorTests(GetSuggestionsTests):
 
     def test_unbound_typo(self):
         """Should be foo."""
-        code = 'def func():\n\tfoo = 1\n\t{0} +=1\nfunc()'
+        code = func_gen(body="foo = 1\n{0} +=1", args='')
         typo, good = "foob", "foo"
         sugg = "'{0}' (local)".format(good)
         bad_code, good_code = format_str(code, typo, good)
@@ -871,7 +874,7 @@ class UnboundLocalErrorTests(GetSuggestionsTests):
     def test_unbound_global(self):
         """Should be global nb."""
         # NICE_TO_HAVE
-        code = 'nb = 0\ndef func():\n\t{0}\n\tnb +=1\nfunc()'
+        code = 'nb = 0\n' + func_gen(body="{0}\nnb += 1", args='')
         sugg = 'global nb'
         bad_code, good_code = format_str(code, "", sugg)
         sys.setrecursionlimit(1000)  # needed for weird PyPy versions
@@ -882,8 +885,8 @@ class UnboundLocalErrorTests(GetSuggestionsTests):
     def test_unbound_nonlocal(self):
         """Shoud be nonlocal nb."""
         # NICE_TO_HAVE
-        code = 'def foo():\n\tnb = 0\n\tdef bar():' \
-               '\n\t\t{0}\n\t\tnb +=1\n\tbar()\nfoo()'
+        inner = func_gen('bar', body="{0}\nnb += 1", args='')
+        code = func_gen('foo', body='nb = 0\n' + inner, args='')
         sugg = 'nonlocal nb'
         bad_code, good_code = format_str(code, "", sugg)
         self.throws(bad_code, UNBOUNDLOCAL)
@@ -1635,7 +1638,7 @@ class TypeErrorTests(GetSuggestionsTests):
         self.throws(bad_code2, UNEXPECTEDKWARG, [], after, interpreters='pypy')
         self.throws(bad_code2, NOKWARGS, sugg, interpreters='cpython')
         # The explanation is only relevant for C functions
-        code3 = 'def func_no_arg(n):\n\tpass\nfunc_no_arg({0}2)'
+        code3 = func_gen(param='n', args='{0}2')
         good_code, good_code2, bad_code = format_str(code3, '', 'n=', 'foo=')
         self.runs(good_code)
         self.runs(good_code2)
@@ -2251,10 +2254,11 @@ class SyntaxErrorTests(GetSuggestionsTests):
         # NICE_TO_HAVE
         before, after = before_and_after((3, 0))
         codes = [
-            "def func1():\n\tbar='1'\n\tdef func2():"
-            "\n\t\texec(bar)\n\tfunc2()\nfunc1()",
-            "def func1():\n\texec('1')\n\tdef func2():"
-            "\n\t\tTrue",
+            func_gen(
+                'func1',
+                body=func_gen('func2', body="exec('1')", args=''),
+                args=''),
+            func_gen('func1', body="exec('1')\n" + func_gen('func2')),
         ]
         sys.setrecursionlimit(1000)  # needed for weird PyPy versions
         for code in codes:
@@ -2266,10 +2270,11 @@ class SyntaxErrorTests(GetSuggestionsTests):
         """'import *' in nested functions."""
         # NICE_TO_HAVE
         codes = [
-            "def func1():\n\tbar='1'\n\tdef func2():"
-            "\n\t\tfrom math import *\n\t\tTrue\n\tfunc2()\nfunc1()",
-            "def func1():\n\tfrom math import *"
-            "\n\tdef func2():\n\t\tTrue",
+            func_gen(
+                'func1',
+                body=func_gen('func2', body='from math import *',
+                args='')),
+            func_gen('func1', body='from math import *\n' + func_gen('func2')),
         ]
         sys.setrecursionlimit(1000)  # needed for weird PyPy versions
         with warnings.catch_warnings():
@@ -2290,7 +2295,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         """Unpacking in function arguments was supported up to Python 3."""
         # NICE_TO_HAVE
         before, after = before_and_after((3, 0))
-        code = 'def addpoints((x1, y1), (x2, y2)):\n\tpass'
+        code = func_gen(param='(x1, y1), (x2, y2)')
         self.runs(code, before)
         self.throws(code, INVALIDSYNTAX, [], after)
 
