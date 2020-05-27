@@ -70,7 +70,7 @@ NB_ARG_RE = r"^(?P<func>{0})(?:\(\) takes| expected) " \
     r"(?:\. Did you forget 'self' in the function definition\?)?" \
     r"$".format(QUAL_FUNC_NAME)
 MISSING_POS_ARG_RE = r"^(?P<func>{0})\(\) missing \d+ required positional " \
-    r"arguments?: .*$".format(FUNC_NAME)
+    r"arguments?: .*$".format(QUAL_FUNC_NAME)
 INVALID_SYNTAX_RE = r"^invalid syntax$"
 INVALID_COMP_RE = r"^invalid comparison$"
 INVALID_TOKEN_RE = r"^invalid token$"

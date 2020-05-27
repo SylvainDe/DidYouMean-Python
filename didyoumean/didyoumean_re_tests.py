@@ -444,16 +444,18 @@ class RegexTests(unittest_module.TestCase):
         """Test MISSING_POS_ARG_RE."""
         msgs = [
             # Python 3.3/3.4/3.5
-            "some_func() missing 2 required positional arguments: "
-            "'much' and 'args'",
-            "some_func() missing 1 required positional argument: "
-            "'much'",
+            ("some_func() missing 2 required positional arguments: "
+            "'much' and 'args'", "some_func"),
+            ("some_func() missing 1 required positional argument: "
+            "'much'", "some_func"),
+            # Python 3.10
+            ("MyClass.some_method() missing 2 required positional "
+			"arguments: 'much' and 'args'", "MyClass.some_method"),
         ]
-        func = 'some_func'
-        groups = (func,)
-        named_groups = {'func': func}
-        results = (groups, named_groups)
-        for msg in msgs:
+        for msg, func in msgs:
+            groups = (func,)
+            named_groups = {'func': func}
+            results = (groups, named_groups)
             self.re_matches(msg, re.MISSING_POS_ARG_RE, results)
 
     def test_need_more_values_to_unpack(self):
