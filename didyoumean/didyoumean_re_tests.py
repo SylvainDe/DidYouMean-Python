@@ -241,12 +241,15 @@ class RegexTests(unittest_module.TestCase):
 
     def test_unexpected_kw_arg(self):
         """Test UNEXPECTED_KEYWORDARG_RE."""
-        # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
         msgs = [
+            # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
             ("some_func() got an unexpected keyword argument 'a'",
                 ('some_func', 'a')),
             ("<lambda>() got an unexpected keyword argument 'a'",
                 ('<lambda>', 'a')),
+            # Python 3.10
+            ("MyClass.func() got an unexpected keyword argument 'a'",
+                ('MyClass.func', 'a')),
         ]
         for msg, groups in msgs:
             func, kw_arg = groups
@@ -415,6 +418,9 @@ class RegexTests(unittest_module.TestCase):
                 'some_func', '1', '2'),
             ("some_func() takes 0 positional arguments but 1 was given",
                 'some_func', '0', '1'),
+            # Python 3.10
+            ("MyClass.some_func() takes 0 positional arguments but 1 was given",
+                'MyClass.some_func', '0', '1'),
             # Pypy 3
             ("get() takes from 2 to 3 positional arguments but 4 were given",
                 'get', '2 to 3', '4'),

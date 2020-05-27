@@ -36,7 +36,7 @@ INDICES_MUST_BE_INT_RE = "^{0} ind(?:ices|ex)? must be " \
     r"(?:an integer|integers)(?: or slices)?, not ({0})$".format(TYPE_NAME)
 UNEXPECTED_KEYWORDARG_RE = r"^(?P<func>{1})\(\) " \
     r"got an unexpected keyword argument " \
-    r"'(?P<arg>{0})'$".format(ARG_NAME, FUNC_NAME)
+    r"'(?P<arg>{0})'$".format(ARG_NAME, QUAL_FUNC_NAME)
 UNEXPECTED_KEYWORDARG2_RE = r"^'(?P<arg>{0})' is an " \
     r"invalid keyword argument for this function$".format(ARG_NAME)
 UNEXPECTED_KEYWORDARG3_RE = r"^invalid keyword arguments to " \
@@ -68,7 +68,7 @@ NB_ARG_RE = r"^(?P<func>{0})(?:\(\) takes| expected) " \
     r"\(?(?:but |got )?(?P<actual>\d+)" \
     r"(?: were given| was given| given)?\)?" \
     r"(?:\. Did you forget 'self' in the function definition\?)?" \
-    r"$".format(FUNC_NAME)
+    r"$".format(QUAL_FUNC_NAME)
 MISSING_POS_ARG_RE = r"^(?P<func>{0})\(\) missing \d+ required positional " \
     r"arguments?: .*$".format(FUNC_NAME)
 INVALID_SYNTAX_RE = r"^invalid syntax$"
