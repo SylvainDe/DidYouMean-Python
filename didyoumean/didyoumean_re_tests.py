@@ -445,12 +445,12 @@ class RegexTests(unittest_module.TestCase):
         msgs = [
             # Python 3.3/3.4/3.5
             ("some_func() missing 2 required positional arguments: "
-            "'much' and 'args'", "some_func"),
+                "'much' and 'args'", "some_func"),
             ("some_func() missing 1 required positional argument: "
-            "'much'", "some_func"),
+                "'much'", "some_func"),
             # Python 3.10
             ("MyClass.some_method() missing 2 required positional "
-			"arguments: 'much' and 'args'", "MyClass.some_method"),
+                "arguments: 'much' and 'args'", "MyClass.some_method"),
         ]
         for msg, func in msgs:
             groups = (func,)
