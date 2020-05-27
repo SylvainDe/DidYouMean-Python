@@ -2256,9 +2256,14 @@ class SyntaxErrorTests(GetSuggestionsTests):
         codes = [
             func_gen(
                 'func1',
-                body=func_gen('func2', body="exec('1')", args=''),
+                body="bar='1'\n" + func_gen(
+                    'func2',
+                    body="exec(bar)",
+                    args=''),
                 args=''),
-            func_gen('func1', body="exec('1')\n" + func_gen('func2')),
+            func_gen(
+                'func1',
+                body="exec('1')\n" + func_gen('func2', body='True')),
         ]
         sys.setrecursionlimit(1000)  # needed for weird PyPy versions
         for code in codes:
@@ -2272,8 +2277,10 @@ class SyntaxErrorTests(GetSuggestionsTests):
         codes = [
             func_gen(
                 'func1',
-                body=func_gen('func2', body='from math import *')),
-            func_gen('func1', body='from math import *\n' + func_gen('func2')),
+                body=func_gen('func2', body='from math import *\nTrue')),
+            func_gen(
+                'func1',
+                body='from math import *\n' + func_gen('func2', body='True')),
         ]
         sys.setrecursionlimit(1000)  # needed for weird PyPy versions
         with warnings.catch_warnings():
