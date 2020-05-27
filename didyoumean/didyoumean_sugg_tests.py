@@ -28,6 +28,10 @@ this_is_a_global_list = []  # Value does not really matter but the type does
 initial_recursion_limit = sys.getrecursionlimit()
 
 
+def indent_code(string, tab="\t"):
+    return ''.join(tab + l for l in string.splitlines(True))
+
+
 def func_gen(name='some_func', param='', body='pass', args=None):
     """Generate code corresponding to a function definition.
 
@@ -37,11 +41,31 @@ def func_gen(name='some_func', param='', body='pass', args=None):
     provided or provided None, function call is not included in generated
     code).
     """
-    tab = "\t"
-    indent_body = ''.join(tab + l for l in body.splitlines(True))
-    func = "def {0}({1}):\n{2}\n".format(name, param, indent_body)
-    call = "" if args is None else "{0}({1})\n".format(name, args)
-    return func + call
+    function = "def {0}({1}):\n{2}\n".format(name, param, indent_code(body))
+    if args is None:
+        return function
+    else:
+        call = "{0}({1})\n".format(name, args)
+        return function + call
+
+
+def meth_gen(class_name='MyClass', name='some_method',
+             param='', body='pass', args=None):
+    """Generate code corresponding to a definition of a class with a method
+    (and eventually a call to it).
+    Parameters are : class_name (with default), name (with default), body
+    (with default), parameters (with default) and arguments to call the
+    method with (if not provided or provided None, method call is not
+    included in generated code).
+    """
+    indent_body = indent_code(body, tab="\t\t")
+    method = "def {0}({1}):\n{2}\n".format(name, param, indent_code(body))
+    class_def = "class {0}():\n{1}\n".format(class_name, indent_code(method))
+    if args is None:
+        return class_def
+    else:
+        call = "{0}().{1}({2})\n".format(class_name, name, args)
+        return class_def + call
 
 
 def my_generator():
@@ -1378,73 +1402,87 @@ class TypeErrorTests(GetSuggestionsTests):
     def test_nb_args(self):
         """Should have 1 arg."""
         typo, good = '1, 2', '1'
-        code = func_gen(param='a', args='{0}')
-        bad_code, good_code = format_str(code, typo, good)
-        self.throws(bad_code, NBARGERROR)
-        self.runs(good_code)
+        func_code = func_gen(param='a', args='{0}')
+        meth_code = meth_gen(param='self, a', args='{0}')
+        for code in [func_code, meth_code]:
+            bad_code, good_code = format_str(code, typo, good)
+            self.throws(bad_code, NBARGERROR)
+            self.runs(good_code)
 
     def test_nb_args1(self):
         """Should have 0 args."""
         typo, good = '1', ''
-        code = func_gen(param='', args='{0}')
-        bad_code, good_code = format_str(code, typo, good)
-        self.throws(bad_code, NBARGERROR)
-        self.runs(good_code)
+        func_code = func_gen(param='', args='{0}')
+        meth_code = meth_gen(param='self', args='{0}')
+        for code in [func_code, meth_code]:
+            bad_code, good_code = format_str(code, typo, good)
+            self.throws(bad_code, NBARGERROR)
+            self.runs(good_code)
 
     def test_nb_args2(self):
         """Should have 1 arg."""
         typo, good = '', '1'
         before, after = before_and_after((3, 3))
-        code = func_gen(param='a', args='{0}')
-        bad_code, good_code = format_str(code, typo, good)
-        self.throws(bad_code, NBARGERROR, [], before)
-        self.throws(bad_code, MISSINGPOSERROR, [], after)
-        self.runs(good_code)
+        func_code = func_gen(param='a', args='{0}')
+        meth_code = meth_gen(param='self, a', args='{0}')
+        for code in [func_code, meth_code]:
+            bad_code, good_code = format_str(code, typo, good)
+            self.throws(bad_code, NBARGERROR, [], before)
+            self.throws(bad_code, MISSINGPOSERROR, [], after)
+            self.runs(good_code)
 
     def test_nb_args3(self):
         """Should have 3 args."""
         typo, good = '1', '1, 2, 3'
         before, after = before_and_after((3, 3))
-        code = func_gen(param='so, much, args', args='{0}')
-        bad_code, good_code = format_str(code, typo, good)
-        self.throws(bad_code, NBARGERROR, [], before)
-        self.throws(bad_code, MISSINGPOSERROR, [], after)
-        self.runs(good_code)
+        func_code = func_gen(param='so, much, args', args='{0}')
+        meth_code = meth_gen(param='self, so, much, args', args='{0}')
+        for code in [func_code, meth_code]:
+            bad_code, good_code = format_str(code, typo, good)
+            self.throws(bad_code, NBARGERROR, [], before)
+            self.throws(bad_code, MISSINGPOSERROR, [], after)
+            self.runs(good_code)
 
     def test_nb_args4(self):
         """Should have 3 args."""
         typo, good = '', '1, 2, 3'
         before, after = before_and_after((3, 3))
-        code = func_gen(param='so, much, args', args='{0}')
-        bad_code, good_code = format_str(code, typo, good)
-        self.throws(bad_code, NBARGERROR, [], before)
-        self.throws(bad_code, MISSINGPOSERROR, [], after)
-        self.runs(good_code)
+        func_code = func_gen(param='so, much, args', args='{0}')
+        meth_code = meth_gen(param='self, so, much, args', args='{0}')
+        for code in [func_code, meth_code]:
+            bad_code, good_code = format_str(code, typo, good)
+            self.throws(bad_code, NBARGERROR, [], before)
+            self.throws(bad_code, MISSINGPOSERROR, [], after)
+            self.runs(good_code)
 
     def test_nb_args5(self):
         """Should have 3 args."""
         typo, good = '1, 2', '1, 2, 3'
         before, after = before_and_after((3, 3))
-        code = func_gen(param='so, much, args', args='{0}')
-        bad_code, good_code = format_str(code, typo, good)
-        self.throws(bad_code, NBARGERROR, [], before)
-        self.throws(bad_code, MISSINGPOSERROR, [], after)
-        self.runs(good_code)
+        func_code = func_gen(param='so, much, args', args='{0}')
+        meth_code = meth_gen(param='self, so, much, args', args='{0}')
+        for code in [func_code, meth_code]:
+            bad_code, good_code = format_str(code, typo, good)
+            self.throws(bad_code, NBARGERROR, [], before)
+            self.throws(bad_code, MISSINGPOSERROR, [], after)
+            self.runs(good_code)
 
     def test_nb_args6(self):
         """Should provide more args."""
         # Amusing message: 'func() takes exactly 2 arguments (2 given)'
         before, after = before_and_after((3, 3))
-        code = func_gen(param='a, b, c=3', args='{0}')
-        bad_code, good_code1, good_code2 = format_str(
-            code,
-            'b=2, c=3',
-            'a=1, b=2, c=3',
-            '1, b=2, c=3')
-        self.throws(bad_code, NBARGERROR, [], before)
-        self.throws(bad_code, MISSINGPOSERROR, [], after)
-        self.runs(good_code1)
-        self.runs(good_code2)
+        func_code = func_gen(param='a, b, c=3', args='{0}')
+        meth_code = meth_gen(param='self, a, b, c=3', args='{0}')
+        for code in [func_code, meth_code]:
+            bad_code, good_code1, good_code2 = format_str(
+                code,
+                'b=2, c=3',
+                'a=1, b=2, c=3',
+                '1, b=2, c=3')
+            self.throws(bad_code, NBARGERROR, [], before)
+            self.throws(bad_code, MISSINGPOSERROR, [], after)
+            self.runs(good_code1)
+            self.runs(good_code2)
 
     def test_nb_arg7(self):
         """More tests."""
