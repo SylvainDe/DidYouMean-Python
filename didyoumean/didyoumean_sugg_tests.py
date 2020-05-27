@@ -574,7 +574,7 @@ class NameErrorTests(GetSuggestionsTests):
         # NICE_TO_HAVE
         typo, good = 'foob', 'foo'
         inner = func_gen('g', body='{0}', args='')
-        code = func_gen('f', body = 'foo = 0\n' + inner, args = '')
+        code = func_gen('f', body='foo = 0\n' + inner, args='')
         bad_code, good_code = format_str(code, typo, good)
         self.throws(bad_code, NAMEERROR)
         self.runs(good_code)
@@ -586,7 +586,7 @@ class NameErrorTests(GetSuggestionsTests):
     def test_free_var_before_assignment(self):
         """No suggestion but different error message."""
         inner = func_gen('g', body='return free_var', args='')
-        code = func_gen('f', body = inner + "free_var = 0", args = "")
+        code = func_gen('f', body=inner + "free_var = 0", args="")
         self.throws(code, NAMEERRORBEFOREREF)
 
     # For added/removed names, following functions with one name
@@ -2272,8 +2272,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         codes = [
             func_gen(
                 'func1',
-                body=func_gen('func2', body='from math import *',
-                args='')),
+                body=func_gen('func2', body='from math import *')),
             func_gen('func1', body='from math import *\n' + func_gen('func2')),
         ]
         sys.setrecursionlimit(1000)  # needed for weird PyPy versions
