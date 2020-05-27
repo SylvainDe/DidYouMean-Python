@@ -419,8 +419,8 @@ class RegexTests(unittest_module.TestCase):
             ("some_func() takes 0 positional arguments but 1 was given",
                 'some_func', '0', '1'),
             # Python 3.10
-            ("MyClass.some_func() takes 0 positional arguments but 1 was given",
-                'MyClass.some_func', '0', '1'),
+            ("MyClass.method() takes 0 positional arguments but 1 was given",
+                'MyClass.method', '0', '1'),
             # Pypy 3
             ("get() takes from 2 to 3 positional arguments but 4 were given",
                 'get', '2 to 3', '4'),
