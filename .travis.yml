@@ -214,8 +214,8 @@ install:
       fi
   - |
       case "$TRAVIS_PYTHON_VERSION" in # Install cryptography with specific options to avoid errors later on
-          "pypy") pip install cryptography --no-binary cryptography
-          "pypy-5.4.1") pip install cryptography --no-binary cryptography;
+          "pypy") pip install cryptography --no-binary cryptography;;
+          "pypy-5.4.1") pip install cryptography --no-binary cryptography;;
           *) ;;
       esac
   - |
