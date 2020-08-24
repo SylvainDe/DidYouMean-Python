@@ -355,20 +355,15 @@ All external APIs (decorator, hook, etc) use the same logic behind the scene. It
 See also (similar projects/ideas)
 ---------------------------------
 
- - "Did you mean" for Ruby (links above)
+Projects:
 
- - [PEP 473 :  Adding structured data to built-in exceptions](http://legacy.python.org/dev/peps/pep-0473/).
+ - "Did you mean" for Ruby (links above)
 
  - [dutc/didyoumean](https://github.com/dutc/didyoumean) : a quite similar project developed in pretty much the same time. A few differences though : written in C, works only for AttributeError, etc.
 
- - [Did You Mean in Perl](http://perltricks.com/article/122/2014/10/31/Implementing-Did-You-Mean-in-Perl)
+ - [nvbn/TheF*ck](https://github.com/nvbn/thefuck) : Correct and execute your previous shell command.
 
- - [Commit in iPython](https://github.com/ipython/ipython/pull/9073/files) to add suggestions in case of errors
-
- - Ideas from the Python Ideas mailing list : ["Improve error message when missing 'self' in method definition"](https://mail.python.org/pipermail/python-ideas/2016-October/042672.html), "Better error messages" [part 1](https://mail.python.org/pipermail/python-ideas/2016-November/043848.html) and [part 2](https://mail.python.org/pipermail/python-ideas/2016-December/043910.html)
- - [TheF*ck](https://github.com/nvbn/thefuck) : Correct and execute your previous shell command.
-
- - [PyDidYouMean](https://github.com/asweigart/pydidyoumean) : Improve "file/command not found" errors with suggestions.
+ - [asweigart/PyDidYouMean](https://github.com/asweigart/pydidyoumean) : Improve "file/command not found" errors with suggestions.
 
  - [Qix-/better-exceptions](https://github.com/Qix-/better-exceptions) : Pretty and useful exceptions in Python
 
@@ -376,7 +371,21 @@ See also (similar projects/ideas)
 
  - [cfbolz/syntaxerrors](https://github.com/cfbolz/syntaxerrors) : Python parser that can recover from errors (also, cfbolz added many suggestions for errors to PyPy).
 
+ - [aroberge/friendly-traceback](https://github.com/aroberge/friendly-traceback) : Replace standard traceback by something easier to understand.
+
+ - [Did You Mean in Perl](http://perltricks.com/article/122/2014/10/31/Implementing-Did-You-Mean-in-Perl)
+
+ - [Commit in iPython](https://github.com/ipython/ipython/pull/9073/files) to add suggestions in case of errors
+
+
+Discussions:
+
+ - [PEP 473 :  Adding structured data to built-in exceptions](http://legacy.python.org/dev/peps/pep-0473/).
+
+ - Ideas from the Python Ideas mailing list : ["Improve error message when missing 'self' in method definition"](https://mail.python.org/pipermail/python-ideas/2016-October/042672.html), "Better error messages" [part 1](https://mail.python.org/pipermail/python-ideas/2016-November/043848.html) and [part 2](https://mail.python.org/pipermail/python-ideas/2016-December/043910.html)
+
  - In [Raymond Hettinger's PyconCA keynote](https://www.youtube.com/watch?v=-TdrFjDJn5E), the part about the `hint` builtin (at 14 minutes) looks a lot like `didyoumean_postmortem`.
+
 
 Contributing
 ------------
