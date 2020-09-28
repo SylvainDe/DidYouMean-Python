@@ -258,7 +258,7 @@ script:
       else
         coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py || true
       fi
- - python didyoumean/didyoumean_sugg_tests.py
+ - python tests/sugg_test.py
  - python didyoumean/readme_examples.py
  - |
       if ([ "$TRAVIS_PYTHON_VERSION" != "pypy-5.4.1" ]); then

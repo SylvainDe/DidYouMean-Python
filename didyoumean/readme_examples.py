@@ -1,7 +1,7 @@
 # -*- coding: utf-8
 """Code to generate examples in README.md."""
-from didyoumean_internal import add_suggestions_to_exception
-import didyoumean_common_tests as common
+from didyoumean.internal import add_suggestions_to_exception
+import tests.common_test as common
 import os
 
 

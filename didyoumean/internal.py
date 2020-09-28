@@ -2,7 +2,7 @@
 """Logic to add suggestions to exceptions."""
 import keyword
 import difflib
-import didyoumean_re as re
+import didyoumean.dre as re
 import itertools
 import inspect
 import errno
