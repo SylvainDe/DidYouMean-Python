@@ -1268,6 +1268,16 @@ class AttributeErrorTests(GetSuggestionsTests):
                 self.throws(set1, INVALIDSYNTAX, [], before)
                 self.runs(set1, after)
 
+    def test_period_should_be_comma(self):
+        """Should be "a, b" instead of "a. b"."""
+        # NICE_TO_HAVE
+        # https://twitter.com/raymondh/status/1296865073747513344
+        typo, good = ".", ","
+        code = "a, b = 1, 2\nmin(a{0} b)"
+        bad_code, good_code = format_str(code, typo, good)
+        self.throws(bad_code, ATTRIBUTEERROR)
+        self.runs(good_code)
+
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""
         code = 'raise AttributeError("unmatched ATTRIBUTEERROR")'
