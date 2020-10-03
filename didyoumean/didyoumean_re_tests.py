@@ -24,6 +24,20 @@ CHECK_RE_VALUE = True
 class RegexTests(unittest_module.TestCase):
     """Tests to check that error messages match the regexps."""
 
+    def assertRegexp(self, text, regex, msg=None):
+        """Wrapper around the different names for assertRegexp...."""
+        for name in ['assertRegex', 'assertRegexpMatches']:
+            if hasattr(self, name):
+                return getattr(self, name)(text, regex, msg)
+        self.assertTrue(False, "No method to check assertRegexp")
+
+    def assertNotRegexp(self, text, regex, msg=None):
+        """Wrapper around the different names for assertRegexpNot...."""
+        for name in ['assertNotRegex', 'assertNotRegexpMatches']:
+            if hasattr(self, name):
+                return getattr(self, name)(text, regex, msg)
+        self.assertTrue(False, "No method to check assertNotRegexp")
+
     def re_matches(self, text, regexp, results):
         """Check that text matches regexp and gives the right match groups.
 
@@ -31,7 +45,7 @@ class RegexTests(unittest_module.TestCase):
         and groupdict().
         """
         groups, named_groups = results
-        self.assertRegexpMatches(text, regexp)   # does pretty printing
+        self.assertRegexp(text, regexp)   # does pretty printing
         match = re.match(regexp, text)
         self.assertTrue(match)
         self.assertEqual(groups, match.groups())
@@ -57,7 +71,7 @@ class RegexTests(unittest_module.TestCase):
             elif CHECK_OTHERS_DONT_MATCH:
                 details = "text '%s' matches %s (on top of %s)" % \
                         (text, other_name, regexp)
-                self.assertNotRegexpMatches(text, other_re, details)
+                self.assertNotRegexp(text, other_re, details)
                 no_match = re.match(other_re, text)
                 self.assertEqual(no_match, None, details)
         if CHECK_RE_LISTED:
@@ -69,9 +83,9 @@ class RegexTests(unittest_module.TestCase):
         real_names = set(locals().keys()) | set(globals().keys())
         names = ['a', 'a1', '_a1', 'aa_bb'] + list(real_names)
         for name in names:
-            self.assertRegexpMatches(name, regex)
+            self.assertRegexp(name, regex)
         for name in ['1a']:
-            self.assertNotRegexpMatches(name, regex)
+            self.assertNotRegexp(name, regex)
 
     def test_attr_name(self):
         """Test ATTR_NAME."""
@@ -81,9 +95,9 @@ class RegexTests(unittest_module.TestCase):
                          for att in dir(o))
         attrs = ['do_stuff', '__magic__'] + list(real_attrs)
         for attr in attrs:
-            self.assertRegexpMatches(attr, regex)
+            self.assertRegexp(attr, regex)
         for attr in ['1a']:
-            self.assertNotRegexpMatches(attr, regex)
+            self.assertNotRegexp(attr, regex)
 
     def test_type_name(self):
         """Test TYPE_NAME."""
@@ -97,7 +111,7 @@ class RegexTests(unittest_module.TestCase):
             'builtin_function_or_method'
         ] + list(real_types)
         for type_ in types:
-            self.assertRegexpMatches(type_, regex)
+            self.assertRegexp(type_, regex)
 
     def test_func_name(self):
         """Test FUNC_NAME."""
@@ -107,7 +121,7 @@ class RegexTests(unittest_module.TestCase):
         real_func_names = [f.__name__ for f in real_funcs]
         more_func_names = ['get', 'range', '<lambda>', 'print']
         for func in real_func_names + more_func_names:
-            self.assertRegexpMatches(func, regex)
+            self.assertRegexp(func, regex)
 
     def test_qual_func_name(self):
         """Test QUAL_FUNC_NAME."""
@@ -118,7 +132,7 @@ class RegexTests(unittest_module.TestCase):
                            if hasattr(f, "__qualname__")]
         more_func_names = ['struct.pack', 'deque.index', 'Struct.pack']
         for func in real_func_names + more_func_names:
-            self.assertRegexpMatches(func, regex)
+            self.assertRegexp(func, regex)
 
     def test_module_name(self):
         """Test MODULE_NAME."""
@@ -126,7 +140,7 @@ class RegexTests(unittest_module.TestCase):
         real_modules = set(sys.modules.keys())
         modules = ['sys', 'unittest.runner'] + list(real_modules)
         for mod in modules:
-            self.assertRegexpMatches(mod, regex)
+            self.assertRegexp(mod, regex)
 
     def test_unbound_assignment(self):
         """Test VARREFBEFOREASSIGN_RE."""

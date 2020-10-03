@@ -454,7 +454,7 @@ class GetSuggestionsTests(unittest_module.TestCase):
                 .format(type_caught, value, error_type) + details)
             msg = next((a for a in value.args if isinstance(a, str)), '')
             if error_msg:
-                self.assertRegexpMatches(msg, error_msg, details)
+                self.assertRegexp(msg, error_msg, details)
             self.assertEqual(suggestions, sugg, details)
 
     def log_exception(self, code, exc, suggestions):
@@ -470,6 +470,13 @@ class GetSuggestionsTests(unittest_module.TestCase):
                 value,
                 suggestions,
             ))
+
+    def assertRegexp(self, text, regex, msg=None):
+        """Wrapper around the different names for assertRegexp...."""
+        for name in ['assertRegex', 'assertRegexpMatches']:
+            if hasattr(self, name):
+                return getattr(self, name)(text, regex, msg)
+        self.assertTrue(False, "No method to check assertRegexp")
 
 
 class NameErrorTests(GetSuggestionsTests):
