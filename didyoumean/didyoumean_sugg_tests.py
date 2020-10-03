@@ -5,7 +5,7 @@ from didyoumean_internal import get_suggestions_for_exception, quote, \
     APPLY_REMOVED_MSG, BUFFER_REMOVED_MSG, CMP_REMOVED_MSG, \
     CMP_ARG_REMOVED_MSG, EXC_ATTR_REMOVED_MSG, LONG_REMOVED_MSG, \
     MEMVIEW_ADDED_MSG, RELOAD_REMOVED_MSG, STDERR_REMOVED_MSG, \
-    BREAKPOINT_ADDED_MSG, NO_KEYWORD_ARG_MSG
+    BREAKPOINT_ADDED_MSG, NO_KEYWORD_ARG_MSG, COMMA_INSTEAD_OF_PERIOD_MSG
 import didyoumean_common_tests as common
 import didyoumean_re as re
 import warnings
@@ -1275,7 +1275,7 @@ class AttributeErrorTests(GetSuggestionsTests):
         typo, good = ".", ","
         code = "a, b = 1, 2\nmin(a{0} b)"
         bad_code, good_code = format_str(code, typo, good)
-        self.throws(bad_code, ATTRIBUTEERROR)
+        self.throws(bad_code, ATTRIBUTEERROR, COMMA_INSTEAD_OF_PERIOD_MSG)
         self.runs(good_code)
 
     def test_unmatched_msg(self):

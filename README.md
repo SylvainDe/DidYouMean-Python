@@ -173,14 +173,6 @@ math.pie
 #>>> Before: AttributeError("'module' object has no attribute 'pie'",)
 #>>> After: AttributeError("'module' object has no attribute 'pie'. Did you mean 'pi'?",)
 ```
-##### Detection of mis-used builtins
-
-```python
-lst = [1, 2, 3]
-lst.max()
-#>>> Before: AttributeError("'list' object has no attribute 'max'",)
-#>>> After: AttributeError("'list' object has no attribute 'max'. Did you mean 'max(list)'?",)
-```
 ##### Trying to find method with similar meaning (hardcoded)
 
 ```python
@@ -194,6 +186,22 @@ lst = [1, 2, 3]
 lst.get(5, None)
 #>>> Before: AttributeError("'list' object has no attribute 'get'",)
 #>>> After: AttributeError("'list' object has no attribute 'get'. Did you mean 'obj[key]' with a len() check or try: except: KeyError or IndexError?",)
+```
+##### Detection of mis-used builtins
+
+```python
+lst = [1, 2, 3]
+lst.max()
+#>>> Before: AttributeError("'list' object has no attribute 'max'")
+#>>> After: AttributeError("'list' object has no attribute 'max'. Did you mean 'max(list)'?")
+```
+##### Period used instead of comma
+
+```python
+a, b = 1, 2
+max(a. b)
+#>>> Before: AttributeError("'int' object has no attribute 'b'")
+#>>> After: AttributeError("'int' object has no attribute 'b'. Did you mean to use a comma instead of a period?")
 ```
 ### ImportError
 

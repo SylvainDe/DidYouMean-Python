@@ -72,6 +72,8 @@ BREAKPOINT_ADDED_MSG = 'to use "import pdb; pdb.set_trace()" (`breakpoint` " \
     "is added in Python 3.7)'
 NO_KEYWORD_ARG_MSG = "use positional arguments (functions written in C \
     do not accept keyword arguments, only positional arguments)"
+#: Message to suggest using comma instead of period
+COMMA_INSTEAD_OF_PERIOD_MSG = "to use a comma instead of a period"
 
 
 # Helper function for string manipulation
@@ -389,20 +391,27 @@ def get_attribute_suggestions(type_str, attribute, frame):
             attributes = set(dir(mod))
 
     return itertools.chain(
-        suggest_attribute_as_builtin(attribute, type_str, frame),
+        suggest_attribute_is_other_obj(attribute, type_str, frame),
         suggest_attribute_alternative(attribute, type_str, attributes),
         suggest_attribute_as_typo(attribute, attributes),
         suggest_attribute_as_special_case(attribute))
 
 
-def suggest_attribute_as_builtin(attribute, type_str, frame):
-    """Suggest that a builtin was used as an attribute.
+def suggest_attribute_is_other_obj(attribute, type_str, frame):
+    """Suggest that attribute correspond to another object.
 
-    Example: 'lst.len()' -> 'len(lst)'.
+    This can happen in two cases:
+	 - A misused builtin function
+        * Examples: 'lst.len()' -> 'len(lst)', 'gen.next()' -> 'next(gen)'
+	 - A typo on the '.' which should have been a ','
+	    * Example: a, b = 1, 2 then: 'min(a. b)' -> 'min(a, b)'
     """
-    obj = frame.f_builtins.get(attribute)
-    if obj is not None and '__call__' in dir(obj):
-        yield quote(attribute + '(' + type_str + ')')
+    for obj, scope in get_objects_in_frame(frame).get(attribute, []):
+        if attribute in frame.f_code.co_names:
+            if scope == 'builtin' and '__call__' in dir(obj):
+                yield quote(attribute + '(' + type_str + ')')
+            else:
+                yield COMMA_INSTEAD_OF_PERIOD_MSG
 
 
 def suggest_attribute_alternative(attribute, type_str, attributes):
