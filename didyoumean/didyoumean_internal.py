@@ -401,10 +401,10 @@ def suggest_attribute_is_other_obj(attribute, type_str, frame):
     """Suggest that attribute correspond to another object.
 
     This can happen in two cases:
-	 - A misused builtin function
+     - A misused builtin function
         * Examples: 'lst.len()' -> 'len(lst)', 'gen.next()' -> 'next(gen)'
-	 - A typo on the '.' which should have been a ','
-	    * Example: a, b = 1, 2 then: 'min(a. b)' -> 'min(a, b)'
+     - A typo on the '.' which should have been a ','
+        * Example: a, b = 1, 2 then: 'min(a. b)' -> 'min(a, b)'
     """
     for obj, scope in get_objects_in_frame(frame).get(attribute, []):
         if attribute in frame.f_code.co_names:
