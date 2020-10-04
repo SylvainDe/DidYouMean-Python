@@ -172,7 +172,7 @@ def get_types_for_str(tp_name, frame):
 
 
 def merge_dict(*dicts):
-    """Merge dicts and return a dictionnary mapping key to list of values.
+    """Merge dicts and return a dictionary mapping key to list of values.
 
     Order of the values corresponds to the order of the original dicts.
     """
@@ -194,7 +194,7 @@ def get_objects_in_frame(frame):
     """Get objects defined in a given frame.
 
     This includes variable, types, builtins, etc.
-    The function returns a dictionnary mapping names to a (non empty)
+    The function returns a dictionary mapping names to a (non empty)
     list of ScopedObj objects in the order following the LEGB Rule.
     """
     # https://www.python.org/dev/peps/pep-0227/ PEP227 Statically Nested Scopes

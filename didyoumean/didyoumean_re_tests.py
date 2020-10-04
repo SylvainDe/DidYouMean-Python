@@ -825,7 +825,7 @@ class RegexTests(unittest_module.TestCase):
         """Test SIZE_CHANGED_DURING_ITER_RE."""
         msgs = {
             "Set": "Set changed size during iteration",
-            "dictionnary": "dictionnary changed size during iteration",
+            "dictionary": "dictionary changed size during iteration",
         }
         for name, msg in msgs.items():
             groups = (name, )
