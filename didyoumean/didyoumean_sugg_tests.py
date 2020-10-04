@@ -1270,7 +1270,6 @@ class AttributeErrorTests(GetSuggestionsTests):
 
     def test_period_should_be_comma(self):
         """Should be "a, b" instead of "a. b"."""
-        # NICE_TO_HAVE
         # https://twitter.com/raymondh/status/1296865073747513344
         typo, good = ".", ","
         code = "a, b = 1, 2\nmin(a{0} b)"
