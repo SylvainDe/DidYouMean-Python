@@ -987,6 +987,32 @@ def get_last_frame(traceback):
     return traceback.tb_frame
 
 
+def print_frame_information(frame):
+    """Print information about a frame and the data one can get from it."""
+    # For debug purposes
+    print("-----")
+    print("Frame", frame)
+    # print(dir(frame))
+    print("-----")
+    code = frame.f_code
+    print("Frame.code", code)
+    # print(dir(code))
+    cellvars = code.co_cellvars
+    print("Frame.code.cellvars", cellvars)
+    # print(dir(cellvars))
+    cocode = code.co_code
+    print("Frame.code.cocode", cocode)
+    coname = code.co_name
+    print("Frame.code.coname", coname)
+    conames = code.co_names
+    print("Frame.code.conames", conames)
+    print("-----")
+    lasti = frame.f_lasti
+    print("Frame.lasti", lasti)
+    # print(dir(lasti))
+    print("-----")
+
+
 def add_suggestions_to_exception(type_, value, traceback):
     """Add suggestion to an exception.
 
