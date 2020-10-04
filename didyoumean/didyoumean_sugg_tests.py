@@ -29,6 +29,7 @@ initial_recursion_limit = sys.getrecursionlimit()
 
 
 def indent_code(string, tab="\t"):
+    """Add indentation an indentation level to a piece of code as a string."""
     return ''.join(tab + l for l in string.splitlines(True))
 
 
