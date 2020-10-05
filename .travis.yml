@@ -232,8 +232,8 @@ before_script:
  - echo $TRAVIS_PYTHON_VERSION
  - python -VV
  - python -c "import sys; print(sys._git)" || true
- - pep8 --ignore=E501,E231,E203,W503,E126,E123,E223 *.py */*.py
- - pep8 --select=E501,E231,E203,W503,E126,E123,E223 *.py */*.py || true
+ - pep8 --ignore=E501,E231,E203,W503,E126,E123,E223,E226 *.py */*.py
+ - pep8 --select=E501,E231,E203,W503,E126,E123,E223,E226 *.py */*.py || true
  - pep257 *.py */*.py || true
  - pydocstyle *.py */*.py || true
  - pyflakes . || true
