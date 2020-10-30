@@ -140,7 +140,8 @@ class RegexTests(unittest_module.TestCase):
         real_modules = set(sys.modules.keys())
         modules = ['sys', 'unittest.runner'] + list(real_modules)
         for mod in modules:
-            self.assertRegexp(mod, regex)
+            if not mod.startswith('$coverage'):
+                self.assertRegexp(mod, regex)
 
     def test_unbound_assignment(self):
         """Test VARREFBEFOREASSIGN_RE."""
