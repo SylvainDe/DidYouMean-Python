@@ -3,7 +3,7 @@ DidYouMean-Python (aka BetterErrorMessages)
 
 [![BetterErrorMessages on PyPI](https://badge.fury.io/py/BetterErrorMessages.svg)](https://badge.fury.io/py/BetterErrorMessages)
 
-[![Build Status](https://travis-ci.org/SylvainDe/DidYouMean-Python.svg)](https://travis-ci.org/SylvainDe/DidYouMean-Python)
+[![Build Status](https://travis-ci.com/SylvainDe/DidYouMean-Python.svg)](https://travis-ci.com/SylvainDe/DidYouMean-Python)
 
 [![Coverage Status](https://coveralls.io/repos/SylvainDe/DidYouMean-Python/badge.svg?branch=master)](https://coveralls.io/r/SylvainDe/DidYouMean-Python?branch=master)
 [![codecov.io](http://codecov.io/github/SylvainDe/DidYouMean-Python/coverage.svg?branch=master)](http://codecov.io/github/SylvainDe/DidYouMean-Python?branch=master)
