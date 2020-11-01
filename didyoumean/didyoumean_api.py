@@ -1,8 +1,8 @@
 # -*- coding: utf-8
 """APIs to add suggestions to exceptions."""
-from didyoumean_internal import add_suggestions_to_exception
 import functools
 import sys
+from .didyoumean_internal import add_suggestions_to_exception
 
 
 def didyoumean_decorator(func):

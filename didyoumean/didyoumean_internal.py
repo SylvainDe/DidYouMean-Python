@@ -2,13 +2,14 @@
 """Logic to add suggestions to exceptions."""
 import keyword
 import difflib
-import didyoumean_re as re
 import itertools
 import inspect
 import errno
 import os
 import sys
 from collections import namedtuple
+
+from didyoumean import didyoumean_re as re
 
 
 #: Standard modules we'll consider while searching for symbols, for instance:
