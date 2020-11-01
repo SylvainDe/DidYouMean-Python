@@ -8,7 +8,7 @@ import tempfile
 from shutil import rmtree
 
 from .didyoumean_internal import (
-    get_suggestions_for_exception, 
+    get_suggestions_for_exception,
     quote,
     STAND_MODULES,
     AVOID_REC_MSG,

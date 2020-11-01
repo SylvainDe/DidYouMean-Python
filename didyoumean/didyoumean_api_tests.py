@@ -18,6 +18,7 @@ from .didyoumean_common_tests import (
     unittest_module
     )
 
+
 class ApiTest(TestWithStringFunction):
     """Tests about the didyoumean APIs.
 

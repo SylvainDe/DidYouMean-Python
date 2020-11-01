@@ -11,13 +11,13 @@ from .didyoumean_internal import (
     get_subclasses,
     get_types_for_str,
     get_types_for_str_using_inheritance,
-    get_types_for_str_using_names
+    get_types_for_str_using_names,
 )
 from didyoumean import didyoumean_common_tests as common
 from .didyoumean_common_tests import (
     unittest_module,
     CommonTestOldStyleClass2,
-    CommonTestNewStyleClass2 
+    CommonTestNewStyleClass2,
 )
 
 OLD_CLASS_SUPPORT = sys.version_info >= (3, 0)
