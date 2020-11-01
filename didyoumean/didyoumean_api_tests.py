@@ -276,7 +276,7 @@ class IPythonHookTest(unittest_module.TestCase, HookTest):
         """Run code with didyoumean after enabling didyoumean hook."""
         prev_handler = None
         shell = DummyShell()
-        module = sys.modules['didyoumean_api']
+        module = sys.modules['didyoumean.didyoumean_api']
         shell.set(module)
         self.assertEqual(shell.handler, prev_handler)
         didyoumean_enablehook()
