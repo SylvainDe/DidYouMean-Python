@@ -36,7 +36,7 @@ class GetObjectInFrameTests(unittest_module.TestCase):
     """Class for tests related to frame/backtrace/etc inspection.
 
     Tested functions are : get_objects_in_frame.
-    No tests about 'nonlocal' is written because it is only supported
+    Tests about 'nonlocal' could be written because only tested
     from Python 3.
     """
 
@@ -53,13 +53,15 @@ class GetObjectInFrameTests(unittest_module.TestCase):
         """
         frame = sys._getframe(1)  # frame of calling function
         lst = get_objects_in_frame(frame).get(name, [])
-        self.assertEqual(len(lst), len(expected))
-        for scopedobj, exp in zip(lst, expected):
-            obj, scope = scopedobj
-            expobj, expscope = exp
-            self.assertEqual(scope, expscope, name)
-            if expobj is not None:
-                self.assertEqual(obj, expobj, name)
+        if len(lst) == len(expected):
+            for scopedobj, exp in zip(lst, expected):
+                obj, scope = scopedobj
+                expobj, expscope = exp
+                self.assertEqual(scope, expscope, name)
+                if expobj is not None:
+                    self.assertEqual(obj, expobj, name)
+        else:
+            self.assertEqual(lst, expected)
 
     def test_builtin(self):
         """Test with builtin."""
@@ -91,7 +93,7 @@ class GetObjectInFrameTests(unittest_module.TestCase):
         global_var = 1  # noqa
         self.name_corresponds_to(name, [(1, 'local'), (42, 'global')])
 
-    def test_global_keword(self):
+    def test_global_keyword(self):
         """Test with global keyword."""
         # Funny detail : the global keyword works even if at the end of
         # the function (after the code it affects) but this raises a
@@ -130,10 +132,9 @@ class GetObjectInFrameTests(unittest_module.TestCase):
             qux = 5  # noqa
             self.name_corresponds_to('qux', [(5, 'local')])
             self.name_corresponds_to('baz', [(4, 'local')])
-            self.name_corresponds_to('foo', [(3, 'local')])
-            self.name_corresponds_to('bar', [])
-            self.name_corresponds_to(
-                'global_var', [(42, 'global')])
+            self.name_corresponds_to('foo', [(3, 'local'), (1, 'non-local')])
+            self.name_corresponds_to('bar', [(2, 'non-local')])
+            self.name_corresponds_to('global_var', [(42, 'global')])
         nested_func(3, 4)
         self.name_corresponds_to('nested_func', [(nested_func, 'local')])
         self.name_corresponds_to('foo', [(1, 'local')])
@@ -144,9 +145,9 @@ class GetObjectInFrameTests(unittest_module.TestCase):
         bar = 2  # noqa
 
         def nested_func():
-            self.name_corresponds_to('bar', [])
+            self.name_corresponds_to('bar', [(2, 'non-local')])
             bar = 3  # noqa
-            self.name_corresponds_to('bar', [(3, 'local')])
+            self.name_corresponds_to('bar', [(3, 'local'), (2, 'non-local')])
 
         nested_func()
         self.name_corresponds_to('nested_func', [(nested_func, 'local')])
@@ -168,7 +169,8 @@ class GetObjectInFrameTests(unittest_module.TestCase):
         global_var = 1  # noqa
 
         def nested_func():
-            self.name_corresponds_to('global_var', [(42, 'global')])
+            self.name_corresponds_to(
+                'global_var', [(1, 'non-local'), (42, 'global')])
 
         nested_func()
         self.name_corresponds_to('global_var', [(1, 'local'), (42, 'global')])
@@ -181,12 +183,12 @@ class GetObjectInFrameTests(unittest_module.TestCase):
         def nested_func():
             bar = 4  # noqa
             baz = 5  # noqa
-            self.name_corresponds_to('foo', [])
-            self.name_corresponds_to('bar', [(4, 'local')])
+            self.name_corresponds_to('foo', [(3, 'non-local')])
+            self.name_corresponds_to('bar', [(4, 'local'), (2, 'non-local')])
 
             def nested_func2():
-                self.name_corresponds_to('foo', [])
-                self.name_corresponds_to('bar', [])
+                self.name_corresponds_to('foo', [(3, 'non-local')])
+                self.name_corresponds_to('bar', [(4, 'non-local')])
 
             nested_func2()
 

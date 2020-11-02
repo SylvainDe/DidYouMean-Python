@@ -190,6 +190,29 @@ def add_scope_to_dict(dict_, scope):
     return dict((k, ScopedObj(v, scope)) for k, v in dict_.items())
 
 
+def get_non_local_objects(frame):
+    """Get non-local objects for a given frame.
+
+    This iterates over the different frames to get the different local
+    variables in each frame. Also, duplicated objects which are also in
+    a different scope (either globals or the original local namespace)
+    are filtered out."""
+    nonlocals = dict()
+    global_namespace = frame.f_globals
+    original_locals = frame.f_locals
+    while frame is not None:
+        for name, value in frame.f_locals.items():
+            if name in nonlocals:
+                continue
+            if name in global_namespace and value is global_namespace[name]:
+                continue
+            if name in original_locals and value is original_locals[name]:
+                continue
+            nonlocals[name] = value
+        frame = frame.f_back
+    return nonlocals
+
+
 def get_objects_in_frame(frame):
     """Get objects defined in a given frame.
 
@@ -202,11 +225,10 @@ def get_objects_in_frame(frame):
     #      access to all visible scopes."
     # https://www.python.org/dev/peps/pep-3104/ PEP 3104 Access to Names in
     #      Outer Scopes
-    # LEGB Rule : missing E (enclosing) at the moment.
-    # I'm not sure if it can be fixed but if it can, suggestions
-    # tagged TODO_ENCLOSING could be implemented (and tested).
+    # LEGB Rule : Local - Enclosing - Global - Buildin
     return merge_dict(
         add_scope_to_dict(frame.f_locals, 'local'),
+        add_scope_to_dict(get_non_local_objects(frame), 'non-local'),
         add_scope_to_dict(frame.f_globals, 'global'),
         add_scope_to_dict(frame.f_builtins, 'builtin'),
     )
@@ -412,6 +434,7 @@ def suggest_attribute_is_other_obj(attribute, type_str, frame):
                 yield quote(attribute + '(' + type_str + ')')
             else:
                 yield COMMA_INSTEAD_OF_PERIOD_MSG
+        break
 
 
 def suggest_attribute_alternative(attribute, type_str, attributes):
@@ -993,6 +1016,9 @@ def print_frame_information(frame):
     print("-----")
     print("Frame", frame)
     # print(dir(frame))
+    print("-----")
+    back = frame.back
+    print("Frame.back", back)
     print("-----")
     code = frame.f_code
     print("Frame.code", code)

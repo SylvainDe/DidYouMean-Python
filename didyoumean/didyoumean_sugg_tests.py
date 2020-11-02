@@ -417,6 +417,8 @@ class GetSuggestionsTests(unittest_module.TestCase):
     work.
     """
 
+    longMessage = True
+
     def runs(self, code, version_range=None, interpreters=None):
         """Helper function to run code.
 
@@ -515,7 +517,7 @@ class NameErrorTests(GetSuggestionsTests):
         """Should be 'max'."""
         typo, good = 'maxi', 'max'
         sugg = "'{0}' (builtin)".format(good)
-        self.throws(typo, NAMEERROR, sugg)
+        self.throws(typo, NAMEERROR, ["'main' (non-local)", sugg])
         self.runs(good)
 
     def test_keyword(self):
@@ -539,7 +541,7 @@ class NameErrorTests(GetSuggestionsTests):
     def test_name(self):
         """Should be '__name__'."""
         typo, good = '__name_', '__name__'
-        sugg = "'{0}' (global)".format(good)
+        sugg = "'{0}' (non-local)".format(good)
         self.throws(typo, NAMEERROR, sugg)
         self.runs(good)
 
@@ -603,12 +605,11 @@ class NameErrorTests(GetSuggestionsTests):
 
     def test_enclosing_scope(self):
         """Test that variables from enclosing scope are suggested."""
-        # NICE_TO_HAVE
         typo, good = 'foob', 'foo'
         inner = func_gen('g', body='{0}', args='')
         code = func_gen('f', body='foo = 0\n' + inner, args='')
         bad_code, good_code = format_str(code, typo, good)
-        self.throws(bad_code, NAMEERROR)
+        self.throws(bad_code, NAMEERROR, "'foo' (non-local)")
         self.runs(good_code)
 
     def test_no_sugg(self):
@@ -768,7 +769,8 @@ class NameErrorTests(GetSuggestionsTests):
                 'PermissionError': ["'ZeroDivisionError' (builtin)"],
                 'ProcessLookupError': ["'LookupError' (builtin)"],
                 'TimeoutError': [],
-                '__loader__': [],
+                '__loader__': ["'loader' (non-local)",
+                               "'mod_loader' (non-local)"],
                 }.items():
             self.throws(name, NAMEERROR, suggs, before)
             self.runs(name, after)
@@ -872,18 +874,18 @@ class NameErrorTests(GetSuggestionsTests):
 
     def test_shell_commands(self):
         """Trying shell commands."""
-        cmd, good = 'ls', 'os.listdir(os.getcwd())'
-        self.throws(cmd, NAMEERROR, quote(good))
+        shell_cmd, good = 'ls', 'os.listdir(os.getcwd())'
+        self.throws(shell_cmd, NAMEERROR, quote(good))
         self.runs(good)
-        cmd, good = 'pwd', 'os.getcwd()'
-        self.throws(cmd, NAMEERROR, quote(good))
+        shell_cmd, good = 'pwd', 'os.getcwd()'
+        self.throws(shell_cmd, NAMEERROR, quote(good))
         self.runs(good)
-        cmd, good = 'cd', 'os.chdir(path)'
-        self.throws(cmd, NAMEERROR, quote(good))
+        shell_cmd, good = 'cd', 'os.chdir(path)'
+        self.throws(shell_cmd, NAMEERROR, quote(good))
         self.runs(good.replace('path', 'os.getcwd()'))
-        cmd = 'rm'
+        shell_cmd = 'rm'
         sugg = "'os.remove(filename)', 'shutil.rmtree(dir)' for recursive"
-        self.throws(cmd, NAMEERROR, sugg)
+        self.throws(shell_cmd, NAMEERROR, sugg)
 
     def test_unmatched_msg(self):
         """Test that arbitrary strings are supported."""
