@@ -1,6 +1,7 @@
 # -*- coding: utf-8
 """Unit tests for get_suggestions_for_exception."""
 from didyoumean_internal import get_suggestions_for_exception, quote, \
+    get_objects_in_frame, suggest_name_as_attribute, \
     STAND_MODULES, AVOID_REC_MSG, \
     APPLY_REMOVED_MSG, BUFFER_REMOVED_MSG, CMP_REMOVED_MSG, \
     CMP_ARG_REMOVED_MSG, EXC_ATTR_REMOVED_MSG, LONG_REMOVED_MSG, \
@@ -696,13 +697,28 @@ class NameErrorTests(GetSuggestionsTests):
         # self.runs(code, before)
         self.throws(code, NAMEERROR, "'input' (builtin)", after)
 
+    def get_name_as_attribute_suggestions(self, name):
+        """"Help to get suggestions from 'suggest_name_as_attribute'
+
+        This is a pretty ugly solution to a real problem: when testing name
+        errors, we often have many suggestions of the form "'obj.attr'" where
+        attr is the same as the name that led to NameError. Most of these
+        suggestions are relevant but they can be hard to list explicitely
+        in a unit-test because they depend heavily on the context (include
+        all the names available). Thus, the trick is to try to regenerate
+        the same list."""
+        objs = get_objects_in_frame(sys._getframe(0))
+        return list(suggest_name_as_attribute(name, objs))
+
     def test_removed_buffer(self):
         """Builtin buffer is removed - use memoryview instead."""
         code = 'buffer(b"abc")'
         new_code = 'memoryview(b"abc")'
+        sugg_xxx = [BUFFER_REMOVED_MSG] + \
+            self.get_name_as_attribute_suggestions('buffer')
         before, after = before_and_after((3, 0))
         self.runs(code, before)
-        self.throws(code, NAMEERROR, BUFFER_REMOVED_MSG, after)
+        self.throws(code, NAMEERROR, sugg_xxx, after)
         self.runs(new_code, from_version((2, 7)))
 
     def test_added_2_7(self):
@@ -716,12 +732,14 @@ class NameErrorTests(GetSuggestionsTests):
 
     def test_removed_3_0(self):
         """Test for names removed in 3.0."""
+        sugg_xxx = [BUFFER_REMOVED_MSG] + \
+            self.get_name_as_attribute_suggestions('buffer')
         before, after = before_and_after((3, 0))
         for name, suggs in {
                 'StandardError': [STDERR_REMOVED_MSG],
                 'apply': [APPLY_REMOVED_MSG],
                 'basestring': [],
-                'buffer': [BUFFER_REMOVED_MSG],
+                'buffer': sugg_xxx,
                 'cmp': [CMP_REMOVED_MSG],
                 'coerce': [],
                 'execfile': [],
