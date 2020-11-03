@@ -2712,6 +2712,6 @@ if __name__ == '__main__':
     print(sys.version_info)
     exc_history = []
     main_module = sys.modules[__name__]
-    loader = unittest_module.TestLoader().loadTestsFromModule(main_module)
-    unittest_module.TextTestRunner().run(loader)
+    unittest_module.TextTestRunner().run(
+        unittest_module.TestLoader().loadTestsFromModule(main_module))
     print(exc_history)
