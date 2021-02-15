@@ -1,0 +1,51 @@
+name: my_github_actions
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+        - '2.7'
+        - '3.5'
+        - '3.6'
+        - '3.7'
+        - '3.8'
+        - 'pypy-3.6' # the latest available version of PyPy that supports Python 3.6
+        - 'pypy-3.7' # the latest available version of PyPy that supports Python 3.7
+        - 'pypy-3.7-v7.3.3' # Python 3.7 and PyPy 7.3.3
+
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Show Python version information
+      run: |
+        python -VV
+        python -c "import sys; print(sys._git)" || true
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pep8
+        pip install pep257 || true
+        pip install pydocstyle || true
+    - name: Check codestyle |
+        pep8 --ignore=E501,E231,E203,W503,E126,E123,E223,E226 *.py */*.py
+        pep8 --select=E501,E231,E203,W503,E126,E123,E223,E226 *.py */*.py || true
+        pep257 *.py */*.py || true
+        pydocstyle *.py */*.py || true
+        pyflakes . || true
+    - name: Run examples |
+        python didyoumean/didyoumean_sugg_tests.py
+        python didyoumean/readme_examples.py
+    - name: Run unit-tests without coverage |
+        python -m unittest discover --start-directory=didyoumean --pattern=*.py || true
+        python -m unittest2 discover --start-directory=didyoumean --pattern=*.py || true
+    - name: Run unit-tests with coverage |
+        coverage run -m unittest discover --start-directory=didyoumean --pattern=*.py || true
+        coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py || true
+
