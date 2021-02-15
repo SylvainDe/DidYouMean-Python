@@ -9,10 +9,22 @@ jobs:
       matrix:
         python-version:
         - '2.7'
+        - '3.0'
+        - '3.1'
+        - '3.2'
+        - '3.3'
+        - '3.4'
         - '3.5'
         - '3.6'
         - '3.7'
         - '3.8'
+        - '3.9'
+        - '3.10'
+        - '3.10.0-alpha.1'
+        - '3.10.0-alpha.2'
+        - '3.10.0-alpha.3'
+        - '3.10.0-alpha.4'
+        - '3.10.0-alpha.5'
         - 'pypy-3.6' # the latest available version of PyPy that supports Python 3.6
         - 'pypy-3.7' # the latest available version of PyPy that supports Python 3.7
         - 'pypy-3.7-v7.3.3' # Python 3.7 and PyPy 7.3.3
@@ -31,8 +43,12 @@ jobs:
     - name: Install dependencies
       run: |
         pip install --upgrade pep8
-        pip install pep257 || true
-        pip install pydocstyle || true
+        pip install pep257
+        pip install pydocstyle
+        pip install --upgrade pyflakes
+        pip install unittest2
+        pip install coverage
+        pip install codecov
     - name: Check codestyle
       run: |
         pep8 --ignore=E501,E231,E203,W503,E126,E123,E223,E226 *.py */*.py
@@ -46,10 +62,17 @@ jobs:
         python didyoumean/readme_examples.py
     - name: Run unit-tests without coverage
       run: |
+        python -m unittest2 discover --start-directory=didyoumean --pattern=*.py
         python -m unittest discover --start-directory=didyoumean --pattern=*.py || true
-        python -m unittest2 discover --start-directory=didyoumean --pattern=*.py || true
     - name: Run unit-tests with coverage
       run: |
+        coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py
         coverage run -m unittest discover --start-directory=didyoumean --pattern=*.py || true
-        coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py || true
+    - name: Install locally
+      run: |
+        pip install .
+    - name: Run coverage tools
+      run: |
+        coveralls
+        codecov
 
