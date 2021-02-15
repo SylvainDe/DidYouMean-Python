@@ -111,7 +111,7 @@ MUST_BE_TYPE1_NOT_TYPE2_RE = r"^must be ({0}), not ({0})$".format(TYPE_NAME)
 NOT_CALLABLE_RE = r"^'({0})' object is not callable$".format(TYPE_NAME)
 DESCRIPT_REQUIRES_TYPE_RE = r"^descriptor '(\w+)' " \
     r"(?:requires a|for) '({0})' " \
-    r"(?:object but received a|objects doesn't apply to a) " \
+    r"(?:object but received|objects doesn't apply to) (?:a )?" \
     r"'({0})'(?:| object)$".format(TYPE_NAME)
 ARG_NOT_ITERABLE_RE = r"^(?:argument of type )?'({0})'" \
     r"(?: object)? is not iterable$".format(TYPE_NAME)

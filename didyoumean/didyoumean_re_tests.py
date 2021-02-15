@@ -689,6 +689,9 @@ class RegexTests(unittest_module.TestCase):
         """Test DESCRIPT_REQUIRES_TYPE_RE."""
         msgs = [
             "descriptor 'add' requires a 'set' object but received a 'int'",
+            # Python 3.7 used with coverage
+            "descriptor 'add' for 'set' objects "
+            "doesn't apply to 'int' object",
             # Python 3.8
             "descriptor 'add' for 'set' objects "
             "doesn't apply to a 'int' object",
