@@ -26,7 +26,7 @@ jobs:
         - '3.10.0-alpha.2'
         - '3.10.0-alpha.3'
         - '3.10.0-alpha.4'
-#        - '3.10.0-alpha.5'
+        - '3.10.0-alpha.5'
         - 'pypy2'
         - 'pypy3'
         - 'pypy-2.7'
@@ -67,12 +67,12 @@ jobs:
         python didyoumean/readme_examples.py
     - name: Run unit-tests without coverage
       run: |
-        python -m unittest2 discover --start-directory=didyoumean --pattern=*.py
-        python -m unittest discover --start-directory=didyoumean --pattern=*.py || true
+        python -m unittest2 discover --start-directory=didyoumean --pattern=*.py || true
+        python -m unittest discover --start-directory=didyoumean --pattern=*.py
     - name: Run unit-tests with coverage
       run: |
-        coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py
-        coverage run -m unittest discover --start-directory=didyoumean --pattern=*.py || true
+        coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py || true
+        coverage run -m unittest discover --start-directory=didyoumean --pattern=*.py
     - name: Install locally
       run: |
         pip install .
