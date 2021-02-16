@@ -53,6 +53,7 @@ jobs:
         pip install --upgrade pyflakes || true
         pip install coverage
         pip install codecov
+        pip install unittest2
     - name: Check codestyle
       run: |
         pep8 --ignore=E501,E231,E203,W503,E126,E123,E223,E226 *.py */*.py
