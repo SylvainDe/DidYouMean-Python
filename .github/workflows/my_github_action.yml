@@ -51,7 +51,7 @@ jobs:
         pip install pep257
         pip install pydocstyle
         pip install --upgrade pyflakes || true
-        pip install unittest2
+        # pip install unittest2
         pip install coverage
         pip install codecov
     - name: Check codestyle
