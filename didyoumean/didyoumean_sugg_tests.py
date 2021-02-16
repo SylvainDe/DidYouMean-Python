@@ -1856,7 +1856,10 @@ class TypeErrorTests(GetSuggestionsTests):
             sugg = '"print({0}<int>)"'.format(op)
             self.runs(code, before)
             self.throws(code, UNSUPPORTEDOPERAND, sugg, after, 'cpython')
-            self.throws(code, UNSUPPORTEDOPERANDSUGG, [], after, 'pypy')
+            if op == '-':
+                self.throws(code, UNSUPPORTEDOPERANDSUGG, [], after, 'pypy')
+            else:
+                self.throws(code, UNSUPPORTEDOPERAND, sugg, after, 'pypy')
             # self.runs(good_code, after)
 
     def test_old_print_chevron_syntax(self):
@@ -2216,7 +2219,8 @@ class SyntaxErrorTests(GetSuggestionsTests):
         before, after = before_and_after((3, 0))
         old_code, new_code = format_str(code, old, new)
         self.runs(old_code, before)
-        self.throws(old_code, INVALIDSYNTAX, sugg, after)
+        self.throws(old_code, INVALIDSYNTAX, sugg, after, 'cpython')
+        self.throws(old_code, INVALIDSYNTAX, [], after, 'pypy')
         self.runs(new_code)
 
     def test_backticks(self):

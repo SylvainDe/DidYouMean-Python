@@ -90,9 +90,12 @@ class RegexTests(unittest_module.TestCase):
     def test_attr_name(self):
         """Test ATTR_NAME."""
         regex = r"^" + re.ATTR_NAME + r"$"
-        real_attrs = set(att
-                         for o in get_subclasses(object)
-                         for att in dir(o))
+        real_attrs = set()
+        for o in get_subclasses(object):
+            try:
+                real_attrs.update(dir(o))
+            except AttributeError:
+                pass
         attrs = ['do_stuff', '__magic__'] + list(real_attrs)
         for attr in attrs:
             self.assertRegexp(attr, regex)
