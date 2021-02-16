@@ -26,7 +26,7 @@ ATTRIBUTEERROR_RE = r"^(?:class |type object )?'?({0})'? " \
 MODULEHASNOATTRIBUTE_RE = r"^module '?({0})' has no attribute " \
     r"'(?P<attr>{1})'$".format(MODULE_NAME, ATTR_NAME)
 UNSUBSCRIPTABLE_RE = r"^'({0})' object " \
-    r"(?:is (?:not |un)subscriptable)$".format(TYPE_NAME)
+    r"(?:is (?:not |un)subscriptable)(?: \(key .*\))?$".format(TYPE_NAME)
 CANNOT_BE_INTERPRETED_INT_RE = r"^'({0})' object cannot be interpreted " \
     r"as an integer$".format(TYPE_NAME)
 INTEGER_EXPECTED_GOT_RE = r"^" \

@@ -248,6 +248,8 @@ class RegexTests(unittest_module.TestCase):
             "'function' object is unsubscriptable",
             # Python 3.2/3.3/3.4/3.5/PyPy/PyPy3
             "'function' object is not subscriptable",
+            # PyPy3.6
+            "'function' object is not subscriptable (key 0)",
         ]
         groups = ('function',)
         results = (groups, dict())
