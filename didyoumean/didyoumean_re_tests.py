@@ -666,6 +666,13 @@ class RegexTests(unittest_module.TestCase):
              'builtin_function_or_method',
              'int',
              'print(<message>, file=<output_stream>)'),
+            ("unsupported operand type(s) for -: "
+             "'builtin_function' and 'int'. "
+             "Did you mean \"print(<-number>)\"?",
+             "-",
+             "builtin_function",
+             "int",
+             "print(<-number>)"),
         ]
         for msg, op, t1, t2, sugg in msgs:
             groups = op, t1, t2, sugg

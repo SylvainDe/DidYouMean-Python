@@ -1148,7 +1148,7 @@ class AttributeErrorTests(GetSuggestionsTests):
             if att_name == 'exc_type':
                 self.runs(code, before)  # others may be undef
             self.runs(code, mid, 'pypy')
-            self.runs(code, after, 'pypy')
+            self.throws(code, MODATTRIBUTEERROR, sugg, after, 'pypy')
             self.throws(code, ATTRIBUTEERROR, sugg, mid, 'cpython')
             self.throws(code, MODATTRIBUTEERROR, sugg, after, 'cpython')
         self.runs('import sys\nsys.exc_info()')
@@ -1855,7 +1855,8 @@ class TypeErrorTests(GetSuggestionsTests):
             good_code = "print({0}1)".format(op)
             sugg = '"print({0}<int>)"'.format(op)
             self.runs(code, before)
-            self.throws(code, UNSUPPORTEDOPERAND, sugg, after)
+            self.throws(code, UNSUPPORTEDOPERAND, sugg, after, 'cpython')
+            self.throws(code, UNSUPPORTEDOPERANDSUGG, [], after, 'pypy')
             # self.runs(good_code, after)
 
     def test_old_print_chevron_syntax(self):
@@ -2215,8 +2216,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         before, after = before_and_after((3, 0))
         old_code, new_code = format_str(code, old, new)
         self.runs(old_code, before)
-        self.throws(old_code, INVALIDCOMP, sugg, after, 'pypy')
-        self.throws(old_code, INVALIDSYNTAX, sugg, after, 'cpython')
+        self.throws(old_code, INVALIDSYNTAX, sugg, after)
         self.runs(new_code)
 
     def test_backticks(self):
