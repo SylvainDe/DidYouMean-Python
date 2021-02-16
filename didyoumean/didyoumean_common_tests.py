@@ -8,6 +8,9 @@ try:
 except ImportError:
     import unittest
     unittest_module = unittest
+except AttributeError:
+    import unittest
+    unittest_module = unittest
 
 # Tests based on MemoryError may required some tweaking to run depending
 # on both the hardware and the software used. This flag can be used to
