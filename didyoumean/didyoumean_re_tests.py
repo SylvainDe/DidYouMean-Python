@@ -506,9 +506,14 @@ class RegexTests(unittest_module.TestCase):
 
     def test_invalid_syntax(self):
         """Test INVALID_SYNTAX_RE."""
-        # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy3
-        msg = "invalid syntax"
-        self.re_matches(msg, re.INVALID_SYNTAX_RE, NO_GROUP)
+        msgs = [
+            # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy3
+            "invalid syntax",
+            # PyPy
+            "invalid syntax (expected ':')",
+        ]
+        for msg in msgs:
+            self.re_matches(msg, re.INVALID_SYNTAX_RE, NO_GROUP)
 
     def test_invalid_comp(self):
         """Test INVALID_COMP_RE."""
