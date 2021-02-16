@@ -71,7 +71,7 @@ NB_ARG_RE = r"^(?P<func>{0})(?:\(\) takes| expected) " \
     r"$".format(QUAL_FUNC_NAME)
 MISSING_POS_ARG_RE = r"^(?P<func>{0})\(\) missing \d+ required positional " \
     r"arguments?: .*$".format(QUAL_FUNC_NAME)
-INVALID_SYNTAX_RE = r"^invalid syntax(?: \(expected .*\))?$"
+INVALID_SYNTAX_RE = r"^(?:invalid syntax|invalid syntax \(expected '.*'\)|expected '.*')$"
 INVALID_COMP_RE = r"^invalid comparison$"
 INVALID_TOKEN_RE = r"^invalid token$"
 LEADING_ZEROS_RE = r"^leading zeros in decimal integer literals are " \

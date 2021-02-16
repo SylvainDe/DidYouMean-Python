@@ -514,6 +514,8 @@ class RegexTests(unittest_module.TestCase):
             "invalid syntax",
             # PyPy
             "invalid syntax (expected ':')",
+            # Python 3.10
+            "expected ':'",
         ]
         for msg in msgs:
             self.re_matches(msg, re.INVALID_SYNTAX_RE, NO_GROUP)
