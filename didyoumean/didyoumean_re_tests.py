@@ -90,9 +90,12 @@ class RegexTests(unittest_module.TestCase):
     def test_attr_name(self):
         """Test ATTR_NAME."""
         regex = r"^" + re.ATTR_NAME + r"$"
-        real_attrs = set(att
-                         for o in get_subclasses(object)
-                         for att in dir(o))
+        real_attrs = set()
+        for o in get_subclasses(object):
+            try:
+                real_attrs.update(dir(o))
+            except AttributeError:
+                pass
         attrs = ['do_stuff', '__magic__'] + list(real_attrs)
         for attr in attrs:
             self.assertRegexp(attr, regex)
@@ -248,6 +251,8 @@ class RegexTests(unittest_module.TestCase):
             "'function' object is unsubscriptable",
             # Python 3.2/3.3/3.4/3.5/PyPy/PyPy3
             "'function' object is not subscriptable",
+            # PyPy3.6
+            "'function' object is not subscriptable (key 0)",
         ]
         groups = ('function',)
         results = (groups, dict())
@@ -504,9 +509,16 @@ class RegexTests(unittest_module.TestCase):
 
     def test_invalid_syntax(self):
         """Test INVALID_SYNTAX_RE."""
-        # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy3
-        msg = "invalid syntax"
-        self.re_matches(msg, re.INVALID_SYNTAX_RE, NO_GROUP)
+        msgs = [
+            # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy3
+            "invalid syntax",
+            # PyPy
+            "invalid syntax (expected ':')",
+            # Python 3.10
+            "expected ':'",
+        ]
+        for msg in msgs:
+            self.re_matches(msg, re.INVALID_SYNTAX_RE, NO_GROUP)
 
     def test_invalid_comp(self):
         """Test INVALID_COMP_RE."""
@@ -659,6 +671,13 @@ class RegexTests(unittest_module.TestCase):
              'builtin_function_or_method',
              'int',
              'print(<message>, file=<output_stream>)'),
+            ("unsupported operand type(s) for -: "
+             "'builtin_function' and 'int'. "
+             "Did you mean \"print(<-number>)\"?",
+             "-",
+             "builtin_function",
+             "int",
+             "print(<-number>)"),
         ]
         for msg, op, t1, t2, sugg in msgs:
             groups = op, t1, t2, sugg
@@ -689,6 +708,9 @@ class RegexTests(unittest_module.TestCase):
         """Test DESCRIPT_REQUIRES_TYPE_RE."""
         msgs = [
             "descriptor 'add' requires a 'set' object but received a 'int'",
+            # Python 3.7 used with coverage
+            "descriptor 'add' for 'set' objects "
+            "doesn't apply to 'int' object",
             # Python 3.8
             "descriptor 'add' for 'set' objects "
             "doesn't apply to a 'int' object",

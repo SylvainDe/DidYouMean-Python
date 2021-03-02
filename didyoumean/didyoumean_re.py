@@ -26,7 +26,7 @@ ATTRIBUTEERROR_RE = r"^(?:class |type object )?'?({0})'? " \
 MODULEHASNOATTRIBUTE_RE = r"^module '?({0})' has no attribute " \
     r"'(?P<attr>{1})'$".format(MODULE_NAME, ATTR_NAME)
 UNSUBSCRIPTABLE_RE = r"^'({0})' object " \
-    r"(?:is (?:not |un)subscriptable)$".format(TYPE_NAME)
+    r"(?:is (?:not |un)subscriptable)(?: \(key .*\))?$".format(TYPE_NAME)
 CANNOT_BE_INTERPRETED_INT_RE = r"^'({0})' object cannot be interpreted " \
     r"as an integer$".format(TYPE_NAME)
 INTEGER_EXPECTED_GOT_RE = r"^" \
@@ -71,7 +71,7 @@ NB_ARG_RE = r"^(?P<func>{0})(?:\(\) takes| expected) " \
     r"$".format(QUAL_FUNC_NAME)
 MISSING_POS_ARG_RE = r"^(?P<func>{0})\(\) missing \d+ required positional " \
     r"arguments?: .*$".format(QUAL_FUNC_NAME)
-INVALID_SYNTAX_RE = r"^invalid syntax$"
+INVALID_SYNTAX_RE = r"^(?:invalid syntax|invalid syntax \(expected '.*'\)|expected '.*')$"
 INVALID_COMP_RE = r"^invalid comparison$"
 INVALID_TOKEN_RE = r"^invalid token$"
 LEADING_ZEROS_RE = r"^leading zeros in decimal integer literals are " \
@@ -111,7 +111,7 @@ MUST_BE_TYPE1_NOT_TYPE2_RE = r"^must be ({0}), not ({0})$".format(TYPE_NAME)
 NOT_CALLABLE_RE = r"^'({0})' object is not callable$".format(TYPE_NAME)
 DESCRIPT_REQUIRES_TYPE_RE = r"^descriptor '(\w+)' " \
     r"(?:requires a|for) '({0})' " \
-    r"(?:object but received a|objects doesn't apply to a) " \
+    r"(?:object but received|objects doesn't apply to) (?:a )?" \
     r"'({0})'(?:| object)$".format(TYPE_NAME)
 ARG_NOT_ITERABLE_RE = r"^(?:argument of type )?'({0})'" \
     r"(?: object)? is not iterable$".format(TYPE_NAME)
