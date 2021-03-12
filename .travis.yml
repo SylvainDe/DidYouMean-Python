@@ -231,6 +231,7 @@ before_script:
  # Information about Python version
  - echo $TRAVIS_PYTHON_VERSION
  - python -VV
+ - python -c "import sys; print(sys.version_info)" || true
  - python -c "import sys; print(sys._git)" || true
  - pep8 --ignore=E501,E231,E203,W503,E126,E123,E223,E226 *.py */*.py
  - pep8 --select=E501,E231,E203,W503,E126,E123,E223,E226 *.py */*.py || true

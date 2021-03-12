@@ -379,6 +379,7 @@ UNKNOWN_ATTRIBUTEERROR = (AttributeError, None)
 INVALIDSYNTAX = (SyntaxError, re.INVALID_SYNTAX_RE)
 INVALIDTOKEN = (SyntaxError, re.INVALID_TOKEN_RE)
 LEADINGZEROS = (SyntaxError, re.LEADING_ZEROS_RE)
+EXCEPTION_GROUP = (SyntaxError, re.EXC_GROUP_PARENTH_RE)
 NOBINDING = (SyntaxError, re.NO_BINDING_NONLOCAL_RE)
 NONLOCALMODULE = (SyntaxError, re.NONLOCAL_AT_MODULE_RE)
 UNEXPECTED_OEF = (SyntaxError, re.UNEXPECTED_EOF_RE)
@@ -2678,7 +2679,7 @@ class AnyErrorTests(GetSuggestionsTests):
         Adding parenthesis solves the issue.
         """
         # NICE_TO_HAVE
-        before, after = before_and_after((3, 0))
+        before, mid, after = before_mid_and_after((3, 0), (3, 10, 0, 'a', '6'))
         raised_exc, other_exc = KeyError, TypeError
         raised, other = raised_exc.__name__, other_exc.__name__
         code = "try:\n\traise {0}()\nexcept {{0}}:\n\tpass".format(raised)
@@ -2686,7 +2687,8 @@ class AnyErrorTests(GetSuggestionsTests):
         sugg = "({0})".format(typo)
         bad1, bad2, good1, good2 = format_str(code, typo, other, sugg, raised)
         self.throws(bad1, (raised_exc, None), [], before)
-        self.throws(bad1, INVALIDSYNTAX, [], after)
+        self.throws(bad1, INVALIDSYNTAX, [], mid)
+        self.throws(bad1, EXCEPTION_GROUP, [], after)
         self.throws(bad2, (raised_exc, None))
         self.runs(good1)
         self.runs(good2)

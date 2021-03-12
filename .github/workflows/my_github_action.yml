@@ -49,6 +49,7 @@ jobs:
     - name: Show Python version information
       run: |
         python -VV
+        python -c "import sys; print(sys.version_info)" || true
         python -c "import sys; print(sys._git)" || true
     - name: Install dependencies
       run: |
