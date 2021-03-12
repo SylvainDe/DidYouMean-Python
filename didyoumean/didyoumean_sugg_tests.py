@@ -2679,7 +2679,7 @@ class AnyErrorTests(GetSuggestionsTests):
         Adding parenthesis solves the issue.
         """
         # NICE_TO_HAVE
-        before, mid, after = before_mid_and_after((3, 0), (3, 10, 0, 'a', '6'))
+        before, mid, after = before_mid_and_after((3, 0), (3, 10, 0, 'alpha', '6'))
         raised_exc, other_exc = KeyError, TypeError
         raised, other = raised_exc.__name__, other_exc.__name__
         code = "try:\n\traise {0}()\nexcept {{0}}:\n\tpass".format(raised)
