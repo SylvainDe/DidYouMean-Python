@@ -2688,7 +2688,7 @@ class AnyErrorTests(GetSuggestionsTests):
         sugg = "({0})".format(typo)
         bad1, bad2, good1, good2 = format_str(code, typo, other, sugg, raised)
         self.throws(bad1, (raised_exc, None), [], before)
-        self.throws(bad1, INVALIDSYNTAX, [], after)
+        self.throws(bad1, EXCEPTION_GROUP, [], after)
         self.throws(bad2, (raised_exc, None))
         self.runs(good1)
         self.runs(good2)
