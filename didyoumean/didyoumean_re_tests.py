@@ -114,7 +114,8 @@ class RegexTests(unittest_module.TestCase):
             'builtin_function_or_method'
         ] + list(real_types)
         for type_ in types:
-            self.assertRegexp(type_, regex)
+            if type_ != 'symtable entry':
+                self.assertRegexp(type_, regex)
 
     def test_func_name(self):
         """Test FUNC_NAME."""
