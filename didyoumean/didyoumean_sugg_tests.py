@@ -486,6 +486,7 @@ class NameErrorTests(GetSuggestionsTests):
     """Class for tests related to NameError."""
 
     aiter_sugg = ["'aiter' (builtin)"] if 'aiter' in dir(__builtins__) else []
+
     def test_local(self):
         """Should be 'foo'."""
         code = "foo = 0\n{0}"
