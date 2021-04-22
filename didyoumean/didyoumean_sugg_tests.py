@@ -485,6 +485,7 @@ class GetSuggestionsTests(unittest_module.TestCase):
 class NameErrorTests(GetSuggestionsTests):
     """Class for tests related to NameError."""
 
+    aiter_sugg = ["'aiter' (builtin)"] if 'aiter' in dir(__builtins__) else []
     def test_local(self):
         """Should be 'foo'."""
         code = "foo = 0\n{0}"
@@ -676,7 +677,7 @@ class NameErrorTests(GetSuggestionsTests):
         """Builtin intern is removed - moved to sys."""
         code = 'intern("toto")'
         new_code = 'sys.intern("toto")'
-        suggs = ["'iter' (builtin)", "'sys.intern'"]
+        suggs = self.aiter_sugg + ["'iter' (builtin)", "'sys.intern'"]
         before, after = before_and_after((3, 0))
         self.runs(code, before)
         self.throws(code, NAMEERROR, suggs, after)
@@ -727,7 +728,7 @@ class NameErrorTests(GetSuggestionsTests):
                 'coerce': [],
                 'execfile': [],
                 'file': ["'filter' (builtin)"],
-                'intern': ["'iter' (builtin)", "'sys.intern'"],
+                'intern': self.aiter_sugg + ["'iter' (builtin)", "'sys.intern'"],
                 'long': [LONG_REMOVED_MSG],
                 'raw_input': ["'input' (builtin)"],
                 'reduce': ["'reduce' from functools (not imported)"],
