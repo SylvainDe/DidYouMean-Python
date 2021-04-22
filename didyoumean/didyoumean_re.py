@@ -12,7 +12,7 @@ VAR_NAME = IDENTIFIER
 # is to make things easier to change if we ever have to.
 ATTR_NAME = IDENTIFIER
 ARG_NAME = IDENTIFIER
-TYPE_NAME = r"[\w\.-]+"
+TYPE_NAME = r"[\w\.- ]+"
 MODULE_NAME = r"[\w\.-]+"
 FUNC_NAME = r"<?\w+>?"
 QUAL_FUNC_NAME = r"(?:{0}\.)*{0}".format(FUNC_NAME)
