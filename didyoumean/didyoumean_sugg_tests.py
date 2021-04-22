@@ -8,6 +8,7 @@ from didyoumean_internal import get_suggestions_for_exception, quote, \
     BREAKPOINT_ADDED_MSG, NO_KEYWORD_ARG_MSG, COMMA_INSTEAD_OF_PERIOD_MSG
 import didyoumean_common_tests as common
 import didyoumean_re as re
+import builtins
 import warnings
 import sys
 import math
@@ -485,7 +486,7 @@ class GetSuggestionsTests(unittest_module.TestCase):
 class NameErrorTests(GetSuggestionsTests):
     """Class for tests related to NameError."""
 
-    aiter_sugg = ["'aiter' (builtin)"] if 'aiter' in dir(__builtins__) else []
+    aiter_sugg = ["'aiter' (builtin)"] if 'aiter' in dir(builtins) else []
 
     def test_local(self):
         """Should be 'foo'."""
