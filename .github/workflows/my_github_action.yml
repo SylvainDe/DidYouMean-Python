@@ -51,9 +51,12 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Show Python version information
       run: |
+        # Information about Python version
         python -VV
         python -c "import sys; print(sys.version_info)" || true
         python -c "import sys; print(sys._git)" || true
+        # Information about Python builtins/keywords
+        python -c "import sys; import keyword; print({sys.version_info: {'kword': set(keyword.kwlist), 'builtins': set(dir(__builtins__))}})" || true
     - name: Install dependencies
       run: |
         pip install --upgrade pep8
