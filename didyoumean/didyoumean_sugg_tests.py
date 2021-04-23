@@ -485,7 +485,13 @@ class GetSuggestionsTests(unittest_module.TestCase):
 class NameErrorTests(GetSuggestionsTests):
     """Class for tests related to NameError."""
 
-    aiter_sugg = ["'aiter' (builtin)"] if 'aiter' in dir(__builtins__) else []
+    aiter_sugg = []
+    try:
+        import builtins
+        if 'aiter' in dir(builtins):
+            aiter_sugg.append("'aiter' (builtin)")
+    except ImportError:
+        pass
 
     def test_local(self):
         """Should be 'foo'."""

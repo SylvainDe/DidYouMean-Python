@@ -114,7 +114,8 @@ class RegexTests(unittest_module.TestCase):
             'builtin_function_or_method'
         ] + list(real_types)
         for type_ in types:
-            self.assertRegexp(type_, regex)
+            if type_ != 'symtable entry':
+                self.assertRegexp(type_, regex)
 
     def test_func_name(self):
         """Test FUNC_NAME."""
@@ -516,6 +517,7 @@ class RegexTests(unittest_module.TestCase):
             "invalid syntax (expected ':')",
             # Python 3.10
             "expected ':'",
+            "invalid syntax. Maybe you meant '==' or ':=' instead of '='?",
         ]
         for msg in msgs:
             self.re_matches(msg, re.INVALID_SYNTAX_RE, NO_GROUP)
