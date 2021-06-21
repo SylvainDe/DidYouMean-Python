@@ -807,6 +807,17 @@ class RegexTests(unittest_module.TestCase):
               "use an 0o prefix for octal integers"
         self.re_matches(msg, re.LEADING_ZEROS_RE, NO_GROUP)
 
+    def test_exception_group_parenthesized(self):
+        """Test EXC_GROUP_PARENTH_RE."""
+        msgs = [
+            # Python 3.10 alpha & beta.1
+            "exception group must be parenthesized",
+            # Python after 3.10-beta.2
+            "multiple exception types must be parenthesized",
+        ]
+        for msg in msgs:
+            self.re_matches(msg, re.EXC_GROUP_PARENTH_RE, NO_GROUP)
+
     def test_exc_must_derive_from(self):
         """Test EXC_MUST_DERIVE_FROM_RE."""
         msgs = [

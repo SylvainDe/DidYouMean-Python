@@ -78,7 +78,8 @@ INVALID_COMP_RE = r"^invalid comparison$"
 INVALID_TOKEN_RE = r"^invalid token$"
 LEADING_ZEROS_RE = r"^leading zeros in decimal integer literals are " \
     r"not permitted; use an 0o prefix for octal integers$"
-EXC_GROUP_PARENTH_RE = r"^exception group must be parenthesized$"
+EXC_GROUP_PARENTH_RE = r"^(?:exception group|multiple exception types) " \
+    r"must be parenthesized$"
 EXPECTED_LENGTH_RE = r"^expected length (\d+), got (\d+)$"
 FUTURE_FIRST_RE = r"^(?:from )?__future__ (?:imports|statements) must " \
     r"(?:occur|appear) at (?:the )?beginning of (?:the )?file$"
