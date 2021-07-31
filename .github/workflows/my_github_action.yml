@@ -59,8 +59,11 @@ jobs:
         python -VV
         python -c "import sys; print(sys.version_info)" || true
         python -c "import sys; print(sys._git)" || true
+        # Information about pip version
+        pip --version
         # Information about Python builtins/keywords
         python -c "import sys; import keyword; print({sys.version_info: {'kword': set(keyword.kwlist), 'builtins': set(dir(__builtins__))}})" || true
+        python -c "import sysconfig; print(dir(sysconfig))" || true
     - name: Install dependencies
       run: |
         pip install --upgrade pep8
