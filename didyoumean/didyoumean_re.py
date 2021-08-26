@@ -60,7 +60,7 @@ NEED_MORE_VALUES_RE = r"^(?:need more than \d+|not enough) values to unpack" \
 UNHASHABLE_RE = r"^(?:unhashable type: )?'({0})'" \
     r"(?: objects are unhashable)?$".format(TYPE_NAME)
 MISSING_PARENT_RE = r"^Missing parentheses in call to " \
-    r"'(?P<func>{0})'$".format(FUNC_NAME)
+    r"'(?P<func>{0})'(?:. Did you mean.*)?$".format(FUNC_NAME)
 INVALID_LITERAL_RE = r"^invalid literal for (\w+)\(\) with base \d+: '(.*)'$"
 NB_ARG_RE = r"^(?P<func>{0})(?:\(\) takes| expected) " \
     r"(?:exactly |at least |at most |from )?(?P<expected>no|\d+|\d+ to \d+) " \

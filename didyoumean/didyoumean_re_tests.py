@@ -492,13 +492,18 @@ class RegexTests(unittest_module.TestCase):
 
     def test_missing_parentheses(self):
         """Test MISSING_PARENT_RE."""
-        # Python 3.4/3.5
-        msg = "Missing parentheses in call to 'exec'"
+        msgs = [
+            # Python 3.4/3.5 (?)
+            "Missing parentheses in call to 'exec'",
+            # Python 3.10
+            "Missing parentheses in call to 'exec'. Did you mean print(...)?",
+        ]
         func = 'exec'
         groups = (func,)
         named_groups = {'func': func}
         results = (groups, named_groups)
-        self.re_matches(msg, re.MISSING_PARENT_RE, results)
+        for msg in msgs:
+            self.re_matches(msg, re.MISSING_PARENT_RE, results)
 
     def test_invalid_literal(self):
         """Test INVALID_LITERAL_RE."""
