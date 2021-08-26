@@ -385,7 +385,8 @@ NOBINDING = (SyntaxError, re.NO_BINDING_NONLOCAL_RE)
 NONLOCALMODULE = (SyntaxError, re.NONLOCAL_AT_MODULE_RE)
 UNEXPECTED_OEF = (SyntaxError, re.UNEXPECTED_EOF_RE)
 OUTSIDEFUNC = (SyntaxError, re.OUTSIDE_FUNCTION_RE)
-MISSINGPARENT = (SyntaxError, re.MISSING_PARENT_RE)
+MISSINGPARENT = (SyntaxError,
+                 re.MISSING_PARENT_RE + "|" + re.INVALID_SYNTAX_RE)
 INVALIDCOMP = (SyntaxError, re.INVALID_COMP_RE)
 FUTUREFIRST = (SyntaxError, re.FUTURE_FIRST_RE)
 FUTFEATNOTDEF = (SyntaxError, re.FUTURE_FEATURE_NOT_DEF_RE)
@@ -2207,8 +2208,8 @@ class SyntaxErrorTests(GetSuggestionsTests):
         code, new_code = 'print ""', 'print("")'
         before, after = before_and_after((3, 0))
         self.runs(code, before)
-        self.throws(code, INVALIDSYNTAX, [], after, 'cpython')
-        self.throws(code, MISSINGPARENT, [], after, 'pypy')
+        # Invalid syntax on some versions, Missing parenthesis on others
+        self.throws(code, MISSINGPARENT, [], after)
         self.runs(new_code)
 
     def test_exec(self):
@@ -2217,8 +2218,8 @@ class SyntaxErrorTests(GetSuggestionsTests):
         code, new_code = 'exec "1"', 'exec("1")'
         before, after = before_and_after((3, 0))
         self.runs(code, before)
-        self.throws(code, INVALIDSYNTAX, [], after, 'cpython')
-        self.throws(code, MISSINGPARENT, [], after, 'pypy')
+        # Invalid syntax on some versions, Missing parenthesis on others
+        self.throws(code, MISSINGPARENT, [], after)
         self.runs(new_code)
 
     def test_old_comparison(self):
