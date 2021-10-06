@@ -3,12 +3,9 @@ DidYouMean-Python (aka BetterErrorMessages)
 
 [![BetterErrorMessages on PyPI](https://badge.fury.io/py/BetterErrorMessages.svg)](https://badge.fury.io/py/BetterErrorMessages)
 
-[![Build Status](https://travis-ci.com/SylvainDe/DidYouMean-Python.svg)](https://travis-ci.com/SylvainDe/DidYouMean-Python)
-
 [![Coverage Status](https://coveralls.io/repos/SylvainDe/DidYouMean-Python/badge.svg?branch=master)](https://coveralls.io/r/SylvainDe/DidYouMean-Python?branch=master)
 [![codecov.io](http://codecov.io/github/SylvainDe/DidYouMean-Python/coverage.svg?branch=master)](http://codecov.io/github/SylvainDe/DidYouMean-Python?branch=master)
 
-[![Code Health](https://landscape.io/github/SylvainDe/DidYouMean-Python/master/landscape.svg?style=flat)](https://landscape.io/github/SylvainDe/DidYouMean-Python/master)
 [![Code Climate](https://codeclimate.com/github/SylvainDe/DidYouMean-Python/badges/gpa.svg)](https://codeclimate.com/github/SylvainDe/DidYouMean-Python)
 [![Scrutinizer](https://scrutinizer-ci.com/g/SylvainDe/DidYouMean-Python/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/SylvainDe/DidYouMean-Python/?branch=master)
 [![Codacy Badge](https://www.codacy.com/project/badge/Grade/54bed0a6466b48ea973325cff2594376)](https://www.codacy.com/app/sylvain-desodt-github/DidYouMean-Python)
@@ -17,6 +14,14 @@ Logic to have various kind of suggestions in case of errors (NameError, Attribut
 
 Inspired by "Did you mean" for Ruby ([Explanation](http://www.yukinishijima.net/2014/10/21/did-you-mean-experience-in-ruby.html), [Github Page](https://github.com/yuki24/did_you_mean)), this is a simple implementation for/in Python. I wanted to see if I could mess around and create something similar in Python and it seems to be possible.
 
+This project is not maintained anymore
+--------------------------------------
+
+As of October 2021, this project is not maintained anymore. Indeed, improvements to the exception messages have been implemented in Python 3.8, 3.9 and 3.10 making this project useless (which is a good thing).
+
+If you are interested in projects aiming to make exception messages better, please refer to the [list of projects below](https://github.com/SylvainDe/DidYouMean-Python#see-also-similar-projectsideas). In particular [friendly-traceback/friendly-traceback](https://github.com/friendly-traceback/friendly-traceback).
+
+I'll try to ensure that the test suite runs fine on all Python versions as it was useful in the past to catch issues in the Python project because things got released.
 
 Usage
 -----
@@ -365,7 +370,7 @@ See also (similar projects/ideas)
 
 Projects:
 
- - "Did you mean" for Ruby (links above)
+ - ["Did you mean" for Ruby (yuki24/did_you_mean)](https://github.com/yuki24/did_you_mean): source for the idea.
 
  - [dutc/didyoumean](https://github.com/dutc/didyoumean) : a quite similar project developed in pretty much the same time. A few differences though : written in C, works only for AttributeError, etc.
 
@@ -379,7 +384,7 @@ Projects:
 
  - [cfbolz/syntaxerrors](https://github.com/cfbolz/syntaxerrors) : Python parser that can recover from errors (also, cfbolz added many suggestions for errors to PyPy).
 
- - [aroberge/friendly-traceback](https://github.com/aroberge/friendly-traceback) : Replace standard traceback by something easier to understand.
+ - [friendly-traceback/friendly-traceback](https://github.com/friendly-traceback/friendly-traceback) : Replace standard traceback by something easier to understand.
 
  - [Did You Mean in Perl](http://perltricks.com/article/122/2014/10/31/Implementing-Did-You-Mean-in-Perl)
 
