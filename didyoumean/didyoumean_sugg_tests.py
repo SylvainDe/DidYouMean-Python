@@ -394,6 +394,7 @@ FUTUREFIRST = (SyntaxError, re.FUTURE_FIRST_RE)
 FUTFEATNOTDEF = (SyntaxError, re.FUTURE_FEATURE_NOT_DEF_RE)
 UNQUALIFIED_EXEC = (SyntaxError, re.UNQUALIFIED_EXEC_RE)
 IMPORTSTAR = (SyntaxError, re.IMPORTSTAR_RE)
+FUNCPARAMCANNOTBEPARENTH = (SyntaxError, re.FUNC_PARAM_CANNOT_BE_PARENTH_RE)
 # MemoryError and OverflowError for MemoryErrorTests
 MEMORYERROR = (MemoryError, '')
 OVERFLOWERR = (OverflowError, re.RESULT_TOO_MANY_ITEMS_RE)
@@ -2375,10 +2376,14 @@ class SyntaxErrorTests(GetSuggestionsTests):
     def test_unpack2(self):
         """Unpacking in function arguments was supported up to Python 3."""
         # NICE_TO_HAVE
-        before, after = before_and_after((3, 0))
+        before, mid, after = before_mid_and_after(
+            (3, 0),
+            (3, 11, 0, 'alpha', 3)
+        )
         code = func_gen(param='(x1, y1), (x2, y2)')
         self.runs(code, before)
-        self.throws(code, INVALIDSYNTAX, [], after)
+        self.throws(code, INVALIDSYNTAX, [], mid)
+        self.throws(code, FUNCPARAMCANNOTBEPARENTH, [], after)
 
     def test_nonlocal(self):
         """nonlocal keyword is added in Python 3."""

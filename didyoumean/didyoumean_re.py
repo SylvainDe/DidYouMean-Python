@@ -77,6 +77,8 @@ MISSING_POS_ARG_RE = r"^(?P<func>{0})\(\) missing \d+ required positional " \
 INVALID_SYNTAX_RE = r"^(?:invalid syntax(?:. Maybe you meant .*)?|" \
     r"invalid syntax \(expected '.*'\)|" \
     r"expected '.*')$"
+FUNC_PARAM_CANNOT_BE_PARENTH_RE = r"^Function parameters cannot " \
+    r"be parenthesized$"
 INVALID_COMP_RE = r"^invalid comparison$"
 INVALID_TOKEN_RE = r"^invalid token$"
 LEADING_ZEROS_RE = r"^leading zeros in decimal integer literals are " \

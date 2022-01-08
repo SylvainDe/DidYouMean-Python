@@ -542,6 +542,12 @@ class RegexTests(unittest_module.TestCase):
         for msg in msgs:
             self.re_matches(msg, re.INVALID_SYNTAX_RE, NO_GROUP)
 
+    def test_func_param_cannot_be_parenthesized(self):
+        """Test FUNC_PARAM_CANNOT_BE_PARENTH_RE."""
+        # Python 3.11.0 alpha 3
+        msg = "Function parameters cannot be parenthesized"
+        self.re_matches(msg, re.FUNC_PARAM_CANNOT_BE_PARENTH_RE, NO_GROUP)
+
     def test_invalid_comp(self):
         """Test INVALID_COMP_RE."""
         # PyPy3
