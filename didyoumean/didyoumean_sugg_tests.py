@@ -316,9 +316,7 @@ NAMEERROR = (NameError, re.NAMENOTDEFINED_RE)
 NAMEERRORBEFOREREF = (NameError, re.VARREFBEFOREASSIGN_RE)
 UNKNOWN_NAMEERROR = (NameError, None)
 # UnboundLocalError for UnboundLocalErrorTests
-UNBOUNDLOCAL = (
-    UnboundLocalError,
-    re.VARREFBEFOREASSIGN_RE + r"|" + re.CANNOTACCESSVAR_RE)
+UNBOUNDLOCAL = (UnboundLocalError, re.VARREFBEFOREASSIGN_RE)
 UNKNOWN_UNBOUNDLOCAL = (UnboundLocalError, None)
 # TypeError for TypeErrorTests
 NBARGERROR = (TypeError, re.NB_ARG_RE)

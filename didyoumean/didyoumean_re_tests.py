@@ -154,16 +154,6 @@ class RegexTests(unittest_module.TestCase):
             "local variable 'some_var' referenced before assignment",
             "free variable 'some_var' referenced before assignment " \
             "in enclosing scope",
-        ]
-        groups = ('some_var',)
-        named_groups = {'name': 'some_var'}
-        results = (groups, named_groups)
-        for msg in msgs:
-            self.re_matches(msg, re.VARREFBEFOREASSIGN_RE, results)
-
-    def test_unbound_assignment2(self):
-        """Test CANNOTACCESSVAR_RE."""
-        msgs = [
             # Python 3.11
             "cannot access free variable 'some_var' where it is not " \
             "associated with a value in enclosing scope",
@@ -171,10 +161,10 @@ class RegexTests(unittest_module.TestCase):
             "associated with a value",
         ]
         groups = ('some_var',)
-        named_groups = {'name2': 'some_var'}
+        named_groups = {'name': 'some_var'}
         results = (groups, named_groups)
         for msg in msgs:
-            self.re_matches(msg, re.CANNOTACCESSVAR_RE, results)
+            self.re_matches(msg, re.VARREFBEFOREASSIGN_RE, results)
 
     def test_name_not_defined(self):
         """Test NAMENOTDEFINED_RE."""
