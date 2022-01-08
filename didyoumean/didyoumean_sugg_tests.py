@@ -317,8 +317,8 @@ NAMEERRORBEFOREREF = (NameError, re.VARREFBEFOREASSIGN_RE)
 UNKNOWN_NAMEERROR = (NameError, None)
 # UnboundLocalError for UnboundLocalErrorTests
 UNBOUNDLOCAL = (
-	UnboundLocalError,
-	re.VARREFBEFOREASSIGN_RE + r"|" + re.CANNOTACCESSVAR_RE)
+    UnboundLocalError,
+    re.VARREFBEFOREASSIGN_RE + r"|" + re.CANNOTACCESSVAR_RE)
 UNKNOWN_UNBOUNDLOCAL = (UnboundLocalError, None)
 # TypeError for TypeErrorTests
 NBARGERROR = (TypeError, re.NB_ARG_RE)

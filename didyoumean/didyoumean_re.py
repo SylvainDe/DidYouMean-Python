@@ -20,7 +20,7 @@ VARREFBEFOREASSIGN_RE = r"^(?:local|free) variable '(?P<name>{0})' " \
     r"referenced before assignment(?: in enclosing scope)?$".format(VAR_NAME)
 CANNOTACCESSVAR_RE = r"^cannot access (?:local|free) variable " \
     r"'(?P<name2>{0})' where it is not associated with a value" \
-	r".*$".format(VAR_NAME)
+    r".*$".format(VAR_NAME)
 NAMENOTDEFINED_RE = r"^(?:global )?name '(?P<name>{0})' " \
     r"is not defined$".format(VAR_NAME)
 ATTRIBUTEERROR_RE = r"^(?:class |type object )?'?({0})'? " \
