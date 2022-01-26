@@ -1,13 +1,5 @@
 # -*- coding: utf-8
 """Unit tests for get_suggestions_for_exception."""
-from didyoumean_internal import get_suggestions_for_exception, quote, \
-    STAND_MODULES, AVOID_REC_MSG, \
-    APPLY_REMOVED_MSG, BUFFER_REMOVED_MSG, CMP_REMOVED_MSG, \
-    CMP_ARG_REMOVED_MSG, EXC_ATTR_REMOVED_MSG, LONG_REMOVED_MSG, \
-    MEMVIEW_ADDED_MSG, RELOAD_REMOVED_MSG, STDERR_REMOVED_MSG, \
-    BREAKPOINT_ADDED_MSG, NO_KEYWORD_ARG_MSG, COMMA_INSTEAD_OF_PERIOD_MSG
-import didyoumean_common_tests as common
-import didyoumean_re as re
 import warnings
 import sys
 import math
@@ -15,6 +7,26 @@ import os
 import tempfile
 from shutil import rmtree
 
+from .didyoumean_internal import (
+    get_suggestions_for_exception,
+    quote,
+    STAND_MODULES,
+    AVOID_REC_MSG,
+    APPLY_REMOVED_MSG,
+    BUFFER_REMOVED_MSG,
+    CMP_REMOVED_MSG,
+    CMP_ARG_REMOVED_MSG,
+    EXC_ATTR_REMOVED_MSG,
+    LONG_REMOVED_MSG,
+    MEMVIEW_ADDED_MSG,
+    RELOAD_REMOVED_MSG,
+    STDERR_REMOVED_MSG,
+    BREAKPOINT_ADDED_MSG,
+    NO_KEYWORD_ARG_MSG,
+    COMMA_INSTEAD_OF_PERIOD_MSG
+    )
+import .didyoumean_common_tests as common
+import .didyoumean_re as re
 
 unittest_module = common.unittest_module
 
