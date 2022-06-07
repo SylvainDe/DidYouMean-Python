@@ -870,8 +870,14 @@ class RegexTests(unittest_module.TestCase):
 
     def test_max_recursion_depth(self):
         """Test MAX_RECURSION_DEPTH_RE."""
-        msg = 'maximum recursion depth exceeded'
-        self.re_matches(msg, re.MAX_RECURSION_DEPTH_RE, NO_GROUP)
+        msgs = [
+            # Most versions
+            'maximum recursion depth exceeded',
+            # Python 3.11.0a7 when used with coverage - https://github.com/nedbat/coveragepy/issues/1396
+            'maximum recursion depth exceeded in comparison',
+        ]
+        for msg in msgs:
+            self.re_matches(msg, re.MAX_RECURSION_DEPTH_RE, NO_GROUP)
 
     def test_size_changed_during_iter(self):
         """Test SIZE_CHANGED_DURING_ITER_RE."""

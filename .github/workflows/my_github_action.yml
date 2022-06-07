@@ -54,7 +54,7 @@ jobs:
         - '3.11.0-alpha.4'
         - '3.11.0-alpha.5'
         - '3.11.0-alpha.6'
-#         - '3.11.0-alpha.7' - temporarily disabled because of https://github.com/nedbat/coveragepy/issues/1396
+        - '3.11.0-alpha.7'
         - '3.11.0-beta.1'
         - '3.11.0-beta.2'
         - '3.11.0-beta.3'
