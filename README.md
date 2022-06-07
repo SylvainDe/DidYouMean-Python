@@ -17,7 +17,7 @@ Inspired by "Did you mean" for Ruby ([Explanation](http://www.yukinishijima.net/
 This project is not maintained anymore
 --------------------------------------
 
-As of October 2021, this project is not maintained anymore. Indeed, improvements to the exception messages have been implemented in Python 3.8, 3.9 and 3.10 making this project useless (which is a good thing).
+As of October 2021, this project is not maintained anymore. Indeed, improvements to the exception messages have been implemented in Python 3.8, 3.9, 3.10 and 3.11 making this project useless (which is a good thing).
 
 If you are interested in projects aiming to make exception messages better, please refer to the [list of projects below](https://github.com/SylvainDe/DidYouMean-Python#see-also-similar-projectsideas). In particular [friendly-traceback/friendly-traceback](https://github.com/friendly-traceback/friendly-traceback).
 
