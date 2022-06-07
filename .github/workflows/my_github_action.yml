@@ -85,6 +85,9 @@ jobs:
         pip install coverage
         pip install codecov
         pip install unittest2
+    - name: Run dummy code with and without coverage
+        python dummy_code.py || true
+        python -m coverage run dummy_code || true
     - name: Run unit-tests without coverage
       run: |
         python -m unittest discover --start-directory=didyoumean --pattern=*.py
