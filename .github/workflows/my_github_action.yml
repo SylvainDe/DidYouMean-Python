@@ -89,6 +89,8 @@ jobs:
       run: |
         python dummy_code.py || true
         python -m coverage run dummy_code.py || true
+        python dummy_code_with_trace.py || true
+        python -m coverage run dummy_code_with_trace.py || true
     - name: Run unit-tests without coverage
       run: |
         python -m unittest discover --start-directory=didyoumean --pattern=*.py
