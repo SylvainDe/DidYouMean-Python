@@ -4,6 +4,10 @@ from didyoumean_internal import add_suggestions_to_exception
 import didyoumean_common_tests as common
 import os
 import sys
+import traceback
+from test.support import captured_stderr
+import io
+import contextlib
 
 
 def standardise(string):
@@ -19,9 +23,27 @@ def standardise(string):
     return string
 
 
-def exception_to_str(e):
-    str_func = repr  # could be str or repr
-    return standardise(str_func(e))
+# Functions to try to get the string representation for an exception
+
+
+def get_except_hook_result_as_str(type_, value, traceback):
+    # Inspired from "get_message_lines" in Lib/idlelib/run.py
+    err = io.StringIO()
+    with contextlib.redirect_stderr(err):
+        sys.__excepthook__(type_, value, traceback)
+    return err.getvalue().split("\n")[-2]
+
+
+def get_print_exception_result_as_str(value):
+    # Trying with traceback
+    with captured_stderr() as output:
+        traceback.print_exception(value)
+    return output.getvalue().splitlines()[-1]
+
+
+def exception_to_str(type_, value, traceback):
+    # Could be str(value), repr(value), get_print_exception_result_as_str(value) or get_except_hook_result_as_str
+    return standardise(str(value))
 
 
 def main():
@@ -133,9 +155,9 @@ def main():
                             % (type_, exc_types)
                         )
                     else:
-                        before = exception_to_str(value)
+                        before = exception_to_str(type_, value, traceback)
                         add_suggestions_to_exception(type_, value, traceback)
-                        after = exception_to_str(value)
+                        after = exception_to_str(type_, value, traceback)
                         if before == after:
                             after += " (unchanged on this version of Python)"
                 print(
