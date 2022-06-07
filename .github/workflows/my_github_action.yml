@@ -88,7 +88,7 @@ jobs:
     - name: Run dummy code with and without coverage
       run: |
         python dummy_code.py || true
-        python -m coverage run dummy_code || true
+        python -m coverage run dummy_code.py || true
     - name: Run unit-tests without coverage
       run: |
         python -m unittest discover --start-directory=didyoumean --pattern=*.py
