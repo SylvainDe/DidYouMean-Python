@@ -90,17 +90,22 @@ class RegexTests(unittest_module.TestCase):
     def test_attr_name(self):
         """Test ATTR_NAME."""
         regex = r"^" + re.ATTR_NAME + r"$"
-        real_attrs = set()
-        for o in get_subclasses(object):
-            try:
-                real_attrs.update(dir(o))
-            except AttributeError:
-                pass
-        attrs = ['do_stuff', '__magic__'] + list(real_attrs)
+        # Tests based on hardcoded values
+        attrs = ["do_stuff", "__magic__"]
         for attr in attrs:
             self.assertRegexp(attr, regex)
-        for attr in ['1a']:
+        for attr in ["1a"]:
             self.assertNotRegexp(attr, regex)
+        # Tests based on introspection
+        for o in get_subclasses(object):
+            try:
+                real_attrs = dir(o)
+            except AttributeError:
+                real_attrs = set()
+            for attr in real_attrs:
+                self.assertNotRegexp(
+                    attr, regex, "for {0} from {1}".format(attr, str(o))
+                )
 
     def test_type_name(self):
         """Test TYPE_NAME."""
