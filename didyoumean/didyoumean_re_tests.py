@@ -103,6 +103,9 @@ class RegexTests(unittest_module.TestCase):
             except AttributeError:
                 real_attrs = set()
             for attr in real_attrs:
+                # Ignore weird case like spec_for_test.test_distutils from <class '_distutils_hack.DistutilsMetaFinder'>
+                if attr.startswith("spec_for_test."):
+                    continue
                 self.assertRegexp(attr, regex, "for {0} from {1}".format(attr, str(o)))
 
     def test_type_name(self):
