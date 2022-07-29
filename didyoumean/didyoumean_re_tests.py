@@ -103,9 +103,7 @@ class RegexTests(unittest_module.TestCase):
             except AttributeError:
                 real_attrs = set()
             for attr in real_attrs:
-                self.assertNotRegexp(
-                    attr, regex, "for {0} from {1}".format(attr, str(o))
-                )
+                self.assertRegexp(attr, regex, "for {0} from {1}".format(attr, str(o)))
 
     def test_type_name(self):
         """Test TYPE_NAME."""
