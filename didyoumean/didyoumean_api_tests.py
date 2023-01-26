@@ -35,7 +35,7 @@ class ApiTest(TestWithStringFunction):
         """Get exception raised with running code with tested API."""
         try:
             self.run_with_api(code)
-        except:
+        except Exception:
             return sys.exc_info()
         assert False, "No exception thrown"
 
@@ -148,7 +148,7 @@ class PostMortemTest(unittest_module.TestCase, ApiTest):
         """Set attributes 'last_<xxx>' from exception thrown by code if any."""
         try:
             no_exception(code)
-        except:
+        except Exception:
             sys.last_type, sys.last_value, sys.last_traceback = sys.exc_info()
 
     def cleanup_sys_last_attr(self):
@@ -206,7 +206,7 @@ class ExceptHookTest(unittest_module.TestCase, HookTest):
         self.assertNotEqual(prev_hook, sys.excepthook)
         try:
             no_exception(code)
-        except:
+        except Exception:
             last_type, last_value, last_traceback = sys.exc_info()
             with suppress_stderr():
                 sys.excepthook(last_type, last_value, last_traceback)
@@ -273,7 +273,7 @@ class IPythonHookTest(unittest_module.TestCase, HookTest):
         self.assertNotEqual(shell.handler, prev_handler)
         try:
             no_exception(code)
-        except:
+        except Exception:
             shell.showtraceback(sys.exc_info())
             raise
         finally:

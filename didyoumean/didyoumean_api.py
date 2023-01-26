@@ -18,7 +18,7 @@ def didyoumean_decorator(func):
         """Function returned by the decorator."""
         try:
             return func(*args, **kwargs)
-        except:
+        except Exception:
             type_, value, traceback = sys.exc_info()
             add_suggestions_to_exception(type_, value, traceback)
             raise

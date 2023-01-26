@@ -182,6 +182,7 @@ def merge_dict(*dicts):
             ret.setdefault(key, []).append(val)
     return ret
 
+
 ScopedObj = namedtuple('ScopedObj', 'obj scope')
 
 

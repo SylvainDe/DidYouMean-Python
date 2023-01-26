@@ -30,7 +30,7 @@ initial_recursion_limit = sys.getrecursionlimit()
 
 def indent_code(string, tab="\t"):
     """Add indentation an indentation level to a piece of code as a string."""
-    return ''.join(tab + l for l in string.splitlines(True))
+    return ''.join(tab + line for line in string.splitlines(True))
 
 
 def func_gen(name='some_func', param='', body='pass', args=None):
@@ -199,6 +199,7 @@ class LenClass():
         """Dummy implementation of __len__."""
         return 0
 
+
 # Logic to be able to have different tests on various version of Python
 FIRST_VERSION = (0, 0)
 LAST_VERSION = (10, 0)
@@ -306,7 +307,7 @@ def get_exception(code):
     """Helper function to run code and get what it throws (or None)."""
     try:
         exec(code)
-    except:
+    except Exception:
         return sys.exc_info()
     return None
 

@@ -45,7 +45,7 @@ def get_exception(code):
     """Helper function to run code and get what it throws."""
     try:
         no_exception(code)
-    except:
+    except Exception:
         return sys.exc_info()
     return None
 
@@ -114,6 +114,7 @@ class TestWithStringFunction(object):
                 self.assertEqual(begin + end, before)
         else:
             self.assertEqual(before, after)
+
 
 if __name__ == '__main__':
     print(sys.version_info)

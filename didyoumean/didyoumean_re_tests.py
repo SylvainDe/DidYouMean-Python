@@ -896,6 +896,7 @@ class RegexTests(unittest_module.TestCase):
             results = (groups, dict())
             self.re_matches(msg, re.SIZE_CHANGED_DURING_ITER_RE, results)
 
+
 if __name__ == '__main__':
     print(sys.version_info)
     unittest_module.main()
