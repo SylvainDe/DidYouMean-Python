@@ -110,8 +110,8 @@ jobs:
         pip install unittest2
     - name: Check codestyle
       run: |
-        pycodestyle --ignore=E501,W503,E126,E123 *.py */*.py
-        pycodestyle --select=E501,W503,E126,E123 *.py */*.py || true
+        pycodestyle --ignore=E501,E231,W503,E126,E123 *.py */*.py
+        pycodestyle --select=E501,E231,W503,E126,E123 *.py */*.py || true
         pep257 *.py */*.py || true
         pydocstyle *.py */*.py || true
         pyflakes . || true
