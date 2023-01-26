@@ -671,8 +671,8 @@ def generate_add_string_to_exc_tests():
         r = get_instance(klass)
         if r is not None:
             _, p = r
-            class_name = ("NameForAddStringToExcFromInstanceTest" +
-                          klass.__name__ + str(id(klass)))
+            class_name = ("NameForAddStringToExcFromInstanceTest"
+                          + klass.__name__ + str(id(klass)))
             assert class_name not in globals(), class_name
             globals()[class_name] = type(
                     class_name,

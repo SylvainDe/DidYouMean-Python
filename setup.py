@@ -1,9 +1,9 @@
 """Setup."""
 
 try:
-        from setuptools import setup
+    from setuptools import setup
 except ImportError:
-        from distutils.core import setup
+    from distutils.core import setup
 # with the help from http://peterdowns.com/posts/first-time-with-pypi.html
 # http://www.scotttorborg.com/python-packaging/minimal.html
 setup(
