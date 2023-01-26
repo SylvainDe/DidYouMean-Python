@@ -101,7 +101,7 @@ jobs:
         python -c "import sysconfig; print(dir(sysconfig))" || true
     - name: Install dependencies
       run: |
-        pip install --upgrade pep8
+        pip install --upgrade pycodestyle
         pip install pep257
         pip install pydocstyle
         pip install --upgrade pyflakes || true
@@ -110,8 +110,8 @@ jobs:
         pip install unittest2
     - name: Check codestyle
       run: |
-        pep8 --ignore=E501,E231,E203,W503,E126,E123,E223,E226 *.py */*.py
-        pep8 --select=E501,E231,E203,W503,E126,E123,E223,E226 *.py */*.py || true
+        pycodestyle --ignore=E501,E231,E203,W503,E126,E123,E223,E226 *.py */*.py
+        pycodestyle --select=E501,E231,E203,W503,E126,E123,E223,E226 *.py */*.py || true
         pep257 *.py */*.py || true
         pydocstyle *.py */*.py || true
         pyflakes . || true

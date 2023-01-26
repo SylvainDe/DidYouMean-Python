@@ -194,7 +194,7 @@ install:
         virtualenv --python="$PYENV_ROOT/versions/pypy-$PYPY_VERSION/bin/python" "$HOME/virtualenvs/pypy-$PYPY_VERSION"
         source "$HOME/virtualenvs/pypy-$PYPY_VERSION/bin/activate"
       fi
-  - pip install --upgrade pep8
+  - pip install --upgrade pycodestyle
   - pip install pep257 || true
   - pip install pydocstyle || true
   - |
@@ -233,8 +233,8 @@ before_script:
  - python -VV
  - python -c "import sys; print(sys.version_info)" || true
  - python -c "import sys; print(sys._git)" || true
- - pep8 --ignore=E501,E231,E203,W503,E126,E123,E223,E226 *.py */*.py
- - pep8 --select=E501,E231,E203,W503,E126,E123,E223,E226 *.py */*.py || true
+ - pycodestyle --ignore=E501,E231,E203,W503,E126,E123,E223,E226 *.py */*.py
+ - pycodestyle --select=E501,E231,E203,W503,E126,E123,E223,E226 *.py */*.py || true
  - pep257 *.py */*.py || true
  - pydocstyle *.py */*.py || true
  - pyflakes . || true

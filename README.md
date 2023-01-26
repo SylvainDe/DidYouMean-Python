@@ -416,6 +416,6 @@ Also, pull-requests are welcome to :
 As for the technical details :
 
  * this is under MIT License : you can do anything you want as long as you provide attribution back to this project.
- * I try to follow [PEP 8](http://legacy.python.org/dev/peps/pep-0008/) and [PEP 257](https://www.python.org/dev/peps/pep-0257/) as much as possible. Compliancy is checked during continuous integration using the [pep8](https://pypi.python.org/pypi/pep8) and [pep257](https://pypi.python.org/pypi/pep257) checkers.
+ * I try to follow [PEP 8](http://legacy.python.org/dev/peps/pep-0008/) and [PEP 257](https://www.python.org/dev/peps/pep-0257/) as much as possible. Compliancy is checked during continuous integration using the [pycodestyle](https://pypi.python.org/pypi/pycodestyle) and [pep257](https://pypi.python.org/pypi/pep257) checkers.
  * I try to have most of the code covered by unit tests.
  * I try to write the code in such a way that it works on all Python versions from 2.6 (included).
