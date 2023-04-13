@@ -108,7 +108,6 @@ jobs:
         pip install pydocstyle
         pip install --upgrade pyflakes || true
         pip install coverage
-        pip install codecov
         pip install unittest2
     - name: Check codestyle
       run: |
@@ -135,5 +134,4 @@ jobs:
     - name: Run coverage tools
       run: |
         coveralls || true
-        codecov || true
 

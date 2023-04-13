@@ -220,12 +220,6 @@ install:
           "pypy") ;; # coveralls installation fails
           *) pip install coveralls;;
       esac
-  - |
-      if ([ "$TRAVIS_PYTHON_VERSION" != "pypy-5.4.1" ]); then
-        pip install codecov
-      else
-        pip install codecov || true # May fail but let's try anyway (see Issue #45)
-      fi
 
 before_script:
  # Information about Python version
@@ -270,6 +264,5 @@ script:
 
 after_success:
  - coveralls
- - codecov
  # Information about Python builtins/keywords
  # - python -c "import sys; import keyword; print({sys.version_info: {'kword': set(keyword.kwlist), 'builtins': set(dir(__builtins__))}})" || true

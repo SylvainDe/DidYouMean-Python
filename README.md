@@ -4,7 +4,6 @@ DidYouMean-Python (aka BetterErrorMessages)
 [![BetterErrorMessages on PyPI](https://badge.fury.io/py/BetterErrorMessages.svg)](https://badge.fury.io/py/BetterErrorMessages)
 
 [![Coverage Status](https://coveralls.io/repos/SylvainDe/DidYouMean-Python/badge.svg?branch=master)](https://coveralls.io/r/SylvainDe/DidYouMean-Python?branch=master)
-[![codecov.io](http://codecov.io/github/SylvainDe/DidYouMean-Python/coverage.svg?branch=master)](http://codecov.io/github/SylvainDe/DidYouMean-Python?branch=master)
 
 [![Code Climate](https://codeclimate.com/github/SylvainDe/DidYouMean-Python/badges/gpa.svg)](https://codeclimate.com/github/SylvainDe/DidYouMean-Python)
 [![Scrutinizer](https://scrutinizer-ci.com/g/SylvainDe/DidYouMean-Python/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/SylvainDe/DidYouMean-Python/?branch=master)
