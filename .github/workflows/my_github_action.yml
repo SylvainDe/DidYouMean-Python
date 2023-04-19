@@ -133,7 +133,7 @@ jobs:
         coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py || true
     - name: Install locally
       run: |
-        pip install .
+        pip install . --use-pep517
     - name: Run coverage tools
       run: |
         coveralls || true
