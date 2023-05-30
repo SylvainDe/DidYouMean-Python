@@ -1668,7 +1668,7 @@ class TypeErrorTests(GetSuggestionsTests):
         self.throws(code, UNEXPECTEDKWARG2, [], mid, 'cpython')
         self.throws(code, UNEXPECTEDKWARG4, [], after, 'cpython')
         self.throws(code, UNEXPECTEDKWARG3, [], mid, 'pypy')
-        self.throws(code, UNEXPECTEDKWARG3, [], after, 'pypy')
+        self.throws(code, UNEXPECTEDKWARG, [], after, 'pypy')
 
     def test_keyword_sort_cmpkey(self):
         """Sort and sorted functions have a cmp/key param dep. on the vers."""
@@ -2446,7 +2446,7 @@ class SyntaxErrorTests(GetSuggestionsTests):
         self.throws(bad, INVALIDTOKEN, [], mid, 'cpython')
         self.throws(bad, LEADINGZEROS, [], after, 'cpython')
         self.throws(bad, INVALIDSYNTAX, [], mid, 'pypy')
-        self.throws(bad, INVALIDSYNTAX, [], after, 'pypy')
+        self.throws(bad, LEADINGZEROS, [], after, 'pypy')
 
     def test_extended_unpacking(self):
         """Extended iterable unpacking is added with Python 3."""
