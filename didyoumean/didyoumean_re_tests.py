@@ -900,3 +900,4 @@ class RegexTests(unittest_module.TestCase):
 if __name__ == '__main__':
     print(sys.version_info)
     unittest_module.main()
+

@@ -163,3 +163,4 @@ if __name__ == '__main__':
     for name, val in ALL_REGEXPS.items():
         if not (val.startswith('^') and val.endswith('$')):
             print("Missing ^$ for ", name)
+
