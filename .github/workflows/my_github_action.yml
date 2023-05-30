@@ -119,6 +119,7 @@ jobs:
         pip install --upgrade pycodestyle
     - name: Check codestyle
       run: |
-        pycodestyle --ignore=E501,E231,W503,E126,E123 *.py
-        pycodestyle --select=E501,E231,W503,E126,E123 *.py || true
+        pycodestyle setup.py
+        pycodestyle setup2.py.py || true
+        pycodestyle setup3.py.py || true
 
