@@ -1664,11 +1664,12 @@ class TypeErrorTests(GetSuggestionsTests):
         # It would be NICE_TO_HAVE suggestions on keyword arguments
         before, mid, after = before_mid_and_after((3, 0), (3, 7))
         code = "c = 'string'\nb = print(c, end_='toto')"
+        sugg = quote('end')
         self.throws(code, INVALIDSYNTAX, [], before)
         self.throws(code, UNEXPECTEDKWARG2, [], mid, 'cpython')
         self.throws(code, UNEXPECTEDKWARG4, [], after, 'cpython')
         self.throws(code, UNEXPECTEDKWARG3, [], mid, 'pypy')
-        self.throws(code, UNEXPECTEDKWARG, ['end'], after, 'pypy')
+        self.throws(code, UNEXPECTEDKWARG, sugg, after, 'pypy')
 
     def test_keyword_sort_cmpkey(self):
         """Sort and sorted functions have a cmp/key param dep. on the vers."""
