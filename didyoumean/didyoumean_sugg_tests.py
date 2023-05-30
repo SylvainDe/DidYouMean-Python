@@ -1662,13 +1662,15 @@ class TypeErrorTests(GetSuggestionsTests):
     def test_keyword_builtin_print(self):
         """Builtin "print" has a different error message."""
         # It would be NICE_TO_HAVE suggestions on keyword arguments
-        before, mid, after = before_mid_and_after((3, 0), (3, 7))
+        before, mid1, mid2, after = ranges_between((3, 0), (3, 7), (3, 8))
         code = "c = 'string'\nb = print(c, end_='toto')"
         sugg = quote('end')
         self.throws(code, INVALIDSYNTAX, [], before)
-        self.throws(code, UNEXPECTEDKWARG2, [], mid, 'cpython')
+        self.throws(code, UNEXPECTEDKWARG2, [], mid1, 'cpython')
+        self.throws(code, UNEXPECTEDKWARG4, [], mid2, 'cpython')
         self.throws(code, UNEXPECTEDKWARG4, [], after, 'cpython')
-        self.throws(code, UNEXPECTEDKWARG3, [], mid, 'pypy')
+        self.throws(code, UNEXPECTEDKWARG3, [], mid1, 'pypy')
+        self.throws(code, UNEXPECTEDKWARG3, [], mid2, 'pypy')
         self.throws(code, UNEXPECTEDKWARG, sugg, after, 'pypy')
 
     def test_keyword_sort_cmpkey(self):
@@ -2442,13 +2444,15 @@ class SyntaxErrorTests(GetSuggestionsTests):
     def test_octal_literal(self):
         """Syntax for octal liberals has changed."""
         # NICE_TO_HAVE
-        before, mid, after = before_mid_and_after((3, 0), (3, 8))
+        before, mid1, mid2, after = ranges_between((3, 0), (3, 8), (3, 9))
         bad, good = '0720', '0o720'
         self.runs(good)
         self.runs(bad, before)
-        self.throws(bad, INVALIDTOKEN, [], mid, 'cpython')
+        self.throws(bad, INVALIDTOKEN, [], mid1, 'cpython')
+        self.throws(bad, LEADINGZEROS, [], mid2, 'cpython')
         self.throws(bad, LEADINGZEROS, [], after, 'cpython')
-        self.throws(bad, INVALIDSYNTAX, [], mid, 'pypy')
+        self.throws(bad, INVALIDSYNTAX, [], mid1, 'pypy')
+        self.throws(bad, INVALIDSYNTAX, [], mid2, 'pypy')
         self.throws(bad, LEADINGZEROS, [], after, 'pypy')
 
     def test_extended_unpacking(self):
