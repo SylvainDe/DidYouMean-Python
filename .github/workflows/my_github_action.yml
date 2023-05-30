@@ -115,7 +115,7 @@ jobs:
       run: |
         pip install --upgrade pip
         pip --version
-        pip install coverage coverage-7.2.6
+        pip install "coverage=7.2.6"
         pip install unittest2
     - name: Show coverage information
       run: |
