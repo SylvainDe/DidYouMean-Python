@@ -287,4 +287,3 @@ class IPythonHookTest(unittest_module.TestCase, HookTest):
 if __name__ == '__main__':
     print(sys.version_info)
     unittest_module.main()
-

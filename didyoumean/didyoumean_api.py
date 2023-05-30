@@ -113,4 +113,3 @@ def didyoumean_disablehook():
 
 # NOTE: It could be funny to have a magic command in Python
 # https://ipython.org/ipython-doc/dev/config/custommagics.html
-

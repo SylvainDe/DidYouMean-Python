@@ -683,4 +683,3 @@ def generate_add_string_to_exc_tests():
 if __name__ == '__main__':
     print(sys.version_info)
     unittest_module.main()
-

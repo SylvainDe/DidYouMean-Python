@@ -1026,4 +1026,3 @@ def add_suggestions_to_exception(type_, value, traceback):
             get_suggestions_for_exception(
                 value,
                 traceback)))
-
