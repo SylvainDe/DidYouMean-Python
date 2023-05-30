@@ -115,8 +115,22 @@ jobs:
       run: |
         pip install --upgrade pip
         pip --version
-        pip install coverage
+        pip install coverage coverage-7.2.6
         pip install unittest2
+    - name: Show coverage information
+      run: |
+        coverage debug sys || true
+    - name: Run unit-tests without coverage
+      run: |
+        python -m unittest discover --start-directory=didyoumean --pattern=*.py
+        python -m unittest2 discover --start-directory=didyoumean --pattern=*.py || true
+    - name: Run unit-tests with coverage
+      run: |
+        coverage run -m unittest discover --start-directory=didyoumean --pattern=*.py
+        coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py || true
+    - name: Update dependencies
+      run: |
+        pip install coverage --upgrade
     - name: Show coverage information
       run: |
         coverage debug sys || true
