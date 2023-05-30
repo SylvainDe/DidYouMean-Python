@@ -82,13 +82,16 @@ jobs:
         - '3.12.0-alpha.7'
         - '3.12.0-beta.1'
         - '3.12-dev'
-        - 'pypy2'
-        - 'pypy3'
         - 'pypy-2.7'
+        - 'pypy-2.7-nightly'
         - 'pypy-3.6' # the latest available version of PyPy that supports Python 3.6
+        - 'pypy-3.6-nightly'
         - 'pypy-3.7' # the latest available version of PyPy that supports Python 3.7
         - 'pypy-3.7-v7.3.3' # Python 3.7 and PyPy 7.3.3
         - 'pypy-3.7-nightly' # Python 3.7 and nightly PyPy
+        - 'pypy-3.8-nightly'
+        - 'pypy-3.9-nightly'
+        - 'pypy-3.10-nightly'
         # TODO: Add nightly somehow
 
     steps:
