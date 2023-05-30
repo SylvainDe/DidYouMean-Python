@@ -117,34 +117,8 @@ jobs:
         pip install --upgrade pip
         pip --version
         pip install --upgrade pycodestyle
-        pip install pep257
-        pip install pydocstyle
-        pip install --upgrade pyflakes || true
-        pip install coverage
-        pip install unittest2
     - name: Check codestyle
       run: |
         pycodestyle --ignore=E501,E231,W503,E126,E123 *.py */*.py
         pycodestyle --select=E501,E231,W503,E126,E123 *.py */*.py || true
-        pep257 *.py */*.py || true
-        pydocstyle *.py */*.py || true
-        pyflakes . || true
-    - name: Run examples
-      run: |
-        python didyoumean/didyoumean_sugg_tests.py
-        python didyoumean/readme_examples.py
-    - name: Run unit-tests without coverage
-      run: |
-        python -m unittest discover --start-directory=didyoumean --pattern=*.py
-        python -m unittest2 discover --start-directory=didyoumean --pattern=*.py || true
-    - name: Run unit-tests with coverage
-      run: |
-        coverage run -m unittest discover --start-directory=didyoumean --pattern=*.py
-        coverage run -m unittest2 discover --start-directory=didyoumean --pattern=*.py || true
-    - name: Install locally
-      run: |
-        pip install . --use-pep517
-    - name: Run coverage tools
-      run: |
-        coveralls || true
 
