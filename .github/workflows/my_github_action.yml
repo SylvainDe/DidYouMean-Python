@@ -117,6 +117,9 @@ jobs:
         pip --version
         pip install coverage
         pip install unittest2
+    - name: Show coverage information
+      run: |
+        coverage debug sys || true
     - name: Run unit-tests without coverage
       run: |
         python -m unittest discover --start-directory=didyoumean --pattern=*.py
