@@ -1668,7 +1668,7 @@ class TypeErrorTests(GetSuggestionsTests):
         self.throws(code, UNEXPECTEDKWARG2, [], mid, 'cpython')
         self.throws(code, UNEXPECTEDKWARG4, [], after, 'cpython')
         self.throws(code, UNEXPECTEDKWARG3, [], mid, 'pypy')
-        self.throws(code, UNEXPECTEDKWARG, [], after, 'pypy')
+        self.throws(code, UNEXPECTEDKWARG, [], after, 'pypy', 'end')
 
     def test_keyword_sort_cmpkey(self):
         """Sort and sorted functions have a cmp/key param dep. on the vers."""
@@ -2229,11 +2229,13 @@ class SyntaxErrorTests(GetSuggestionsTests):
         code = '1 {0} 2'
         old, new = '<>', '!='
         sugg = "'{0}'".format(new)
-        before, after = before_and_after((3, 0))
+        before, mid, after = before_mid_and_after((3, 0), (3, 9))
         old_code, new_code = format_str(code, old, new)
         self.runs(old_code, before)
+        self.throws(old_code, INVALIDSYNTAX, sugg, mid, 'cpython')
         self.throws(old_code, INVALIDSYNTAX, sugg, after, 'cpython')
-        self.throws(old_code, INVALIDSYNTAX, [], after, 'pypy')
+        self.throws(old_code, INVALIDSYNTAX, [], mid, 'pypy')
+        self.throws(old_code, INVALIDSYNTAX, sugg, after, 'pypy')
         self.runs(new_code)
 
     def test_backticks(self):
