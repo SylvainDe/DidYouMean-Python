@@ -119,7 +119,7 @@ jobs:
         pip install unittest2
     - name: Run unit-tests without coverage
       run: |
-        python -m unittest discover --start-directory=didyoumean --pattern=*.py || true
+        python -m unittest discover --start-directory=didyoumean --pattern=*.py
         python -m unittest2 discover --start-directory=didyoumean --pattern=*.py || true
     - name: Run unit-tests with coverage
       run: |
