@@ -1668,7 +1668,7 @@ class TypeErrorTests(GetSuggestionsTests):
         self.throws(code, UNEXPECTEDKWARG2, [], mid, 'cpython')
         self.throws(code, UNEXPECTEDKWARG4, [], after, 'cpython')
         self.throws(code, UNEXPECTEDKWARG3, [], mid, 'pypy')
-        self.throws(code, UNEXPECTEDKWARG, [], after, 'pypy', 'end')
+        self.throws(code, UNEXPECTEDKWARG, ['end'], after, 'pypy')
 
     def test_keyword_sort_cmpkey(self):
         """Sort and sorted functions have a cmp/key param dep. on the vers."""
