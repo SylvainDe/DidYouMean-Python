@@ -124,8 +124,9 @@ jobs:
         pip install unittest2
     - name: Check codestyle
       run: |
-        pycodestyle --ignore=E501,E231,W503,E126,E123 *.py */*.py
-        pycodestyle --select=E501,E231,W503,E126,E123 *.py */*.py || true
+        # W391 temporarily disabled - https://github.com/PyCQA/pycodestyle/issues/1142
+        pycodestyle --ignore=W391,E501,E231,W503,E126,E123 *.py */*.py
+        pycodestyle --select=W391,E501,E231,W503,E126,E123 *.py */*.py || true
         pep257 *.py */*.py || true
         pydocstyle *.py */*.py || true
         pyflakes . || true
