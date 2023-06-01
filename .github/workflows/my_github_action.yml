@@ -120,7 +120,7 @@ jobs:
         pip install pep257
         pip install pydocstyle
         pip install --upgrade pyflakes || true
-        pip install coverage-7.2.6 # https://github.com/nedbat/coveragepy/issues/1634
+        pip install coverage==7.2.6 # https://github.com/nedbat/coveragepy/issues/1634
         pip install unittest2
     - name: Check codestyle
       run: |
