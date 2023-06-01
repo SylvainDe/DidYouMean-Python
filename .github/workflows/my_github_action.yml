@@ -121,13 +121,14 @@ jobs:
         pip install pydocstyle
         pip install --upgrade pyflakes || true
         # https://github.com/nedbat/coveragepy/issues/1634
-        if [[ "(3, 11, 0, 'alpha')" == $(python -c "import sys; v = sys.version_info; print(v.major, v.minor, v.micro, v.releaselevel)") ]]; then pip install coverage==7.2.6; else pip install coverage; fi
+        python -c "import sys; v = sys.version_info; print(v.major, v.minor, v.micro, v.releaselevel)"
+        if [[ "(3, 12, 0, 'alpha')" == $(python -c "import sys; v = sys.version_info; print(v.major, v.minor, v.micro, v.releaselevel)") ]]; then pip install coverage==7.2.6; else pip install coverage; fi
         pip install unittest2
     - name: Check codestyle
       run: |
-        # W391 temporarily disabled - https://github.com/PyCQA/pycodestyle/issues/1142
-        pycodestyle --ignore=W391,E501,E231,W503,E126,E123 *.py */*.py
-        pycodestyle --select=W391,E501,E231,W503,E126,E123 *.py */*.py || true
+        # W391, E122 temporarily disabled - https://github.com/PyCQA/pycodestyle/issues/1142
+        pycodestyle --ignore=W391,E122,E501,E231,W503,E126,E123 *.py */*.py
+        pycodestyle --select=W391,E122,E501,E231,W503,E126,E123 *.py */*.py || true
         pep257 *.py */*.py || true
         pydocstyle *.py */*.py || true
         pyflakes . || true
