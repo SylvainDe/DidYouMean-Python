@@ -120,22 +120,8 @@ jobs:
         pip install pep257
         pip install pydocstyle
         pip install --upgrade pyflakes || true
+        pip install coverage==7.2.6 # https://github.com/nedbat/coveragepy/issues/1634
         pip install unittest2
-
-    # https://github.com/nedbat/coveragepy/issues/1634
-    - name: Install coverage 7.2.6
-      if: "startsWith(matrix.python-version, '3.12.0-alpha-')"
-      with:
-        python-version: ${{ matrix.python-version }}
-      run: |
-        pip install coverage==7.2.6
-    - name: Install coverage
-      if: "!startsWith(matrix.python-version, '3.12.0-alpha-')"
-      with:
-        python-version: ${{ matrix.python-version }}
-      run: |
-        pip install coverage
-
     - name: Check codestyle
       run: |
         # W391 temporarily disabled - https://github.com/PyCQA/pycodestyle/issues/1142
