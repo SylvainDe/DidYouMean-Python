@@ -681,7 +681,7 @@ class NameErrorTests(GetSuggestionsTests):
         self.runs(code, before)
         self.throws(code, NAMEERROR, RELOAD_REMOVED_MSG, after)
         self.runs(sugg1, from_version((3, 4)))
-        self.runs(sugg2, up_to_version((3, 12))
+        self.runs(sugg2, up_to_version((3, 12)))
 
     def test_removed_intern(self):
         """Builtin intern is removed - moved to sys."""
