@@ -64,8 +64,8 @@ LONG_REMOVED_MSG = 'to use "int" (since Python 3, there is only one ' \
     'integer type: `int`)'
 MEMVIEW_ADDED_MSG = '"buffer" (`memoryview` is added in Python 2.7 and " \
     "completely replaces `buffer` since Python 3)'
-RELOAD_REMOVED_MSG = '"importlib.reload" or "imp.reload" (`reload` is " \
-    "removed since Python 3)'
+RELOAD_REMOVED_MSG = '"importlib.reload" or (`reload` is removed " \
+    "since Python 3)'
 STDERR_REMOVED_MSG = '"Exception" (`StandardError` has been removed since " \
     "Python 3)'
 BREAKPOINT_ADDED_MSG = 'to use "import pdb; pdb.set_trace()" (`breakpoint` " \
