@@ -961,7 +961,7 @@ def add_string_to_exception(value, string):
     # (for `str()`, not for `repr()`).
     # Also, elements in args might not be strings or args might me empty
     # so we add to the first string and add the element otherwise.
-    assert type(value.args) == tuple
+    assert isinstance(value.args, tuple)
     if string:
         lst_args = list(value.args)
         for i, arg in enumerate(lst_args):
