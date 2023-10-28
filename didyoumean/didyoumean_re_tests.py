@@ -289,6 +289,19 @@ class RegexTests(unittest_module.TestCase):
             results = (groups, named_groups)
             self.re_matches(msg, re.UNEXPECTED_KEYWORDARG_RE, results)
 
+    def test_unexpected_kw_arg_sugg(self):
+        """Test UNEXPECTED_KEYWORDARG_SUGG_RE."""
+        msgs = [
+            # Python 3.13
+            ("MyClass.func() got an unexpected keyword argument 'abcdf'. Did you mean 'abcdef'?",
+                ('MyClass.func', 'abcdf', 'abcdef')),
+        ]
+        for msg, groups in msgs:
+            func, kw_arg, sugg = groups
+            named_groups = {'arg': kw_arg, 'func': func, 'sugg': sugg}
+            results = (groups, named_groups)
+            self.re_matches(msg, re.UNEXPECTED_KEYWORDARG_SUGG_RE, results)
+
     def test_unexpected_kw_arg2(self):
         """Test UNEXPECTED_KEYWORDARG2_RE."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5

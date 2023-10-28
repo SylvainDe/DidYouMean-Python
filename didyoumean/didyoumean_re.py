@@ -39,6 +39,9 @@ INDICES_MUST_BE_INT_RE = "^{0} ind(?:ices|ex)? must be " \
 UNEXPECTED_KEYWORDARG_RE = r"^(?P<func>{1})\(\) " \
     r"got an unexpected keyword argument " \
     r"'(?P<arg>{0})'$".format(ARG_NAME, QUAL_FUNC_NAME)
+UNEXPECTED_KEYWORDARG_SUGG_RE = r"^(?P<func>{1})\(\) " \
+    r"got an unexpected keyword argument " \
+    r"'(?P<arg>{0})'\. Did you mean '(?P<sugg>.*)'\?$".format(ARG_NAME, QUAL_FUNC_NAME)
 UNEXPECTED_KEYWORDARG2_RE = r"^'(?P<arg>{0})' is an " \
     r"invalid keyword argument for this function$".format(ARG_NAME)
 UNEXPECTED_KEYWORDARG3_RE = r"^invalid keyword arguments to " \

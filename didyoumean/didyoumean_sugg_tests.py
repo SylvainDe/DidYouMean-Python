@@ -334,6 +334,7 @@ CANNOTBEINTERPRETEDINDEX = (
     r"^object cannot be interpreted as an index$")
 NOATTRIBUTE_TYPEERROR = (TypeError, re.ATTRIBUTEERROR_RE)
 UNEXPECTEDKWARG = (TypeError, re.UNEXPECTED_KEYWORDARG_RE)
+UNEXPECTEDKWARGSUGG = (TypeError, re.UNEXPECTED_KEYWORDARG_SUGG_RE)
 UNEXPECTEDKWARG2 = (TypeError, re.UNEXPECTED_KEYWORDARG2_RE)
 UNEXPECTEDKWARG3 = (TypeError, re.UNEXPECTED_KEYWORDARG3_RE)
 UNEXPECTEDKWARG4 = (TypeError, re.UNEXPECTED_KEYWORDARG4_RE)
@@ -1559,11 +1560,13 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_keyword_args2(self):
         """Should be param 'abcdef' not 'abcdf'."""
+        before, after = before_and_after((3, 13))
         typo, good = 'abcdf', 'abcdef'
         code = func_gen(param=good, args='{0}=1')
         bad_code, good_code = format_str(code, typo, good)
         sugg = quote(good)
-        self.throws(bad_code, UNEXPECTEDKWARG, sugg)
+        self.throws(bad_code, UNEXPECTEDKWARG, sugg, before)
+        self.throws(bad_code, UNEXPECTEDKWARGSUGG, [], after)
         self.runs(good_code)
 
     def test_keyword_arg_method(self):
@@ -1576,12 +1579,14 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_keyword_arg_method2(self):
         """Should be the same as previous test but on a method."""
+        before, after = before_and_after((3, 13))
         typo, good = 'abcdf', 'abcdef'
         code = 'class MyClass:\n\tdef func(self, ' + good + '):' \
                '\n\t\tpass\nMyClass().func({0}=1)'
         bad_code, good_code = format_str(code, typo, good)
         sugg = quote(good)
-        self.throws(bad_code, UNEXPECTEDKWARG, sugg)
+        self.throws(bad_code, UNEXPECTEDKWARG, sugg, before)
+        self.throws(bad_code, UNEXPECTEDKWARGSUGG, [], after)
         self.runs(good_code)
 
     def test_keyword_arg_class_method(self):
@@ -1594,42 +1599,51 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_keyword_arg_class_method2(self):
         """Should be the same as previous test but on a class method."""
+        before, after = before_and_after((3, 13))
         typo, good = 'abcdf', 'abcdef'
         code = 'class MyClass:\n\t@classmethod ' \
                '\n\tdef func(cls, ' + good + '):\n ' \
                '\t\tpass\nMyClass.func({0}=1)'
         bad_code, good_code = format_str(code, typo, good)
         sugg = quote(good)
-        self.throws(bad_code, UNEXPECTEDKWARG, sugg)
+        self.throws(bad_code, UNEXPECTEDKWARG, sugg, before)
+        self.throws(bad_code, UNEXPECTEDKWARGSUGG, [], after)
         self.runs(good_code)
 
     def test_keyword_arg_multiples_instances(self):
         """If multiple functions are found, suggestions should be unique."""
+        before, after = before_and_after((3, 13))
         typo, good = 'abcdf', 'abcdef'
         code = 'class MyClass:\n\tdef func(self, ' + good + '):' \
                '\n\t\tpass\na = MyClass()\nb = MyClass()\na.func({0}=1)'
         bad_code, good_code = format_str(code, typo, good)
         sugg = quote(good)
-        self.throws(bad_code, UNEXPECTEDKWARG, sugg)
+        self.throws(bad_code, UNEXPECTEDKWARG, sugg, before)
+        self.throws(bad_code, UNEXPECTEDKWARGSUGG, [], after)
         self.runs(good_code)
 
     def test_keyword_arg_lambda(self):
         """Test with lambda functions instead of usual function."""
+        before, after = before_and_after((3, 13))
         typo, good = 'abcdf', 'abcdef'
         sugg = quote(good)
         code = 'f = lambda arg1, ' + good + ': None\nf(42, {0}=None)'
         bad_code, good_code = format_str(code, typo, good)
-        self.throws(bad_code, UNEXPECTEDKWARG, sugg)
+        self.throws(bad_code, UNEXPECTEDKWARG, sugg, before)
+        self.throws(bad_code, UNEXPECTEDKWARGSUGG, [], after)
+
         self.runs(good_code)
 
     def test_keyword_arg_lambda_method(self):
         """Test with lambda methods instead of usual methods."""
+        before, after = before_and_after((3, 13))
         typo, good = 'abcdf', 'abcdef'
         sugg = quote(good)
         code = 'class MyClass:\n\tfunc = lambda self, ' + good + ': None' \
                '\nMyClass().func({0}=1)'
         bad_code, good_code = format_str(code, typo, good)
-        self.throws(bad_code, UNEXPECTEDKWARG, sugg)
+        self.throws(bad_code, UNEXPECTEDKWARG, sugg, before)
+        self.throws(bad_code, UNEXPECTEDKWARGSUGG, [], after)
         self.runs(good_code)
 
     def test_keyword_arg_other_objects_with_name(self):
