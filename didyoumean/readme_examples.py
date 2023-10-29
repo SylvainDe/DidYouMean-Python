@@ -35,16 +35,19 @@ def get_except_hook_result_as_str(type_, value, traceback):
     return err.getvalue().split("\n")[-2]
 
 
-def get_print_exception_result_as_str(value):
+def get_print_exception_result_as_str(type_, value, traceback_):
     # Trying with traceback
     with captured_stderr() as output:
-        traceback.print_exception(value)
+        traceback.print_exception(type_, value, traceback_)
     return output.getvalue().splitlines()[-1]
 
 
-def exception_to_str(type_, value, traceback):
-    # Could be str(value), repr(value), get_print_exception_result_as_str(value) or get_except_hook_result_as_str
+def get_exc_value_with_str(type_, value, traceback_):
     return str(value)
+
+
+def get_exc_value_with_repr(type_, value, traceback_):
+    return repr(value)
 
 
 # Different examples :
@@ -152,7 +155,7 @@ EXAMPLES = {
 }
 
 
-def get_code_with_exc_before_and_after(code, exc_types):
+def get_code_with_exc_before_and_after(code, exc_types, exception_to_str_func):
     exc = common.get_exception(code)
     if exc is None:
         before = after = "No exception thrown on this version of Python"
@@ -165,9 +168,9 @@ def get_code_with_exc_before_and_after(code, exc_types):
             )
             before = after = msg
         else:
-            before = exception_to_str(type_, value, traceback)
+            before = exception_to_str_func(type_, value, traceback)
             add_suggestions_to_exception(type_, value, traceback)
-            after = exception_to_str(type_, value, traceback)
+            after = exception_to_str_func(type_, value, traceback)
             if before == after:
                 after += " (unchanged on this version of Python)"
     return """```python
@@ -179,10 +182,14 @@ def get_code_with_exc_before_and_after(code, exc_types):
     )
 
 
-def main():
+def main(exception_to_str_func):
     """Main."""
     print(datetime.datetime.now())
-    print(sys.version)
+    print(
+        "## Exception on Python {0} printed with {1}".format(
+            sys.version, exception_to_str_func.__name__
+        )
+    )
     for (_, exc_types), exc_examples in sorted(EXAMPLES.items()):
         if not isinstance(exc_types, tuple):
             exc_types = (exc_types,)
@@ -190,8 +197,22 @@ def main():
         for (_, desc), codes in sorted(exc_examples.items()):
             print("##### {0}\n".format(desc))
             for code in codes:
-                print(standardise(get_code_with_exc_before_and_after(code, exc_types)))
+                print(
+                    standardise(
+                        get_code_with_exc_before_and_after(
+                            code, exc_types, exception_to_str_func
+                        )
+                    )
+                )
 
 
 if __name__ == "__main__":
-    main()
+    # Use various output formats to pick to most interesting based on usage
+    str_functions = [
+        get_exc_value_with_str,
+        get_exc_value_with_repr,
+        get_except_hook_result_as_str,
+        get_print_exception_result_as_str,
+    ]
+    for exception_to_str_func in str_functions:
+        main(exception_to_str_func)

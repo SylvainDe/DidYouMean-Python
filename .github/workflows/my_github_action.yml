@@ -154,9 +154,11 @@ jobs:
         pep257 *.py */*.py || true
         pydocstyle *.py */*.py || true
         pyflakes . || true
-    - name: Run examples
+    - name: Run examples (from unit tests)
       run: |
         python didyoumean/didyoumean_sugg_tests.py
+    - name: Run examples (from Readme)
+      run: |
         python didyoumean/readme_examples.py
     - name: Run unit-tests without coverage
       run: |
