@@ -29,8 +29,11 @@ def standardise(string):
 
 def get_except_hook_result_as_str(type_, value, traceback):
     # Inspired from "get_message_lines" in Lib/idlelib/run.py
+    redirect_stderr = getattr(contextlib, 'redirect_stderr')
+    if redirect_stderr is None:
+        return "redirect_stderr not supported"
     err = io.StringIO()
-    with contextlib.redirect_stderr(err):
+    with redirect_stderr(err):
         sys.__excepthook__(type_, value, traceback)
     return err.getvalue().split("\n")[-2]
 
