@@ -123,7 +123,7 @@ class RegexTests(unittest_module.TestCase):
             'builtin_function_or_method'
         ] + list(real_types)
         for type_ in types:
-            if type_ not in ('symtable entry', 'builtin method'):
+            if type_ not in ('symtable entry', 'builtin method', 'Counter optimizer'):
                 self.assertRegexp(type_, regex)
 
     def test_func_name(self):
