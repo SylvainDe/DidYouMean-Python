@@ -1663,16 +1663,21 @@ class TypeErrorTests(GetSuggestionsTests):
         # NICE_TO_HAVE
         # 'max', 'input', 'len', 'abs', 'all', etc have a specific error
         # message and are not relevant here
-        before, after = before_and_after((3, 7))
+        before, mid, after = before_mid_and_after(
+            (3, 7),
+            (3, 13, 0, 'alpha', 4)
+        )
         for builtin, kwarg in [
                 ('float', False), ('bool', False),
                 ('int', True), ('complex', True)]:
             code = builtin + '(this_doesnt_exist=2)'
             old_exc = UNEXPECTEDKWARG2
             new_exc = UNEXPECTEDKWARG4 if kwarg else NOKWARGS
+            new_exc2 = UNEXPECTEDKWARG if kwarg else NOKWARGS
             sugg = [] if kwarg else NO_KEYWORD_ARG_MSG
             self.throws(code, old_exc, [], before, interpreters='cpython')
-            self.throws(code, new_exc, sugg, after, interpreters='cpython')
+            self.throws(code, new_exc, sugg, mid, interpreters='cpython')
+            self.throws(code, new_exc2, sugg, after, interpreters='cpython')
             self.throws(code, UNEXPECTEDKWARG, interpreters='pypy')
 
     def test_keyword_builtin_print(self):
