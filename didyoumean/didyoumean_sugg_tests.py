@@ -1692,7 +1692,7 @@ class TypeErrorTests(GetSuggestionsTests):
         self.throws(code, UNEXPECTEDKWARG2, [], mid1, 'cpython')
         self.throws(code, UNEXPECTEDKWARG4, [], mid2, 'cpython')
         self.throws(code, UNEXPECTEDKWARG4, [], mid3, 'cpython')
-        self.throws(code, UNEXPECTEDKWARG, [], after, 'cpython')
+        self.throws(code, UNEXPECTEDKWARGSUGG, [], after, 'cpython')
         self.throws(code, UNEXPECTEDKWARG3, [], mid1, 'pypy')
         self.throws(code, UNEXPECTEDKWARG3, [], mid2, 'pypy')
         self.throws(code, UNEXPECTEDKWARG, sugg, mid3, 'pypy')
