@@ -133,6 +133,8 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
+      env: # Temporary workaround for Python 3.5 failures - May 2024
+        PIP_TRUSTED_HOST: "pypi.python.org pypi.org files.pythonhosted.org"
     - name: Show Python version information
       run: |
         # Information about Python version
