@@ -161,12 +161,12 @@ class RegexTests(unittest_module.TestCase):
         msgs = [
             # Python 2.6/2.7/3.2/3.3/3.4/3.5/../3.10/PyPy/PyPy3
             "local variable 'some_var' referenced before assignment",
-            "free variable 'some_var' referenced before assignment " \
+            "free variable 'some_var' referenced before assignment "
             "in enclosing scope",
             # Python 3.11
-            "cannot access free variable 'some_var' where it is not " \
+            "cannot access free variable 'some_var' where it is not "
             "associated with a value in enclosing scope",
-            "cannot access local variable 'some_var' where it is not " \
+            "cannot access local variable 'some_var' where it is not "
             "associated with a value",
         ]
         groups = ('some_var',)
