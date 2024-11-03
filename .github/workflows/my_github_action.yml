@@ -138,7 +138,7 @@ jobs:
         - '3.13.0-rc.3'
         - '3.13.0'
         - '3.14.0-alpha.0'
-        - '3.14.0-alpha.1'
+# Disabled because of issue #67        - '3.14.0-alpha.1'
         - 'pypy-2.7'
         - 'pypy-2.7-nightly'
         - 'pypy-3.6' # the latest available version of PyPy that supports Python 3.6
