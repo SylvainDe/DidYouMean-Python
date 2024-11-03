@@ -120,7 +120,8 @@ class RegexTests(unittest_module.TestCase):
             'int',
             'method-wrapper',
             'builtin_function',
-            'builtin_function_or_method'
+            'builtin_function_or_method',
+            '_io.TextIOWrapper'
         ] + list(real_types)
         for type_ in types:
             if type_ not in ('symtable entry', 'builtin method', 'Counter optimizer'):
@@ -380,6 +381,8 @@ class RegexTests(unittest_module.TestCase):
             "too many values to unpack",
             # Python 3.2/3.3/3.4/3.5/PyPy3
             "too many values to unpack (expected 3)",
+            # Python 3.14.1
+            "too many values to unpack (expected 3, got 4)"
         ]
         for msg in msgs:
             self.re_matches(msg, re.TOO_MANY_VALUES_UNPACK_RE, NO_GROUP)

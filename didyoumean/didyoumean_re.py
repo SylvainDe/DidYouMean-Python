@@ -58,7 +58,7 @@ INDEXOUTOFRANGE_RE = r"^list index out of range$"
 ZERO_LEN_FIELD_RE = r"^zero length field name in format$"
 MATH_DOMAIN_ERROR_RE = r"^math domain error$"
 TOO_MANY_VALUES_UNPACK_RE = r"^too many values " \
-    r"to unpack(?: \(expected \d+\))?$"
+    r"to unpack(?: \(expected.*\))?$"
 OUTSIDE_FUNCTION_RE = r"^'?(\w+)'? outside function$"
 NEED_MORE_VALUES_RE = r"^(?:need more than \d+|not enough) values to unpack" \
     r"(?: \(expected \d+, got \d+\))?$"
