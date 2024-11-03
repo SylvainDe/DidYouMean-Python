@@ -765,6 +765,8 @@ class RegexTests(unittest_module.TestCase):
         msgs = [
             # Python 2.6/2.7/3.2/3.3/3.4/3.5
             "argument of type 'type' is not iterable",
+            # Python 3.14
+            "argument of type 'type' is not a container or iterable",
             # PyPy/PyPy3
             "'type' object is not iterable"
         ]

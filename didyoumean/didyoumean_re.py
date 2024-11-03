@@ -125,7 +125,7 @@ DESCRIPT_REQUIRES_TYPE_RE = r"^descriptor '(\w+)' " \
     r"(?:object but received|objects doesn't apply to) (?:a )?" \
     r"'({0})'(?:| object)$".format(TYPE_NAME)
 ARG_NOT_ITERABLE_RE = r"^(?:argument of type )?'({0})'" \
-    r"(?: object)? is not iterable$".format(TYPE_NAME)
+    r"(?: object)? is not (a container or )?iterable$".format(TYPE_NAME)
 MUST_BE_CALLED_WITH_INST_RE = r"^unbound method (\w+)\(\) must be called " \
     r"with ({0}) instance as first argument " \
     r"\(got ({0}) instance instead\)$".format(TYPE_NAME)

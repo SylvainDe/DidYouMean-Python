@@ -555,7 +555,7 @@ def suggest_feature_not_supported(attr, type_str, frame):
     for s in suggest_attribute_alternative(attr, type_str, attributes):
         yield s
     if type_str not in frame.f_builtins and \
-            type_str not in ('function', 'generator'):
+            type_str not in ('function', 'generator', 'builtin_function_or_method'):
         yield 'implement "' + attr + '" on ' + type_str
 
 
