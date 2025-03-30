@@ -371,8 +371,12 @@ class RegexTests(unittest_module.TestCase):
     def test_math_domain_error(self):
         """Test MATH_DOMAIN_ERROR_RE."""
         # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
-        msg = "math domain error"
-        self.re_matches(msg, re.MATH_DOMAIN_ERROR_RE, NO_GROUP)
+        msgs = [
+            "math domain error",
+            "expected a positive input, got -1",
+        ]
+        for msg in msgs:
+            self.re_matches(msg, re.MATH_DOMAIN_ERROR_RE, NO_GROUP)
 
     def test_too_many_values(self):
         """Test TOO_MANY_VALUES_UNPACK_RE."""

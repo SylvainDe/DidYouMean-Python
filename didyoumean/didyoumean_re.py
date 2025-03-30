@@ -56,7 +56,8 @@ CANNOTIMPORT_RE = r"^cannot import name '?(?P<name>{0})'?" \
     r"(?: from '{1}' \(.*\))?$".format(IDENTIFIER, MODULE_NAME)
 INDEXOUTOFRANGE_RE = r"^list index out of range$"
 ZERO_LEN_FIELD_RE = r"^zero length field name in format$"
-MATH_DOMAIN_ERROR_RE = r"^math domain error$"
+MATH_DOMAIN_ERROR_RE = r"^math domain error|" \
+    r"expected a positive input, got -\d+$"
 TOO_MANY_VALUES_UNPACK_RE = r"^too many values " \
     r"to unpack(?: \(expected.*\))?$"
 OUTSIDE_FUNCTION_RE = r"^'?(\w+)'? outside function$"
