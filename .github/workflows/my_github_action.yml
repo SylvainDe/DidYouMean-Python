@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04 # Should be ubuntu-latest if not for issue #58
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
