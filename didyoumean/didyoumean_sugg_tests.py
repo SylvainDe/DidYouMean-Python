@@ -2734,7 +2734,7 @@ class AnyErrorTests(GetSuggestionsTests):
         This gets fixed on Python 3.14 with PEP 758
         """
         # NICE_TO_HAVE
-        before, mid, after = before_mid_and_after((3, 0), (3, 14, 'alpha', 7))
+        before, mid, after = before_mid_and_after((3, 0), (3, 14, 0, 'alpha', 7))
         raised_exc, other_exc = KeyError, TypeError
         raised, other = raised_exc.__name__, other_exc.__name__
         code = "try:\n\traise {0}()\nexcept {{0}}:\n\tpass".format(raised)
