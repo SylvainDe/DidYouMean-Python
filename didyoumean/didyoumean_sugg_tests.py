@@ -1909,14 +1909,16 @@ class TypeErrorTests(GetSuggestionsTests):
 
     def test_old_print_chevron_syntax(self):
         """Trying old print chevron syntax (before Python 3)."""
-        before, mid, after = before_mid_and_after((3, 0), (3, 6))
+        before, mid1, mid2, after = ranges_between((3, 0), (3, 6), (3, 14, 0, 'beta'))
         code = "with open('/dev/null', 'w') as f:\n\tprint >> f, 5"
         sugg = '"print(<message>, file=<output_stream>)"'
         good_code = "with open('/dev/null', 'w') as f:\n\tprint('5', file=f)"
         self.runs(code, before)
-        self.throws(code, UNSUPPORTEDOPERAND, sugg, mid)
-        self.throws(code, UNSUPPORTEDOPERANDSUGG, [], after)
-        self.runs(good_code, mid)
+        self.throws(code, UNSUPPORTEDOPERAND, sugg, mid1)
+        self.throws(code, UNSUPPORTEDOPERANDSUGG, [], mid2)
+        self.throws(code, UNSUPPORTEDOPERAND, sugg, after)
+        self.runs(good_code, mid2)
+        self.runs(good_code, mid2)
         self.runs(good_code, after)
 
     def test_assignment_to_range(self):

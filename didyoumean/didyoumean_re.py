@@ -57,14 +57,15 @@ CANNOTIMPORT_RE = r"^cannot import name '?(?P<name>{0})'?" \
 INDEXOUTOFRANGE_RE = r"^list index out of range$"
 ZERO_LEN_FIELD_RE = r"^zero length field name in format$"
 MATH_DOMAIN_ERROR_RE = r"^math domain error|" \
-    r"expected a positive input, got -\d+$"
+    r"expected a positive input(?:, got -\d+)?$"
 TOO_MANY_VALUES_UNPACK_RE = r"^too many values " \
     r"to unpack(?: \(expected.*\))?$"
 OUTSIDE_FUNCTION_RE = r"^'?(\w+)'? outside function$"
 NEED_MORE_VALUES_RE = r"^(?:need more than \d+|not enough) values to unpack" \
     r"(?: \(expected \d+, got \d+\))?$"
-UNHASHABLE_RE = r"^(?:unhashable type: )?'({0})'" \
-    r"(?: objects are unhashable)?$".format(TYPE_NAME)
+UNHASHABLE_RE = r"^(?:cannot use '{0}' as a {0} element \(?)?" \
+    r"(?:unhashable type: )?'({0})'" \
+    r"(?: objects are unhashable)?.?$".format(TYPE_NAME)
 MISSING_PARENT_RE = r"^Missing parentheses in call to " \
     r"'(?P<func>{0})'(?:. Did you mean.*)?$".format(FUNC_NAME)
 INVALID_LITERAL_RE = r"^invalid literal for (\w+)\(\) with base \d+: '(.*)'$"

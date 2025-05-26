@@ -370,10 +370,12 @@ class RegexTests(unittest_module.TestCase):
 
     def test_math_domain_error(self):
         """Test MATH_DOMAIN_ERROR_RE."""
-        # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
         msgs = [
+            # Python 2.6/2.7/3.2/3.3/3.4/3.5/PyPy/PyPy3
             "math domain error",
             "expected a positive input, got -1",
+            # Python 3.14.0.b
+            "expected a positive input",
         ]
         for msg in msgs:
             self.re_matches(msg, re.MATH_DOMAIN_ERROR_RE, NO_GROUP)
@@ -396,6 +398,8 @@ class RegexTests(unittest_module.TestCase):
         msgs = [
             # Python 2.6/2.7/3.2/3.3/3.4/3.5
             "unhashable type: 'list'",
+            # Python 3.14.0.b
+            "cannot use 'list' as a set element (unhashable type: 'list')",
             # PyPy/PyPy3
             "'list' objects are unhashable",
         ]
@@ -701,6 +705,11 @@ class RegexTests(unittest_module.TestCase):
              '-',
              'builtin_function',
              'int'),
+            # Python 3.14.0.b
+            ("unsupported operand type(s) for >>: 'builtin_function_or_method' and '_io.TextIOWrapper'",
+             '>>',
+             'builtin_function_or_method',
+             '_io.TextIOWrapper'),
         ]
         for msg, op, t1, t2 in msgs:
             groups = op, t1, t2
