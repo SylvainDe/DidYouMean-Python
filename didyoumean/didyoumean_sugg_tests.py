@@ -2731,9 +2731,10 @@ class AnyErrorTests(GetSuggestionsTests):
 
         Common mistake : "except Exc1, Exc2" doesn't catch Exc2.
         Adding parenthesis solves the issue.
+        This gets fixed on Python 3.14 with PEP 758
         """
         # NICE_TO_HAVE
-        before, after = before_and_after((3, 0))
+        before, mid, after = before_mid_and_after((3, 0), (3, 14, 'alpha', 7))
         raised_exc, other_exc = KeyError, TypeError
         raised, other = raised_exc.__name__, other_exc.__name__
         code = "try:\n\traise {0}()\nexcept {{0}}:\n\tpass".format(raised)
@@ -2741,7 +2742,8 @@ class AnyErrorTests(GetSuggestionsTests):
         sugg = "({0})".format(typo)
         bad1, bad2, good1, good2 = format_str(code, typo, other, sugg, raised)
         self.throws(bad1, (raised_exc, None), [], before)
-        self.throws(bad1, EXCEPTION_GROUP, [], after)
+        self.throws(bad1, EXCEPTION_GROUP, [], mid)
+        self.runs(bad1, after)
         self.throws(bad2, (raised_exc, None))
         self.runs(good1)
         self.runs(good2)
